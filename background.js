@@ -25,7 +25,7 @@ async function contaML() {
 
 async function chamar(caminho, { metodo = "GET", corpo, semToken = false } = {}) {
   const c = await configuracao();
-  if (!c.servidor) throw new Error("Endereço do Replique não configurado. Clique no ícone da extensão.");
+  if (!c.servidor) throw new Error("Endereço do servidor Monvatti não configurado. Clique no ícone da extensão.");
   if (!semToken && !c.token) throw new Error("Extensão desligada. Clique no ícone da extensão e cole o código do administrador.");
   const headers = { "Content-Type": "application/json", "X-Extensao-Chave": c.chave };
   if (!semToken) headers.Authorization = "Bearer " + c.token;
@@ -33,11 +33,11 @@ async function chamar(caminho, { metodo = "GET", corpo, semToken = false } = {})
   try {
     r = await fetch(c.servidor + caminho, { method: metodo, headers, body: corpo ? JSON.stringify(corpo) : undefined });
   } catch {
-    throw new Error("Não consegui falar com o Replique. Confira o endereço e a internet.");
+    throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
   }
   const dados = await r.json().catch(() => ({}));
   if (r.status === 401 && !semToken) await chrome.storage.local.set({ token: "" });
-  if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "O Replique recusou o pedido (" + r.status + ").");
+  if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "O servidor Monvatti recusou o pedido (" + r.status + ").");
   return dados;
 }
 
@@ -106,11 +106,11 @@ const acoes = {
         body: JSON.stringify({ pesquisa, filtro, imposto, itens }),
       });
     } catch {
-      throw new Error("Não consegui falar com o Replique. Confira o endereço e a internet.");
+      throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
     }
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
-      throw new Error(typeof d.detail === "string" ? d.detail : "O Replique não gerou a planilha (" + r.status + ").");
+      throw new Error(typeof d.detail === "string" ? d.detail : "O servidor Monvatti não gerou a planilha (" + r.status + ").");
     }
     const bytes = new Uint8Array(await r.arrayBuffer());
     let binario = "";

@@ -45,11 +45,11 @@ async function desenhar() {
 $("#ligar").onclick = async () => {
   const servidor = $("#servidor").value.trim().replace(/\/+$/, "");
   const codigo = $("#codigo").value.trim();
-  if (!/^https?:\/\/[^/]+$/.test(servidor)) return aviso("Informe o endereço do Replique, por exemplo https://replique.seudominio.com.br", "erro");
+  if (!/^https?:\/\/[^/]+$/.test(servidor)) return aviso("Informe o endereço do servidor Monvatti, por exemplo https://app.monvatti.com.br", "erro");
   if (!codigo) return aviso("Cole o código gerado pelo administrador.", "erro");
   const destino = new URL(servidor);
   const permitido = await chrome.permissions.request({ origins: [`${destino.protocol}//${destino.hostname}/*`] });
-  if (!permitido) return aviso("Sem a permissão a extensão não fala com o Replique.", "erro");
+  if (!permitido) return aviso("Sem a permissão a extensão não fala com o servidor Monvatti.", "erro");
   try {
     await enviar({ tipo: "parear", servidor, codigo, navegador: nomeNavegador() });
     await desenhar();

@@ -5,15 +5,15 @@
   const ESTILO = `
     :host { all: initial; }
     * { box-sizing: border-box; }
-    .raiz { --azul: #0b50f5; --azul-forte: #0a33d9; --azul-suave: #e8efff; --azul-borda: #c4d4ff; --texto: #0b0f1a; --suave: #5f6b85;
-      --tenue: #8a94ab; --borda: #e3e8f2; --fundo: #f4f6fb; --verde: #0f8a5f; --verde-claro: #e3f6ee; --vermelho: #d4343b;
+    .raiz { --azul: #001AD8; --azul-forte: #0014a6; --azul-vivo: #3145FF; --azul-suave: #e9ebff; --azul-borda: #b9c2ff; --texto: #2B333B; --suave: #5b6472;
+      --tenue: #8a93a3; --borda: #e4e6ea; --fundo: #f3f4f7; --verde: #0f8a5f; --verde-claro: #e3f6ee; --vermelho: #d4343b;
       --vermelho-claro: #fdecec; --amarelo: #a15c07; --amarelo-claro: #fdf3dc;
       font: 13px/1.45 Inter, "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--texto); }
     .painel { margin: 12px 0; border: 1px solid var(--borda); border-radius: 12px; background: #fff; overflow: hidden;
       box-shadow: 0 1px 3px rgba(15, 23, 42, .06); }
     .topo { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--borda); background: var(--fundo); }
-    .marca { width: 22px; height: 22px; border-radius: 6px; background: var(--azul); color: #fff; display: grid; place-items: center;
-      font-weight: 700; font-size: 12px; flex: none; }
+    .marca { width: 22px; height: 22px; flex: none; background: url("${chrome.runtime.getURL("icones/icone-48.png")}") center/contain no-repeat; }
+    .marca.mini { width: 18px; height: 18px; }
     .topo b { font-size: 13px; }
     .topo .suave { margin-left: auto; }
     .suave { color: var(--suave); font-size: 12px; }
@@ -45,7 +45,7 @@
     .linhas { padding: 8px 10px; display: grid; gap: 4px; font-size: 12px; }
     .acoes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     select, input { padding: 7px 9px; border: 1px solid var(--borda); border-radius: 8px; font: inherit; color: var(--texto); background: #fff; min-width: 0; }
-    select:focus, input:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(11, 80, 245, .18); }
+    select:focus, input:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(49, 69, 255, .22); }
     button, a.botao { padding: 8px 12px; text-decoration: none; display: inline-block; border: 0; border-radius: 8px; background: var(--azul); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
     button:hover, a.botao:hover { background: var(--azul-forte); }
     button.sec, a.botao.sec { background: #fff; color: var(--texto); border: 1px solid var(--borda); }
@@ -59,9 +59,9 @@
     .girando { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--azul-borda); border-top-color: var(--azul);
       border-radius: 50%; animation: g 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
     @keyframes g { to { transform: rotate(360deg); } }
-    .fab { position: fixed; right: 24px; bottom: 96px; width: 52px; height: 52px; border-radius: 50%; background: var(--azul); color: #fff;
-      display: grid; place-items: center; font-weight: 700; font-size: 18px; box-shadow: 0 12px 32px -8px rgba(15, 23, 42, .35);
-      cursor: pointer; z-index: 2147483000; border: 0; padding: 0; }
+    .fab { position: fixed; right: 24px; bottom: 96px; width: 52px; height: 52px; border-radius: 50%;
+      background: var(--azul) url("${chrome.runtime.getURL("icones/icone-branco-48.png")}") center/58% no-repeat;
+      box-shadow: 0 12px 32px -8px rgba(15, 23, 42, .35); cursor: pointer; z-index: 2147483000; border: 0; padding: 0; }
     .fundo-gaveta { position: fixed; inset: 0; background: rgba(7, 10, 23, .25); z-index: 2147483001; }
     .gaveta { position: fixed; top: 0; right: 0; height: 100vh; width: min(460px, 100vw); background: #fff; z-index: 2147483002;
       box-shadow: -12px 0 32px -8px rgba(15, 23, 42, .25); display: flex; flex-direction: column; }
@@ -383,7 +383,7 @@
   const estado = { info: null, dados: null, pagina: null, imposto: 7 };
 
   function aviso(raiz, texto, tipo = "info") {
-    raiz.innerHTML = `<div class="painel"><div class="topo"><span class="marca">M</span><b>Monvatti Pro</b></div>
+    raiz.innerHTML = `<div class="painel"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b></div>
       <div class="corpo"><div class="aviso ${tipo}">${esc(texto)}</div></div></div>`;
   }
 
@@ -446,7 +446,7 @@
       ? `<p><b>Por que pode ser bem menor que em outras ferramentas:</b> esta é uma página de produto (/up/), que junta anúncios antigos e novos do mesmo produto, e as avaliações vêm desde ${dataBR(d.primeira_avaliacao)}. Os ${n(d.vendidos)} vendidos são desse histórico todo. Quem divide só pela idade do anúncio atual, que pode ser recente, chega num número muitas vezes maior.</p>` : "";
     const piso = d.patamar ? `O Mercado Livre mostra “+${n(d.vendidos)} vendidos”, que é um piso: o anúncio vendeu pelo menos ${n(d.vendidos)}.` : `O Mercado Livre mostra ${n(d.vendidos)} vendidos.`;
     const textos = {
-      estimadas: `<p>${piso}</p>${d.patamar ? `<p>O número real fica entre esse piso e o próximo degrau. Estimamos <b>1,55 × ${n(d.vendidos)} = ${n(d.vendas_estimadas)}</b>, a mesma régua do Avant Pro.</p>` : "<p>Como o número é exato, a estimativa é igual a ele.</p>"}`,
+      estimadas: `<p>${piso}</p>${d.patamar ? `<p>O número real fica entre esse piso e o próximo degrau. Estimamos <b>1,55 × ${n(d.vendidos)} = ${n(d.vendas_estimadas)}</b>.</p>` : "<p>Como o número é exato, a estimativa é igual a ele.</p>"}`,
       ritmo: d.ritmo_mes == null ? "<p>Sem a data do anúncio não dá para calcular o ritmo.</p>"
         : `<p>Supõe que 40% das vendas aconteceram no último terço da vida do anúncio.</p>
            <p>Idade do anúncio: <b>${n(d.dias_anuncio)} dias</b> (${dec(d.dias_anuncio / 30.44)} meses), contada por ${fonte}. Último terço = ${dec(d.dias_anuncio / 30.44 / 3)} meses.</p>
@@ -529,7 +529,7 @@
       local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
     };
     raiz.innerHTML = `<div class="painel anuncio">
-      <div class="topo"><span class="marca">M</span><b>Monvatti Pro</b><span class="suave">${esc(info.conta.conta === "deslogado" ? "ML deslogado" : "conta " + info.conta.conta)}</span></div>
+      <div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b><span class="suave">${esc(info.conta.conta === "deslogado" ? "ML deslogado" : "conta " + info.conta.conta)}</span></div>
       <div class="corpo">
         <div class="parte">
           <div class="chips">
@@ -667,9 +667,9 @@
     alvo.after(host);
     const info = estado.info;
     if (!info || info.erro) return aviso(raiz, info?.erro || "Não consegui falar com a extensão.", "erro");
-    if (!info.ligado) return aviso(raiz, "Extensão desligada. Clique no ícone do Monvatti Pro na barra do Chrome e cole o código do administrador.");
+    if (!info.ligado) return aviso(raiz, "Extensão desligada. Clique no ícone do Monvatti Marketplace na barra do Chrome e cole o código do administrador.");
     if (!info.conta.liberado) return aviso(raiz, info.conta.motivo, "erro");
-    raiz.innerHTML = '<div class="painel"><div class="topo"><span class="marca">M</span><b>Monvatti Pro</b></div><div class="corpo"><div class="suave"><span class="girando"></span>Carregando dados do anúncio…</div></div></div>';
+    raiz.innerHTML = '<div class="painel"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b></div><div class="corpo"><div class="suave"><span class="girando"></span>Carregando dados do anúncio…</div></div></div>';
     estado.pagina = lerAnuncio();
     try {
       const dados = await enviar({ tipo: "anuncio", pagina: estado.pagina });
@@ -916,8 +916,8 @@
     const linhaData = (k, cor, rotulo) => `<button class="linha-filtro ${ativo(k)}" data-filtro="${k}" ${conta(k) || ativo(k) ? "" : "disabled"}>
       <i class="ponto" style="background:${cor}"></i><span>${rotulo}</span><b>${num(conta(k))}</b></button>`;
     const cab = (ic, titulo, extra = "") => `<div class="lat-cab">${icone(ic)}<h5>${titulo}</h5>${extra}</div>`;
-    const aguardando = '<p class="nota">Clique em “Carregar dados Monvatti Pro” para ver.</p>';
-    raiz.innerHTML = `<div class="painel lateral"><div class="topo"><span class="marca">M</span><b>Monvatti Pro</b>
+    const aguardando = '<p class="nota">Clique em “Carregar dados Monvatti Marketplace” para ver.</p>';
+    raiz.innerHTML = `<div class="painel lateral"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b>
         <span class="suave">${itens.length} anúncios</span></div>
       <div class="corpo">
         ${temFiltro() ? `<div class="filtros-ativos"><div><b>${num(visiveis)}</b> de ${num(itens.length)} anúncios com os filtros:</div>
@@ -1004,7 +1004,7 @@
     const tipo = tipoDe(it);
     const tarifa = d?.tarifas?.[tipo];
     raiz.innerHTML = `<div class="cartao">
-      <div class="cartao-cab"><span class="marca mini">M</span><b>Monvatti Pro</b>
+      <div class="cartao-cab"><span class="marca mini"></span><b>Monvatti Marketplace</b>
         ${curvaDe(it) ? `<span class="selo-curva curva-${curvaDe(it).toLowerCase()}" title="${esc(EXPLICA_CURVA)}">Curva ${curvaDe(it)}</span>` : ""}
         ${it.patrocinado ? '<span class="chip">Patrocinado</span>' : ""}</div>
       <div class="cartao-dados">
@@ -1094,14 +1094,14 @@
     const itens = estado.itensBusca || [];
     if (!raiz) return;
     const info = estado.info;
-    if (!info || info.erro || !info.ligado) return aviso(raiz, info?.erro || "Extensão desligada. Clique no ícone do Monvatti Pro e cole o código do administrador.");
+    if (!info || info.erro || !info.ligado) return aviso(raiz, info?.erro || "Extensão desligada. Clique no ícone do Monvatti Marketplace e cole o código do administrador.");
     if (!info.conta.liberado) return aviso(raiz, info.conta.motivo, "erro");
     const soma = itens.reduce((a, i) => a + (i.vendidos || 0), 0);
     const estimadas = itens.reduce((a, i) => a + (estado.busca?.dados?.[i.item_id]?.vendas_estimadas ?? estimar(i.vendidos, i.patamar) ?? 0), 0);
     const fat = itens.reduce((a, i) => a + (i.preco || 0) * (i.vendidos || 0), 0);
     const b = estado.busca || {};
     const visiveis = itens.filter((i) => i.item_id && passaNoFiltro(i)).length;
-    raiz.innerHTML = `<div class="painel resumo-busca"><div class="topo"><span class="marca">M</span><b>Resumo da página</b>
+    raiz.innerHTML = `<div class="painel resumo-busca"><div class="topo"><span class="marca"></span><b>Resumo da página</b>
         <span class="suave">${itens.length} anúncios</span></div>
       <div class="corpo">
         <div class="resumo-linha">
@@ -1119,7 +1119,7 @@
         </div>
         ${estado.estudoMsg ? `<div class="aviso ${estado.estudoMsg.tipo}">${esc(estado.estudoMsg.texto)}</div>` : ""}
         <div class="acoes">
-          <button class="sec" id="m-carregar" ${b.carregando ? "disabled" : ""}>${b.carregando ? `<span class="girando"></span>${esc(b.etapa || "Carregando dados…")}` : b.dados ? "Recarregar dados Monvatti Pro" : "Carregar dados Monvatti Pro"}</button>
+          <button class="sec" id="m-carregar" ${b.carregando ? "disabled" : ""}>${b.carregando ? `<span class="girando"></span>${esc(b.etapa || "Carregando dados…")}` : b.dados ? "Recarregar dados Monvatti Marketplace" : "Carregar dados Monvatti Marketplace"}</button>
           <span class="suave">${b.erro ? "" : b.dados ? "Data de criação, ritmo, comissão, frete e vendedor de cada anúncio." : "Lê data de criação, ritmo, comissão, frete e vendedor de cada anúncio (leva alguns segundos)."}</span>
         </div>
         ${b.erro ? `<div class="aviso erro">${esc(b.erro)}</div>` : ""}
@@ -1346,8 +1346,8 @@
     const { host, raiz } = hospedeiro("monvatti-gaveta");
     document.body.append(host);
     const fechar = () => host.remove();
-    raiz.innerHTML = `<div class="fundo-gaveta"></div><aside class="gaveta" role="dialog" aria-label="Monvatti Pro">
-      <header><span class="marca">M</span><b>Monvatti Pro</b><button class="sec" id="g-fechar">Fechar</button></header>
+    raiz.innerHTML = `<div class="fundo-gaveta"></div><aside class="gaveta" role="dialog" aria-label="Monvatti Marketplace">
+      <header><span class="marca"></span><b>Monvatti Marketplace</b><button class="sec" id="g-fechar">Fechar</button></header>
       <nav class="abas">
         <button class="aba" data-aba="calculadora">Calculadora de margem</button>
         <button class="aba" data-aba="metricas">Métricas do anúncio</button>
@@ -1564,7 +1564,7 @@
   function botaoFlutuante() {
     const { host, raiz } = hospedeiro("monvatti-fab");
     document.body.append(host);
-    raiz.innerHTML = '<button class="fab" title="Monvatti Pro" aria-label="Abrir o Monvatti Pro">M</button>';
+    raiz.innerHTML = '<button class="fab" title="Monvatti Marketplace" aria-label="Abrir o Monvatti Marketplace"></button>';
     raiz.querySelector(".fab").onclick = () => abrirGaveta("calculadora");
   }
 
