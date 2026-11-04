@@ -28,6 +28,13 @@ async function desenhar() {
     return;
   }
   $("#quem").textContent = `Logado como ${e.nome}.`;
+  const mlConectado = !!e.ml_conectado;
+  $("#ml").className = "caixa" + (mlConectado ? " ok" : "");
+  $("#ml").textContent = mlConectado
+    ? `Conta do Mercado Livre vinculada${e.ml_apelido ? ` (${e.ml_apelido})` : ""}. Estudo liberado.`
+    : "Vincule a sua conta do Mercado Livre para liberar o estudo de anúncios.";
+  $("#conectar-ml").hidden = mlConectado;
+  $("#desconectar-ml").hidden = !mlConectado;
   const conta = e.conta && e.conta.conta;
   $("#conta").className = "caixa";
   $("#conta").textContent = conta && conta !== "deslogado"
@@ -48,6 +55,25 @@ $("#entrar").onclick = async () => {
     await enviar({ tipo: "entrar", servidor, email });
     await desenhar();
     aviso("Login feito. Abra um anúncio no Mercado Livre.", "ok");
+  } catch (err) {
+    aviso(err.message, "erro");
+  }
+};
+
+$("#conectar-ml").onclick = async () => {
+  try {
+    await enviar({ tipo: "conectarML" });
+    aviso("Abri o Mercado Livre numa aba nova. Entre com a sua conta, autorize e depois reabra esta janela.", "ok");
+  } catch (err) {
+    aviso(err.message, "erro");
+  }
+};
+
+$("#desconectar-ml").onclick = async () => {
+  try {
+    await enviar({ tipo: "desconectarML" });
+    await desenhar();
+    aviso("Conta do Mercado Livre desvinculada.", "ok");
   } catch (err) {
     aviso(err.message, "erro");
   }

@@ -164,11 +164,12 @@ class MercadoLivre:
                 "vendedor_id": str(perguntas[0].get("seller_id") or "") if perguntas else ""}
 
 
-def cliente_ml(db: Session) -> MercadoLivre:
-    """A conta de estudo conectada. Levanta ErroML se ainda não conectaram."""
-    conta = db.query(ContaML).first()
+def cliente_ml(db: Session, usuario) -> MercadoLivre:
+    """A conta do Mercado Livre que este usuário vinculou. Levanta ErroML se ele
+    ainda não conectou a sua (é o que mantém o estudo trancado até vincular)."""
+    conta = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first()
     if not conta or not (conta.credenciais or {}).get("access_token"):
-        raise ErroML("Conecte a conta de estudo do Mercado Livre no servidor (admin em /api/ml/conectar).")
+        raise ErroML("Conecte sua conta do Mercado Livre na extensão para liberar o estudo.")
 
     def salvar(cred: dict):
         conta.credenciais = dict(cred)

@@ -20,12 +20,14 @@ def agora() -> datetime:
 
 
 class ContaML(Base):
-    """A conta de estudo do Mercado Livre conectada (OAuth). Uma só, do servidor.
-    As credenciais (access_token, refresh_token, obtido_em, expires_in, user_id)
-    ficam em `credenciais`; o estudo usa essa conta para ler a API do ML."""
+    """A conta do Mercado Livre que um usuário vinculou (OAuth). Uma por usuário:
+    cada um conecta a sua e libera o estudo só para si (como no Avant). As
+    credenciais (access_token, refresh_token, obtido_em, expires_in, user_id)
+    ficam em `credenciais`; o estudo lê a API do ML por essa conta."""
 
     __tablename__ = "conta_ml"
     id: Mapped[int] = mapped_column(primary_key=True)
+    usuario_id: Mapped[int | None] = mapped_column(Integer, unique=True, index=True, nullable=True)
     credenciais: Mapped[dict] = mapped_column(JSON, default=dict)
     apelido: Mapped[str] = mapped_column(String(120), default="")
     atualizado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)

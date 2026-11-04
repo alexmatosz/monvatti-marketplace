@@ -170,13 +170,13 @@ def _vendedor(ad, seller_id: str) -> dict:
             "uf": str((u.get("address") or {}).get("state", "")).removeprefix("BR-")}
 
 
-def custos_de_venda(db: Session, preco: float, categoria: str, tipo: str,
+def custos_de_venda(db: Session, usuario: Usuario, preco: float, categoria: str, tipo: str,
                     vendedor_id: str = "", item_id: str = "") -> dict:
     if not preco or preco <= 0:
         raise ErroML("Informe um preço de venda maior que zero.")
     if not re.fullmatch(r"MLB\d+", categoria or ""):
         raise ErroML("Categoria do anúncio não encontrada. Abra a página de um anúncio.")
-    ad = cliente_ml(db)
+    ad = cliente_ml(db, usuario)
     frete = _frete(ad, preco, categoria, tipo or "gold_special", vendedor_id, item_id)
     return {"preco": preco, "tarifas": _tarifas(ad, preco, categoria),
             "frete": frete["custo"] if frete else None, "frete_peso_g": frete["peso_g"] if frete else None}
@@ -187,7 +187,7 @@ def analisar(db: Session, usuario: Usuario, pagina: dict) -> dict:
     if not re.fullmatch(r"MLB\d{6,}", item_id):
         raise ErroML("Não achei o código do anúncio (MLB…) nesta página.")
     produto_id = _texto(pagina.get("produto_id"), 40).upper()
-    ad = cliente_ml(db)
+    ad = cliente_ml(db, usuario)
     vendidos, patamar = numero_vendidos(_texto(pagina.get("vendidos_texto"), 60))
     if vendidos is None and _num(pagina.get("vendidos")) is not None:
         vendidos, patamar = int(_num(pagina.get("vendidos"))), True
@@ -285,7 +285,7 @@ def _id_anuncio(valor) -> str:
 
 
 def analisar_busca(db: Session, usuario: Usuario, itens: list[dict]) -> dict:
-    ad = cliente_ml(db)
+    ad = cliente_ml(db, usuario)
     hoje = date.today()
     validos = []
     for it in itens[:100]:

@@ -14,8 +14,8 @@ from backend.models import Usuario
 
 def main():
     init_db()
-    email = os.getenv("MONVATTI_USUARIO_EMAIL", "chefe@monvatti.com.br").strip().lower()
-    nome = os.getenv("MONVATTI_USUARIO_NOME", "Chefe")
+    email = os.getenv("MONVATTI_USUARIO_EMAIL", "alexmonvatti@gmail.com").strip().lower()
+    nome = os.getenv("MONVATTI_USUARIO_NOME", "Monvatti")
     with SessionLocal() as db:
         if db.query(Usuario).filter(Usuario.email == email).first():
             print(f"Já existe: {email}")

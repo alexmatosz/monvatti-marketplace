@@ -50,6 +50,27 @@ def criar_token(usuario_id: int, sessao_versao: int) -> str:
     return f"{corpo}.{_assinar(corpo)}"
 
 
+def criar_state_ml(usuario_id: int) -> str:
+    """State do OAuth do ML que carrega, assinado, quem está conectando. O
+    callback do Mercado Livre não traz o token da sessão, então é por aqui que
+    o servidor sabe de quem é a conta que voltou."""
+    corpo = f"{usuario_id}.{secrets.token_urlsafe(6)}"
+    return f"{corpo}.{_assinar(corpo)}"
+
+
+def ler_state_ml(state: str) -> int | None:
+    try:
+        uid, nonce, assinatura = (state or "").split(".", 2)
+    except ValueError:
+        return None
+    if not hmac.compare_digest(assinatura, _assinar(f"{uid}.{nonce}")):
+        return None
+    try:
+        return int(uid)
+    except ValueError:
+        return None
+
+
 def pkce_do_state(state: str) -> tuple[str, str]:
     """PKCE sem guardar nada: o code_verifier sai do state, então o callback do
     Mercado Livre (em qualquer servidor) recalcula o mesmo valor."""

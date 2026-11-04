@@ -168,6 +168,17 @@ const acoes = {
     await chrome.storage.local.set({ token: dados.token });
     return { ligado: true, usuario: dados.usuario };
   },
+  async conectarML() {
+    const { url } = await chamar("/api/ml/conectar");
+    await chrome.tabs.create({ url });
+    return { aberto: true };
+  },
+  async situacaoML() {
+    return chamar("/api/ml/situacao");
+  },
+  async desconectarML() {
+    return chamar("/api/ml/desconectar", { metodo: "POST" });
+  },
   async desligar() {
     await chrome.storage.local.set({ token: "" });
     return { ligado: false };

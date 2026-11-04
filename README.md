@@ -37,15 +37,17 @@ Variáveis de ambiente úteis (opcionais): `MONVATTI_SECRET` (troque em produç�
 
 - **Login só por e-mail** → token; usuário inicial já pago (`seed`); encaixe de assinatura (`assinatura_ativa`) pronto para o AbacatePay.
 - **Planilha do estudo** (`/api/extensao/estudo`): gera o `.xlsx` a partir dos itens coletados na página.
-- **Estudo do anúncio** (`/api/extensao/anuncio`, `/tarifas`, `/busca`): métricas, taxas, frete e vendedor pela conta de estudo do ML (portado do Replique em `backend/estudo_ml.py` + cliente `backend/ml.py`). Sem a conta conectada, respondem 503 pedindo a conexão.
+- **Estudo do anúncio** (`/api/extensao/anuncio`, `/tarifas`, `/busca`): métricas, taxas, frete e vendedor pela conta do ML que **cada usuário vincula** (portado do Replique em `backend/estudo_ml.py` + cliente `backend/ml.py`). Sem a conta vinculada, respondem 503 pedindo a vinculação.
 
-## Conectar a conta de estudo do Mercado Livre
+## Vincular a conta do Mercado Livre (como no Avant)
 
-As chamadas ao ML só funcionam com uma conta de estudo conectada (e não dá para testar sem ela):
+Cada usuário vincula a **própria** conta do ML pela extensão, e isso libera o estudo só para ele. Para isso funcionar, o servidor precisa de um app do Mercado Livre cadastrado (uma vez):
 
-1. Crie um app no Mercado Livre (developers.mercadolivre.com.br) e defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI` (o mesmo redirect cadastrado no app; o padrão usa o callback do Postman).
-2. Logado como admin, chame `GET /api/ml/conectar` (manda o token), abra a URL retornada, **autorize com a conta de estudo** (conta descartável, nunca de cliente) e o ML volta em `/api/ml/callback`, que guarda o token.
-3. Confira em `GET /api/ml/situacao`. A partir daí o estudo lê o ML por essa conta.
+1. Crie um app no Mercado Livre (developers.mercadolivre.com.br) e defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI`. O `ML_REDIRECT_URI` deve ser o endereço do callback **deste servidor** e estar igual no cadastro do app — local: `http://localhost:8000/api/ml/callback` (padrão); hospedado: `https://seu-dominio/api/ml/callback`.
+2. No popup da extensão, logado, o usuário clica em **Vincular minha conta do Mercado Livre**: abre a tela do ML numa aba nova (`GET /api/ml/conectar`), ele autoriza com a conta dele e o ML volta em `/api/ml/callback`, que guarda o token daquele usuário (quem é vem assinado no `state`).
+3. O popup passa a mostrar "Conta vinculada" e o estudo é liberado. Dá para desvincular a qualquer momento (`POST /api/ml/desconectar`).
+
+> Observação: vincular a conta libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de anúncios de terceiros (visitas, data de criação) o próprio ML não entrega por essa via — o estudo contorna com avaliações/perguntas, igual no Replique.
 
 > O código de referência original do Replique ficou em `backend/_referencia_estudo_replique.py` (só consulta).
 

@@ -16,7 +16,7 @@ from backend import config, estudo_ml, estudo_planilha
 from backend.auth import usuario_atual
 from backend.db import get_db
 from backend.ml import ErroML
-from backend.models import Usuario
+from backend.models import ContaML, Usuario
 
 router = APIRouter(prefix="/api/extensao", tags=["extensao"])
 
@@ -54,9 +54,13 @@ def versao():
 
 
 @router.get("/eu")
-def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual)):
+def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    conta = db.query(ContaML).filter(ContaML.usuario_id == u.id).first()
+    conectado = bool(conta and (conta.credenciais or {}).get("access_token"))
     return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao,
-            "conta": {"conta": conta_ml or "deslogado"}, "clientes": []}
+            "conta": {"conta": conta_ml or "deslogado"},
+            "ml_conectado": conectado, "ml_apelido": conta.apelido if conta else "",
+            "clientes": []}
 
 
 @router.post("/anuncio")
@@ -68,9 +72,9 @@ def anuncio(dados: Pagina, u: Usuario = Depends(usuario_atual), db: Session = De
 
 
 @router.post("/tarifas")
-def tarifas(dados: Tarifas, _u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+def tarifas(dados: Tarifas, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
     try:
-        return estudo_ml.custos_de_venda(db, dados.preco, dados.categoria_id, dados.tipo, dados.vendedor_id, dados.item_id)
+        return estudo_ml.custos_de_venda(db, u, dados.preco, dados.categoria_id, dados.tipo, dados.vendedor_id, dados.item_id)
     except ErroML as e:
         raise HTTPException(503, e.mensagem)
 
