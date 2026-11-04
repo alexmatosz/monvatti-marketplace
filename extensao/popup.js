@@ -11,13 +11,6 @@ function aviso(texto, tipo = "") {
   m.className = "caixa " + tipo;
 }
 
-function nomeNavegador() {
-  const ua = navigator.userAgent;
-  const versao = (ua.match(/Chrome\/(\d+)/) || [])[1] || "";
-  const sistema = /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "outro sistema";
-  return `Chrome ${versao} · ${sistema}`;
-}
-
 async function desenhar() {
   aviso("");
   let e;
@@ -34,26 +27,28 @@ async function desenhar() {
     $("#servidor").value = servidor;
     return;
   }
-  $("#quem").textContent = `Ligada para ${e.nome}.`;
-  $("#conta").className = "caixa " + (e.conta.liberado ? "ok" : "erro");
-  $("#conta").textContent = e.conta.liberado
-    ? (e.conta.conta === "deslogado" ? "Mercado Livre deslogado: estudo liberado." : `Conta de estudo: ${e.conta.conta}.`)
-    : e.conta.motivo;
+  $("#quem").textContent = `Logado como ${e.nome}.`;
+  const conta = e.conta && e.conta.conta;
+  $("#conta").className = "caixa";
+  $("#conta").textContent = conta && conta !== "deslogado"
+    ? `Conta do Mercado Livre detectada neste navegador: ${conta}.`
+    : "Mercado Livre deslogado neste navegador.";
   $("#imposto").value = e.imposto;
 }
 
-$("#ligar").onclick = async () => {
+$("#entrar").onclick = async () => {
   const servidor = $("#servidor").value.trim().replace(/\/+$/, "");
-  const codigo = $("#codigo").value.trim();
-  if (!/^https?:\/\/[^/]+$/.test(servidor)) return aviso("Informe o endereço do servidor Monvatti, por exemplo https://app.monvatti.com.br", "erro");
-  if (!codigo) return aviso("Cole o código gerado pelo administrador.", "erro");
+  const email = $("#email").value.trim();
+  const senha = $("#senha").value;
+  if (!/^https?:\/\/[^/]+$/.test(servidor)) return aviso("Informe o endereço do servidor, por exemplo https://app.monvatti.com.br", "erro");
+  if (!email || !senha) return aviso("Informe e-mail e senha.", "erro");
   const destino = new URL(servidor);
   const permitido = await chrome.permissions.request({ origins: [`${destino.protocol}//${destino.hostname}/*`] });
-  if (!permitido) return aviso("Sem a permissão a extensão não fala com o servidor Monvatti.", "erro");
+  if (!permitido) return aviso("Sem a permissão a extensão não fala com o servidor.", "erro");
   try {
-    await enviar({ tipo: "parear", servidor, codigo, navegador: nomeNavegador() });
+    await enviar({ tipo: "entrar", servidor, email, senha });
     await desenhar();
-    aviso("Extensão ligada. Abra um anúncio no Mercado Livre.", "ok");
+    aviso("Login feito. Abra um anúncio no Mercado Livre.", "ok");
   } catch (err) {
     aviso(err.message, "erro");
   }

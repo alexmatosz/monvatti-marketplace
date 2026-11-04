@@ -34,9 +34,10 @@
   <section id="desligada" hidden>
     <div style="display:grid;gap:10px">
       <div><label for="servidor">Endereço do servidor Monvatti</label><input id="servidor" type="url" placeholder="https://app.monvatti.com.br"></div>
-      <div><label for="codigo">Código de acesso</label><input id="codigo" type="text" autocomplete="off" placeholder="Cole o código recebido"></div>
-      <button id="ligar">Ligar neste navegador</button>
-      <p style="margin:0;color:var(--suave);font-size:12px">O código liga a extensão a este navegador. Em outro navegador ela não funciona até o administrador desligar este.</p>
+      <div><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" placeholder="voce@monvatti.com.br"></div>
+      <div><label for="senha">Senha</label><input id="senha" type="password" autocomplete="current-password" placeholder="sua senha"></div>
+      <button id="entrar">Entrar</button>
+      <p style="margin:0;color:var(--suave);font-size:12px">Use o e-mail e a senha que o administrador criou para você.</p>
     </div>
   </section>
   <section id="ligada" hidden>
@@ -45,7 +46,7 @@
       <div id="conta" class="caixa"></div>
       <div class="linha"><div><label for="imposto">Imposto padrão na calculadora (%)</label><input id="imposto" type="number" min="0" max="100" step="0.01"></div>
         <button class="sec" id="salvar-imposto">Salvar</button></div>
-      <button class="sec" id="desligar">Desligar a extensão</button>
+      <button class="sec" id="desligar">Sair</button>
     </div>
   </section>
 </main>

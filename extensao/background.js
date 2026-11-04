@@ -26,7 +26,7 @@ async function contaML() {
 async function chamar(caminho, { metodo = "GET", corpo, semToken = false } = {}) {
   const c = await configuracao();
   if (!c.servidor) throw new Error("Endereço do servidor Monvatti não configurado. Clique no ícone da extensão.");
-  if (!semToken && !c.token) throw new Error("Extensão desligada. Clique no ícone da extensão e cole o código do administrador.");
+  if (!semToken && !c.token) throw new Error("Faça login na extensão: clique no ícone da Monvatti.");
   const headers = { "Content-Type": "application/json", "X-Extensao-Chave": c.chave };
   if (!semToken) headers.Authorization = "Bearer " + c.token;
   let r;
@@ -97,7 +97,7 @@ const acoes = {
   },
   async estudo({ pesquisa, filtro, imposto, itens }) {
     const c = await configuracao();
-    if (!c.servidor || !c.token) throw new Error("Extensão desligada. Clique no ícone da extensão e cole o código do administrador.");
+    if (!c.servidor || !c.token) throw new Error("Faça login na extensão: clique no ícone da Monvatti.");
     let r;
     try {
       r = await fetch(c.servidor + "/api/extensao/estudo", {
@@ -151,12 +151,22 @@ const acoes = {
   async salvarFotos({ pagina, cliente_id }) {
     return chamar("/api/extensao/fotos", { metodo: "POST", corpo: { pagina, cliente_id: cliente_id ?? null } });
   },
-  async parear({ servidor, codigo, navegador }) {
+  async entrar({ servidor, email, senha }) {
     await chrome.storage.local.set({ servidor });
-    const c = await configuracao();
-    const r = await chamar("/api/extensao/parear", { metodo: "POST", semToken: true, corpo: { codigo, chave: c.chave, navegador } });
-    await chrome.storage.local.set({ token: r.token });
-    return { ligado: true };
+    let r;
+    try {
+      r = await fetch(servidor + "/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
+    } catch {
+      throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
+    }
+    const dados = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "Não consegui entrar (" + r.status + ").");
+    await chrome.storage.local.set({ token: dados.token });
+    return { ligado: true, usuario: dados.usuario };
   },
   async desligar() {
     await chrome.storage.local.set({ token: "" });
