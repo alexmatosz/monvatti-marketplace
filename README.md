@@ -43,9 +43,11 @@ Variáveis de ambiente úteis (opcionais): `MONVATTI_SECRET` (troque em produç�
 
 Cada usuário vincula a **própria** conta do ML pela extensão, e isso libera o estudo só para ele. Para isso funcionar, o servidor precisa de um app do Mercado Livre cadastrado (uma vez):
 
-1. Crie um app no Mercado Livre (developers.mercadolivre.com.br) e defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI`. O `ML_REDIRECT_URI` deve ser o endereço do callback **deste servidor** e estar igual no cadastro do app — local: `http://localhost:8000/api/ml/callback` (padrão); hospedado: `https://seu-dominio/api/ml/callback`.
-2. No popup da extensão, logado, o usuário clica em **Vincular minha conta do Mercado Livre**: abre a tela do ML numa aba nova (`GET /api/ml/conectar`), ele autoriza com a conta dele e o ML volta em `/api/ml/callback`, que guarda o token daquele usuário (quem é vem assinado no `state`).
-3. O popup passa a mostrar "Conta vinculada" e o estudo é liberado. Dá para desvincular a qualquer momento (`POST /api/ml/desconectar`).
+1. Crie um app **próprio** no Mercado Livre (developers.mercadolivre.com.br), separado do app do Replique — isola a atividade de estudo das contas reais dos clientes. Defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI`.
+2. O Mercado Livre **não aceita `localhost`** como redirect. Duas formas:
+   - **Hospedado (HTTPS):** `ML_REDIRECT_URI = https://seu-dominio/api/ml/callback` (igual no cadastro do app). Aí o fluxo é automático: o usuário clica em **Vincular minha conta do Mercado Livre** no popup, autoriza e o ML volta em `/api/ml/callback`, que guarda o token daquele usuário (quem é vem assinado no `state`). O popup passa a mostrar "Conta vinculada".
+   - **Local/dev:** use o callback do Postman (`https://oauth.pstmn.io/v1/callback`, padrão) e cole o código manualmente — mesmo truque do Replique. (Esse atalho manual ainda não tem tela na extensão; peça para habilitar se quiser testar o estudo antes de hospedar.)
+3. Desvincular a qualquer momento (`POST /api/ml/desconectar`).
 
 > Observação: vincular a conta libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de anúncios de terceiros (visitas, data de criação) o próprio ML não entrega por essa via — o estudo contorna com avaliações/perguntas, igual no Replique.
 

@@ -27,4 +27,4 @@ ML_SITE_ID = "MLB"
 
 ML_CLIENT_ID = os.getenv("ML_CLIENT_ID", "")
 ML_CLIENT_SECRET = os.getenv("ML_CLIENT_SECRET", "")
-ML_REDIRECT_URI = os.getenv("ML_REDIRECT_URI", "http://localhost:8000/api/ml/callback")
+ML_REDIRECT_URI = os.getenv("ML_REDIRECT_URI", "https://oauth.pstmn.io/v1/callback")
