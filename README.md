@@ -46,8 +46,10 @@ Cada usuário vincula a **própria** conta do ML pela extensão, e isso libera o
 1. Crie um app **próprio** no Mercado Livre (developers.mercadolivre.com.br), separado do app do Replique — isola a atividade de estudo das contas reais dos clientes. Defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI`.
 2. O Mercado Livre **não aceita `localhost`** como redirect. Duas formas:
    - **Hospedado (HTTPS):** `ML_REDIRECT_URI = https://seu-dominio/api/ml/callback` (igual no cadastro do app). Aí o fluxo é automático: o usuário clica em **Vincular minha conta do Mercado Livre** no popup, autoriza e o ML volta em `/api/ml/callback`, que guarda o token daquele usuário (quem é vem assinado no `state`). O popup passa a mostrar "Conta vinculada".
-   - **Local/dev:** use o callback do Postman (`https://oauth.pstmn.io/v1/callback`, padrão) e cole o código manualmente — mesmo truque do Replique. (Esse atalho manual ainda não tem tela na extensão; peça para habilitar se quiser testar o estudo antes de hospedar.)
+   - **Local/dev:** use o callback do Postman (`https://oauth.pstmn.io/v1/callback`, padrão). Ao clicar em **Vincular**, o popup abre a autorização e mostra um campo para **colar o código** que o Mercado Livre exibe; cole e clique em **Confirmar vínculo** (`POST /api/ml/colar`). É o mesmo truque do Replique, para dar para testar o estudo antes de hospedar.
 3. Desvincular a qualquer momento (`POST /api/ml/desconectar`).
+
+Passo a passo de criar o app do ML (onde criar, o que preencher, onde pôr as chaves): veja **`CRIAR-APP-MERCADO-LIVRE.md`**.
 
 > Observação: vincular a conta libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de anúncios de terceiros (visitas, data de criação) o próprio ML não entrega por essa via — o estudo contorna com avaliações/perguntas, igual no Replique.
 

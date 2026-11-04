@@ -35,6 +35,8 @@ async function desenhar() {
     : "Vincule a sua conta do Mercado Livre para liberar o estudo de anúncios.";
   $("#conectar-ml").hidden = mlConectado;
   $("#desconectar-ml").hidden = !mlConectado;
+  const { ml_state } = await chrome.storage.local.get({ ml_state: "" });
+  $("#ml-manual").hidden = mlConectado || !ml_state;
   const conta = e.conta && e.conta.conta;
   $("#conta").className = "caixa";
   $("#conta").textContent = conta && conta !== "deslogado"
@@ -62,8 +64,26 @@ $("#entrar").onclick = async () => {
 
 $("#conectar-ml").onclick = async () => {
   try {
-    await enviar({ tipo: "conectarML" });
-    aviso("Abri o Mercado Livre numa aba nova. Entre com a sua conta, autorize e depois reabra esta janela.", "ok");
+    const { manual } = await enviar({ tipo: "conectarML" });
+    if (manual) {
+      $("#ml-manual").hidden = false;
+      aviso("Abri o Mercado Livre numa aba. Autorize com a sua conta, copie o código que aparecer e cole aqui embaixo.", "ok");
+    } else {
+      aviso("Abri o Mercado Livre numa aba. Autorize e depois reabra esta janela.", "ok");
+    }
+  } catch (err) {
+    aviso(err.message, "erro");
+  }
+};
+
+$("#confirmar-ml").onclick = async () => {
+  const code = $("#ml-code").value.trim();
+  if (!code) return aviso("Cole o código que o Mercado Livre mostrou.", "erro");
+  try {
+    await enviar({ tipo: "colarCodigoML", code });
+    $("#ml-code").value = "";
+    await desenhar();
+    aviso("Conta do Mercado Livre vinculada!", "ok");
   } catch (err) {
     aviso(err.message, "erro");
   }

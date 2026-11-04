@@ -169,14 +169,23 @@ const acoes = {
     return { ligado: true, usuario: dados.usuario };
   },
   async conectarML() {
-    const { url } = await chamar("/api/ml/conectar");
+    const { url, state, manual } = await chamar("/api/ml/conectar");
+    await chrome.storage.local.set({ ml_state: state || "" });
     await chrome.tabs.create({ url });
-    return { aberto: true };
+    return { manual: !!manual };
+  },
+  async colarCodigoML({ code }) {
+    const { ml_state } = await chrome.storage.local.get({ ml_state: "" });
+    if (!ml_state) throw new Error("Clique em Vincular antes de colar o código.");
+    const r = await chamar("/api/ml/colar", { metodo: "POST", corpo: { code, state: ml_state } });
+    await chrome.storage.local.remove("ml_state");
+    return r;
   },
   async situacaoML() {
     return chamar("/api/ml/situacao");
   },
   async desconectarML() {
+    await chrome.storage.local.remove("ml_state");
     return chamar("/api/ml/desconectar", { metodo: "POST" });
   },
   async desligar() {
