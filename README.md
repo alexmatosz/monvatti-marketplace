@@ -35,13 +35,23 @@ Variáveis de ambiente úteis (opcionais): `MONVATTI_SECRET` (troque em produç�
 
 ## O que já funciona
 
-- **Login** (email + senha → token), sessão, criar usuários (admin), e o encaixe de assinatura (`assinatura_ativa`) pronto para o AbacatePay.
-- **Planilha do estudo** (`/api/extensao/estudo`): gera o `.xlsx` a partir dos itens que a extensão coletou na página.
+- **Login só por e-mail** → token; usuário inicial já pago (`seed`); encaixe de assinatura (`assinatura_ativa`) pronto para o AbacatePay.
+- **Planilha do estudo** (`/api/extensao/estudo`): gera o `.xlsx` a partir dos itens coletados na página.
+- **Estudo do anúncio** (`/api/extensao/anuncio`, `/tarifas`, `/busca`): métricas, taxas, frete e vendedor pela conta de estudo do ML (portado do Replique em `backend/estudo_ml.py` + cliente `backend/ml.py`). Sem a conta conectada, respondem 503 pedindo a conexão.
 
-## Passos do dev (precisam da conta de estudo do ML)
+## Conectar a conta de estudo do Mercado Livre
 
-- **Dados do anúncio** (`/api/extensao/anuncio`, `/tarifas`, `/busca`): hoje respondem com uma mensagem pedindo para conectar a conta de estudo. O código original (que lê o Mercado Livre pela conta de estudo) está em `backend/_referencia_estudo_replique.py`; porte as chamadas para `backend/estudo.py`. Não dá para testar isso sem uma conta de estudo real do ML.
-- **AbacatePay**: implemente `registrar_evento_abacatepay` em `backend/pagamento.py` (webhook liga/desliga `assinatura_ativa`). O resto do sistema já só pergunta `assinatura_valida`.
+As chamadas ao ML só funcionam com uma conta de estudo conectada (e não dá para testar sem ela):
+
+1. Crie um app no Mercado Livre (developers.mercadolivre.com.br) e defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI` (o mesmo redirect cadastrado no app; o padrão usa o callback do Postman).
+2. Logado como admin, chame `GET /api/ml/conectar` (manda o token), abra a URL retornada, **autorize com a conta de estudo** (conta descartável, nunca de cliente) e o ML volta em `/api/ml/callback`, que guarda o token.
+3. Confira em `GET /api/ml/situacao`. A partir daí o estudo lê o ML por essa conta.
+
+> O código de referência original do Replique ficou em `backend/_referencia_estudo_replique.py` (só consulta).
+
+## AbacatePay (próximo passo)
+
+Implemente `registrar_evento_abacatepay` em `backend/pagamento.py` (o webhook liga/desliga `assinatura_ativa`). O resto do sistema já só pergunta `assinatura_valida`.
 
 ## Marca
 

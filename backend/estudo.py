@@ -1,30 +1,24 @@
 """Endpoints usados pela extensão.
 
-O que já funciona de verdade:
 - /versao  — a versão que o servidor espera da extensão;
 - /eu      — quem está logado, imposto padrão e conta do ML detectada;
-- /estudo  — gera a planilha .xlsx a partir dos itens que a própria extensão já
-             coletou na página (não depende de chamar o Mercado Livre).
-
-O que depende da conta de estudo do Mercado Livre (passo do dev):
-- /anuncio, /tarifas, /busca — leem dados do anúncio no ML. O código original do
-  Replique está em backend/_referencia_estudo_replique.py; o dev porta as chamadas
-  usando a conta de estudo e um adaptador do ML. Enquanto não entra, respondem com
-  uma mensagem clara em vez de dado falso.
+- /estudo  — gera a planilha .xlsx a partir dos itens coletados na página;
+- /anuncio, /tarifas, /busca — métricas e taxas do anúncio pela conta de estudo
+             do Mercado Livre (conecte em /api/ml/conectar). Sem a conta conectada,
+             respondem 503 com a mensagem pedindo a conexão.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from backend import config, estudo_planilha
+from backend import config, estudo_ml, estudo_planilha
 from backend.auth import usuario_atual
 from backend.db import get_db
+from backend.ml import ErroML
 from backend.models import Usuario
 
 router = APIRouter(prefix="/api/extensao", tags=["extensao"])
-
-_SEM_ML = "Conecte a conta de estudo do Mercado Livre no servidor para ver os dados do anúncio."
 
 
 class Pagina(BaseModel):
@@ -66,18 +60,27 @@ def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual)):
 
 
 @router.post("/anuncio")
-def anuncio(_dados: Pagina, _u: Usuario = Depends(usuario_atual)):
-    raise HTTPException(503, _SEM_ML)
+def anuncio(dados: Pagina, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.analisar(db, u, dados.pagina)
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)
 
 
 @router.post("/tarifas")
-def tarifas(_dados: Tarifas, _u: Usuario = Depends(usuario_atual)):
-    raise HTTPException(503, _SEM_ML)
+def tarifas(dados: Tarifas, _u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.custos_de_venda(db, dados.preco, dados.categoria_id, dados.tipo, dados.vendedor_id, dados.item_id)
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)
 
 
 @router.post("/busca")
-def busca(_dados: Busca, _u: Usuario = Depends(usuario_atual)):
-    raise HTTPException(503, _SEM_ML)
+def busca(dados: Busca, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.analisar_busca(db, u, dados.itens)
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)
 
 
 @router.post("/estudo")

@@ -23,4 +23,8 @@ VERSAO_EXTENSAO = os.getenv("MONVATTI_VERSAO_EXTENSAO", "0.2.0")
 
 TOKEN_VALIDADE_DIAS = int(os.getenv("MONVATTI_TOKEN_DIAS", "30"))
 
-ML_SITE = "MLB"
+ML_SITE_ID = "MLB"
+
+ML_CLIENT_ID = os.getenv("ML_CLIENT_ID", "")
+ML_CLIENT_SECRET = os.getenv("ML_CLIENT_SECRET", "")
+ML_REDIRECT_URI = os.getenv("ML_REDIRECT_URI", "https://oauth.pstmn.io/v1/callback")

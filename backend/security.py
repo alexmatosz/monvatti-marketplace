@@ -50,6 +50,14 @@ def criar_token(usuario_id: int, sessao_versao: int) -> str:
     return f"{corpo}.{_assinar(corpo)}"
 
 
+def pkce_do_state(state: str) -> tuple[str, str]:
+    """PKCE sem guardar nada: o code_verifier sai do state, então o callback do
+    Mercado Livre (em qualquer servidor) recalcula o mesmo valor."""
+    verificador = _b64(hmac.new(config.SECRET.encode(), f"pkce|{state}".encode(), hashlib.sha256).digest())
+    desafio = _b64(hashlib.sha256(verificador.encode()).digest())
+    return verificador, desafio
+
+
 def ler_token(token: str) -> dict | None:
     try:
         corpo, assinatura = token.split(".", 1)
