@@ -39,14 +39,13 @@ async function desenhar() {
 $("#entrar").onclick = async () => {
   const servidor = $("#servidor").value.trim().replace(/\/+$/, "");
   const email = $("#email").value.trim();
-  const senha = $("#senha").value;
   if (!/^https?:\/\/[^/]+$/.test(servidor)) return aviso("Informe o endereço do servidor, por exemplo https://app.monvatti.com.br", "erro");
-  if (!email || !senha) return aviso("Informe e-mail e senha.", "erro");
+  if (!email) return aviso("Informe o seu e-mail.", "erro");
   const destino = new URL(servidor);
   const permitido = await chrome.permissions.request({ origins: [`${destino.protocol}//${destino.hostname}/*`] });
   if (!permitido) return aviso("Sem a permissão a extensão não fala com o servidor.", "erro");
   try {
-    await enviar({ tipo: "entrar", servidor, email, senha });
+    await enviar({ tipo: "entrar", servidor, email });
     await desenhar();
     aviso("Login feito. Abra um anúncio no Mercado Livre.", "ok");
   } catch (err) {

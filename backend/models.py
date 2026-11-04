@@ -24,7 +24,7 @@ class Usuario(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(200))
     email: Mapped[str] = mapped_column(String(200), unique=True, index=True)
-    senha_hash: Mapped[str] = mapped_column(String(300))
+    senha_hash: Mapped[str] = mapped_column(String(300), default="")
     papel: Mapped[str] = mapped_column(String(20), default="equipe")
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     sessao_versao: Mapped[int] = mapped_column(Integer, default=0)

@@ -13,13 +13,11 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 class Entrada(BaseModel):
     email: str = Field(min_length=3, max_length=200)
-    senha: str = Field(min_length=1, max_length=200)
 
 
 class NovoUsuario(BaseModel):
     nome: str = Field(min_length=1, max_length=200)
     email: str = Field(min_length=3, max_length=200)
-    senha: str = Field(min_length=6, max_length=200)
     papel: str = Field(default="equipe", pattern="^(admin|equipe)$")
 
 
@@ -50,9 +48,12 @@ def exigir_admin(u: Usuario = Depends(usuario_atual)) -> Usuario:
 
 @router.post("/login")
 def login(dados: Entrada, db: Session = Depends(get_db)):
+    """Login só por e-mail (sem senha). Só entra quem já está cadastrado como
+    pago. Enquanto não há landing/pagamento, o administrador cria os usuários.
+    Depois, o cadastro+pagamento (AbacatePay) passa a criar e liberar sozinho."""
     u = db.query(Usuario).filter(Usuario.email == dados.email.strip().lower()).first()
-    if not u or not security.conferir_senha(dados.senha, u.senha_hash):
-        raise HTTPException(401, "E-mail ou senha incorretos.")
+    if not u:
+        raise HTTPException(401, "E-mail não cadastrado. Fale com o administrador.")
     if not u.ativo:
         raise HTTPException(403, "Acesso desativado. Fale com o administrador.")
     if not pagamento.assinatura_valida(u):
@@ -74,8 +75,7 @@ def criar_usuario(dados: NovoUsuario, _adm: Usuario = Depends(exigir_admin), db:
         raise HTTPException(422, "E-mail inválido.")
     if db.query(Usuario).filter(Usuario.email == email).first():
         raise HTTPException(409, "Já existe um usuário com esse e-mail.")
-    u = Usuario(nome=dados.nome, email=email, senha_hash=security.hash_senha(dados.senha),
-                papel=dados.papel)
+    u = Usuario(nome=dados.nome, email=email, papel=dados.papel)
     db.add(u)
     db.commit()
     return {"id": u.id, "email": u.email}

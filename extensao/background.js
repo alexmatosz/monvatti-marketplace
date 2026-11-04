@@ -151,14 +151,14 @@ const acoes = {
   async salvarFotos({ pagina, cliente_id }) {
     return chamar("/api/extensao/fotos", { metodo: "POST", corpo: { pagina, cliente_id: cliente_id ?? null } });
   },
-  async entrar({ servidor, email, senha }) {
+  async entrar({ servidor, email }) {
     await chrome.storage.local.set({ servidor });
     let r;
     try {
       r = await fetch(servidor + "/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ email }),
       });
     } catch {
       throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
