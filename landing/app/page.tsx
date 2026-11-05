@@ -1,4 +1,6 @@
-import { Logo, Marca } from "@/components/Logo";
+import { Marca } from "@/components/Logo";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Panel } from "@/components/Panel";
 import { Pricing } from "@/components/Pricing";
 import { Faq } from "@/components/Faq";
@@ -127,21 +129,7 @@ function ExemploPlaceholder({ titulo, legenda }: { titulo: string; legenda: stri
 export default function Pagina() {
   return (
     <>
-      {/* Cabeçalho */}
-      <header className="sticky top-0 z-40 border-b border-platina/70 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-conteudo items-center justify-between px-6">
-          <a href="#topo" className="foco"><Logo h={24} /></a>
-          <nav className="hidden items-center gap-7 text-sm text-aco md:flex">
-            <a className="foco hover:text-ink" href="#monvatti">A Monvatti</a>
-            <a className="foco hover:text-ink" href="#funcionalidades">Funcionalidades</a>
-            <a className="foco hover:text-ink" href="#planos">Planos</a>
-            <a className="foco hover:text-ink" href="#faq">Dúvidas</a>
-          </nav>
-          <a href="#cadastro" className="foco rounded-xl bg-azul px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-vivo">
-            Começar
-          </a>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section id="topo" className="relative overflow-hidden">
@@ -351,18 +339,7 @@ export default function Pagina() {
         </div>
       </section>
 
-      {/* Rodapé */}
-      <footer className="border-t border-platina/70 bg-white">
-        <div className="mx-auto flex max-w-conteudo flex-col items-start justify-between gap-6 px-6 py-10 sm:flex-row sm:items-center">
-          <div>
-            <Logo h={22} />
-            <p className="mt-3 max-w-[52ch] text-[13px] text-aco">
-              Monvatti Marketplaces — inteligência de anúncios para o Mercado Livre e, em breve, Shopee e Amazon. As vendas estimadas são aproximações a partir de números públicos, não dados oficiais dos marketplaces.
-            </p>
-          </div>
-          <p className="text-[12px] text-aco">© {new Date().getFullYear()} Monvatti · uma ferramenta da consultoria Monvatti</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
