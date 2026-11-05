@@ -4,7 +4,16 @@ import { Pricing } from "@/components/Pricing";
 import { Faq } from "@/components/Faq";
 import { Signup } from "@/components/Signup";
 import { Reveal } from "@/components/Reveal";
-import { SeloMarketplace, ConcorrenciaMock, CalculadoraMock, TendenciaMock } from "@/components/Mockups";
+import {
+  SeloMarketplace,
+  ConcorrenciaMock,
+  CalculadoraMock,
+  TendenciaMock,
+  BuyBoxMock,
+  PassoInstalar,
+  PassoVincular,
+  PassoPainel,
+} from "@/components/Mockups";
 
 function Icone({ nome }: { nome: string }) {
   const comum = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "#001AD8", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -29,9 +38,21 @@ const GRID = [
 ];
 
 const PASSOS = [
-  { t: "Instale a extensão", d: "Adicione a Monvatti ao Chrome e entre com o seu e-mail." },
-  { t: "Vincule sua conta", d: "Uma autorização, uma vez. É ela que libera o estudo para você." },
-  { t: "Abra qualquer anúncio", d: "O painel aparece sozinho na página, com tudo para você decidir." },
+  {
+    t: "Instale a extensão",
+    d: "Adicione a Monvatti Marketplaces ao Chrome e entre com o seu e-mail — o mesmo do cadastro.",
+    mock: <PassoInstalar />,
+  },
+  {
+    t: "Vincule sua conta",
+    d: "Uma autorização, uma vez. É ela que libera o estudo e prende o acesso à sua conta vinculada.",
+    mock: <PassoVincular />,
+  },
+  {
+    t: "Abra qualquer anúncio",
+    d: "O painel aparece sozinho na página, com métricas, concorrência, margem e tendência em abas.",
+    mock: <PassoPainel />,
+  },
 ];
 
 const PILARES = [
@@ -40,25 +61,34 @@ const PILARES = [
   { t: "Estudo de concorrência", d: "Quem lidera a busca, quanto vende, com que logística e desde quando está no ar." },
 ];
 
+type Canal = { nome: string; breve?: boolean };
+
+const CANAIS_PADRAO: Canal[] = [
+  { nome: "Mercado Livre" },
+  { nome: "Shopee", breve: true },
+  { nome: "Amazon", breve: true },
+];
+
 function Showcase({
   titulo,
   texto,
   mock,
   invertido = false,
-  shopee = true,
+  canais = CANAIS_PADRAO,
 }: {
   titulo: string;
   texto: string;
   mock: React.ReactNode;
   invertido?: boolean;
-  shopee?: boolean;
+  canais?: Canal[];
 }) {
   return (
     <div className="grid items-center gap-10 py-12 lg:grid-cols-2">
       <Reveal className={invertido ? "lg:order-2" : ""}>
         <div className="mb-3 flex flex-wrap gap-2">
-          <SeloMarketplace nome="Mercado Livre" />
-          {shopee ? <SeloMarketplace nome="Shopee" breve /> : null}
+          {canais.map((c) => (
+            <SeloMarketplace key={c.nome} nome={c.nome} breve={c.breve} />
+          ))}
         </div>
         <h3 className="font-display text-[26px] font-semibold leading-tight tracking-tight text-ink">{titulo}</h3>
         <p className="mt-3 max-w-[46ch] text-[16px] leading-relaxed text-aco">{texto}</p>
@@ -119,7 +149,7 @@ export default function Pagina() {
         <div className="mx-auto grid max-w-conteudo items-center gap-12 px-6 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-white px-3 py-1 text-[12.5px] text-aco">
-              <Marca size={15} /> A ferramenta da Monvatti · 40+ contas no Mercado Livre
+              <Marca size={15} /> A ferramenta da Monvatti · 150+ clientes atendidos
             </span>
             <h1 className="mt-5 font-display text-[40px] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[52px]">
               A inteligência do seu anúncio, dentro da página do marketplace.
@@ -130,6 +160,7 @@ export default function Pagina() {
             <div className="mt-6 flex flex-wrap gap-2">
               <SeloMarketplace nome="Mercado Livre" />
               <SeloMarketplace nome="Shopee" breve />
+              <SeloMarketplace nome="Amazon" breve />
             </div>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a href="#cadastro" className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">
@@ -155,8 +186,9 @@ export default function Pagina() {
                 A mesma inteligência que faz a Monvatti dar resultado.
               </h2>
               <p className="mt-4 text-[17px] leading-relaxed text-white/70">
-                A Monvatti é a agência que opera mais de 40 contas no Mercado Livre. O que a gente faz todo dia para os clientes
-                — pesquisa de mercado, precificação e estudo de concorrência — virou uma ferramenta. É ela que você usa agora.
+                A <strong className="font-semibold text-white">Monvatti</strong> é a consultoria que opera mais de 150 clientes
+                em marketplaces. O que a equipe faz todo dia — pesquisa de mercado, precificação e estudo de concorrência —
+                virou o <strong className="font-semibold text-white">Monvatti Marketplaces</strong>: a ferramenta que você usa agora.
               </p>
             </div>
           </Reveal>
@@ -182,7 +214,7 @@ export default function Pagina() {
               Tudo para decidir, dentro do próprio anúncio.
             </h2>
             <p className="mt-3 text-[16px] leading-relaxed text-aco">
-              As mesmas leituras que a equipe da Monvatti usa todos os dias. Hoje no Mercado Livre; em breve, na Shopee.
+              As mesmas leituras que a equipe da Monvatti usa todos os dias. Hoje no Mercado Livre; em breve, na Shopee e na Amazon.
             </p>
           </div>
         </Reveal>
@@ -203,6 +235,13 @@ export default function Pagina() {
             titulo="Descubra o que mais vende"
             texto="O ranking oficial de mais vendidos de cada categoria, para achar oportunidade de produto com alta demanda antes de investir no estoque."
             mock={<TendenciaMock />}
+          />
+          <Showcase
+            titulo="Ganhe o Buy Box na Amazon"
+            texto="Veja quem está com a caixa de compra, por qual preço, e o preço exato para você assumir o Buy Box sem derrubar sua margem à toa. Específico da Amazon."
+            mock={<BuyBoxMock />}
+            invertido
+            canais={[{ nome: "Amazon", breve: true }]}
           />
         </div>
 
@@ -247,7 +286,12 @@ export default function Pagina() {
       {/* Como funciona */}
       <section className="mx-auto max-w-conteudo px-6 py-20">
         <Reveal>
-          <h2 className="font-display text-[32px] font-semibold tracking-tight text-ink">Em três passos.</h2>
+          <div className="max-w-[46ch]">
+            <h2 className="font-display text-[32px] font-semibold tracking-tight text-ink">Em três passos, do Chrome ao anúncio.</h2>
+            <p className="mt-3 text-[16px] leading-relaxed text-aco">
+              Sem configuração, sem planilha. Instale, vincule a sua conta uma vez e o estudo aparece em cada anúncio que você abrir.
+            </p>
+          </div>
         </Reveal>
         <ol className="mt-10 grid gap-8 sm:grid-cols-3">
           {PASSOS.map((p, idx) => (
@@ -256,6 +300,7 @@ export default function Pagina() {
                 <span className="tnum font-display text-[15px] font-semibold text-azul">{String(idx + 1).padStart(2, "0")}</span>
                 <h3 className="mt-2 font-display text-[18px] font-semibold text-ink">{p.t}</h3>
                 <p className="mt-1.5 max-w-[38ch] text-[15px] leading-relaxed text-aco">{p.d}</p>
+                <div className="mt-5">{p.mock}</div>
               </li>
             </Reveal>
           ))}
@@ -268,7 +313,7 @@ export default function Pagina() {
           <Reveal>
             <div className="mb-10 text-center">
               <h2 className="font-display text-[32px] font-semibold tracking-tight text-white">Escolha o seu plano.</h2>
-              <p className="mt-3 text-[16px] text-white/60">Mercado Livre hoje, Shopee em breve. Sem fidelidade.</p>
+              <p className="mt-3 text-[16px] text-white/60">Mercado Livre hoje; Shopee e Amazon em breve. Sem fidelidade.</p>
             </div>
           </Reveal>
           <Pricing />
@@ -312,10 +357,10 @@ export default function Pagina() {
           <div>
             <Logo h={22} />
             <p className="mt-3 max-w-[52ch] text-[13px] text-aco">
-              Inteligência de anúncios para o Mercado Livre e, em breve, a Shopee. As vendas estimadas são aproximações a partir de números públicos, não dados oficiais dos marketplaces.
+              Monvatti Marketplaces — inteligência de anúncios para o Mercado Livre e, em breve, Shopee e Amazon. As vendas estimadas são aproximações a partir de números públicos, não dados oficiais dos marketplaces.
             </p>
           </div>
-          <p className="text-[12px] text-aco">© {new Date().getFullYear()} Monvatti</p>
+          <p className="text-[12px] text-aco">© {new Date().getFullYear()} Monvatti · uma ferramenta da consultoria Monvatti</p>
         </div>
       </footer>
     </>

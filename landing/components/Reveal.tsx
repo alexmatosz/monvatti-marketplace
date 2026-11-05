@@ -23,14 +23,9 @@ export function Reveal({
     }
     const obs = new IntersectionObserver(
       (entradas) => {
-        entradas.forEach((e) => {
-          if (e.isIntersecting) {
-            setVisivel(true);
-            obs.disconnect();
-          }
-        });
+        entradas.forEach((e) => setVisivel(e.isIntersecting));
       },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
     );
     obs.observe(el);
     return () => obs.disconnect();

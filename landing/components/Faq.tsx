@@ -4,8 +4,12 @@ import { useState } from "react";
 
 const ITENS = [
   {
-    q: "Como a Monvatti se conecta ao Mercado Livre?",
+    q: "Como a Monvatti Marketplaces se conecta ao Mercado Livre?",
     a: "Você instala a extensão no Chrome e vincula a sua conta do Mercado Livre uma vez. A partir daí o painel aparece sozinho dentro dos anúncios e da busca.",
+  },
+  {
+    q: "Quais marketplaces já funcionam?",
+    a: "Hoje, o Mercado Livre por completo. Shopee e Amazon estão a caminho — na Amazon entra também o Buy Box e o preço para ganhar a caixa de compra. Quem assina o Combo recebe os canais novos assim que saem.",
   },
   {
     q: "Preciso de conhecimento técnico?",

@@ -17,9 +17,9 @@ const sans = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Monvatti Marketplace — inteligência de anúncios no Mercado Livre",
+  title: "Monvatti Marketplaces — inteligência de anúncios no Mercado Livre, Shopee e Amazon",
   description:
-    "Extensão que mostra vendas estimadas, métricas, taxas e margem do anúncio direto na página do Mercado Livre. Da Monvatti, agência que opera mais de 40 contas.",
+    "Extensão que mostra vendas estimadas, métricas, taxas e margem do anúncio direto na página do marketplace. A ferramenta da Monvatti, consultoria que opera mais de 150 clientes.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
