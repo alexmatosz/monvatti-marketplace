@@ -33,7 +33,7 @@ export default function MarketplacesPagina() {
             >
               <span className="h-12 w-12 rounded-2xl ring-1 ring-black/5" style={{ background: c.estado === "breve" ? "#EEF0F6" : c.cor }} />
               <div className="mt-5 flex items-center gap-2">
-                <h2 className="font-display text-[20px] font-semibold text-ink">{c.nome}</h2>
+                <h2 className="font-display text-[20px] font-bold text-ink">{c.nome}</h2>
                 {c.estado === "breve" ? (
                   <span className="rounded-full bg-platina/60 px-2 py-0.5 text-[10.5px] font-semibold text-aco">em breve</span>
                 ) : (

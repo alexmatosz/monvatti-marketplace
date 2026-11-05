@@ -33,7 +33,7 @@ export default function NovidadesPagina() {
           <BlogCover post={destaque} alto />
           <div className="flex flex-col justify-center p-7 sm:p-9">
             <span className="text-[13px] text-aco">{destaque.data}</span>
-            <h2 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-tight text-ink">{destaque.titulo}</h2>
+            <h2 className="mt-2 font-display text-[26px] font-bold leading-tight tracking-tight text-ink">{destaque.titulo}</h2>
             <p className="mt-3 text-[15.5px] leading-relaxed text-aco">{destaque.resumo}</p>
             <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-semibold text-azul">
               Ler novidade
@@ -55,7 +55,7 @@ export default function NovidadesPagina() {
               <BlogCover post={p} />
               <div className="flex flex-1 flex-col p-6">
                 <span className="text-[12.5px] text-aco">{p.data}</span>
-                <h3 className="mt-1.5 font-display text-[18px] font-semibold leading-snug text-ink">{p.titulo}</h3>
+                <h3 className="mt-1.5 font-display text-[18px] font-bold leading-snug text-ink">{p.titulo}</h3>
                 <p className="mt-2 flex-1 text-[14px] leading-relaxed text-aco">{p.resumo}</p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-azul">
                   Ler

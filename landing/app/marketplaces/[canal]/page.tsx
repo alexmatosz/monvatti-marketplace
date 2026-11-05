@@ -76,7 +76,7 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
 
         {/* Funcionalidades do canal */}
         <div className="mt-16">
-          <h2 className="font-display text-[26px] font-semibold tracking-tight text-ink">
+          <h2 className="font-display text-[26px] font-bold tracking-tight text-ink">
             O que a ferramenta faz {canal.estado === "ativo" ? "no" : "vai fazer no"} {canal.nome}
           </h2>
           <div className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
