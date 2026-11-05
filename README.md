@@ -56,6 +56,22 @@ Passo a passo de criar o app do ML (onde criar, o que preencher, onde pôr as ch
 
 > O código de referência original do Replique ficou em `backend/_referencia_estudo_replique.py` (só consulta).
 
+## Landing page (`landing/`)
+
+Site de marketing + cadastro, em **Next.js** (App Router) + Tailwind, com a marca Monvatti.
+
+```
+cd landing
+npm install
+npm run dev     # http://localhost:3000
+```
+
+O formulário de cadastro chama `POST /api/cadastro` no backend (cria um usuário
+**pendente**, sem assinatura — só libera quando o pagamento entrar). Defina o
+endereço do backend em `NEXT_PUBLIC_API_URL` (ex.: `http://localhost:8000` no
+dev; a URL hospedada em produção). Os valores dos planos são de exemplo, a
+confirmar; o pagamento (AbacatePay) entra na próxima fase.
+
 ## AbacatePay (próximo passo)
 
 Implemente `registrar_evento_abacatepay` em `backend/pagamento.py` (o webhook liga/desliga `assinatura_ativa`). O resto do sistema já só pergunta `assinatura_valida`.
