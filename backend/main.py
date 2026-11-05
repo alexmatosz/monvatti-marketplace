@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend import auth, config, estudo, ml_conta
+from backend import auth, cadastro, config, estudo, ml_conta
 from backend.db import init_db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -24,6 +24,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(cadastro.router)
 app.include_router(estudo.router)
 app.include_router(ml_conta.router)
 

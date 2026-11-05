@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #2b333b;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Numeração tabular para as métricas do painel. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Malha fina de fundo, evocando uma grade de dados. */
+.malha {
+  background-image:
+    linear-gradient(to right, rgba(49, 69, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(49, 69, 255, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.foco:focus-visible {
+  outline: 2px solid #001ad8;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
