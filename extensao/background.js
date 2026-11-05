@@ -145,6 +145,12 @@ const acoes = {
   async busca({ itens, lote = 0 }) {
     return chamar("/api/extensao/busca", { metodo: "POST", corpo: { conta_ml: await contaML(), itens, lote } });
   },
+  async tendencia({ termo, categoria_id }) {
+    return chamar("/api/extensao/tendencia", { metodo: "POST", corpo: { termo, categoria_id } });
+  },
+  async ranqueamento({ termo, item_id }) {
+    return chamar("/api/extensao/ranqueamento", { metodo: "POST", corpo: { termo, item_id } });
+  },
   async copiar({ cliente_id, pagina }) {
     return chamar("/api/extensao/copiar", { metodo: "POST", corpo: { cliente_id, pagina } });
   },

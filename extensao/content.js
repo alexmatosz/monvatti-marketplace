@@ -1342,6 +1342,73 @@
     painel.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  function desenharTendencia(r) {
+    if (!r.itens || !r.itens.length) return '<div class="aviso info">Sem ranking de mais vendidos para essa categoria.</div>';
+    const linhas = r.itens.map((x) => `
+      <div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--borda)">
+        <b style="width:24px;text-align:center;color:var(--azul-forte);font-variant-numeric:tabular-nums">${x.posicao ?? "–"}</b>
+        ${x.thumbnail ? `<img src="${esc(x.thumbnail)}" width="38" height="38" style="border-radius:6px;object-fit:cover;flex:none" alt="">` : '<span style="width:38px;flex:none"></span>'}
+        <span style="flex:1;min-width:0">${x.permalink
+          ? `<a href="${esc(x.permalink)}" target="_blank" rel="noopener">${esc(x.titulo || "Anúncio de vendedor (detalhes restritos pelo ML)")}</a>`
+          : esc(x.titulo || "—")}</span>
+        <b style="white-space:nowrap;font-variant-numeric:tabular-nums">${x.preco != null ? brl(x.preco) : ""}</b>
+      </div>`).join("");
+    return `<div class="parte-cab"><h5>Mais vendidos — ${esc(r.categoria || "")}</h5></div><div>${linhas}</div>`;
+  }
+
+  async function tendenciaNaGaveta(conteudo) {
+    const inicial = (ehBusca() && termoDaBusca()) || (ehAnuncio() && (lerAnuncio().titulo || "").split(/\s+/).slice(0, 4).join(" ")) || "";
+    conteudo.innerHTML = `
+      <div class="aviso info">Veja os produtos campeões de venda de uma categoria. Digite um termo que eu descubro a categoria.</div>
+      <div class="acoes"><input id="t-termo" placeholder="ex.: furadeira, fone bluetooth" value="${esc(inicial)}" style="flex:1"><button id="t-ir">Ver tendência</button></div>
+      <div id="t-saida"></div>`;
+    const saida = conteudo.querySelector("#t-saida");
+    const ir = async () => {
+      const termo = conteudo.querySelector("#t-termo").value.trim();
+      if (!termo) return;
+      saida.innerHTML = '<div class="aviso info"><span class="girando"></span>Consultando o Mercado Livre…</div>';
+      try {
+        saida.innerHTML = desenharTendencia(await enviar({ tipo: "tendencia", termo }));
+      } catch (err) {
+        saida.innerHTML = `<div class="aviso erro">${esc(err.message)}</div>`;
+      }
+    };
+    conteudo.querySelector("#t-ir").onclick = ir;
+    conteudo.querySelector("#t-termo").addEventListener("keydown", (e) => e.key === "Enter" && ir());
+    if (inicial) ir();
+  }
+
+  async function ranqueamentoNaGaveta(conteudo) {
+    const an = ehAnuncio() ? lerAnuncio() : {};
+    const inicial = (an.titulo || "").split(/\s+/).slice(0, 4).join(" ") || (ehBusca() && termoDaBusca()) || "";
+    conteudo.innerHTML = `
+      <div class="aviso info">Veja em que posição um anúncio aparece na busca do Mercado Livre para uma palavra-chave.</div>
+      <div class="campos">
+        <label>Anúncio (MLB)<input id="r-item" value="${esc(an.item_id || "")}" placeholder="MLB..."></label>
+        <label>Palavra-chave<input id="r-termo" value="${esc(inicial)}" placeholder="ex.: furadeira 500w"></label>
+      </div>
+      <div class="acoes"><button id="r-ir">Ver posição</button></div>
+      <div id="r-saida"></div>`;
+    const saida = conteudo.querySelector("#r-saida");
+    conteudo.querySelector("#r-ir").onclick = async () => {
+      const item_id = conteudo.querySelector("#r-item").value.trim();
+      const termo = conteudo.querySelector("#r-termo").value.trim();
+      if (!item_id || !termo) {
+        saida.innerHTML = '<div class="aviso erro">Informe o anúncio (MLB) e a palavra-chave.</div>';
+        return;
+      }
+      saida.innerHTML = '<div class="aviso info"><span class="girando"></span>Procurando na busca do Mercado Livre…</div>';
+      try {
+        const r = await enviar({ tipo: "ranqueamento", termo, item_id });
+        saida.innerHTML = r.posicao
+          ? `<div class="aviso ok"><b>${esc(r.item_id)}</b> está em <b>${r.posicao}º</b> na busca por “${esc(r.termo)}”${r.total ? ` (de ${r.total.toLocaleString("pt-BR")} anúncios)` : ""}.</div>`
+          : `<div class="aviso info">Não achei “${esc(r.item_id)}” nos primeiros ${r.limite} resultados de “${esc(r.termo)}”. Pode estar além dessa posição.</div>`;
+      } catch (err) {
+        saida.innerHTML = `<div class="aviso erro">${esc(err.message)}</div>`;
+      }
+    };
+  }
+
   function abrirGaveta(aba = "calculadora") {
     const { host, raiz } = hospedeiro("monvatti-gaveta");
     document.body.append(host);
@@ -1351,6 +1418,8 @@
       <nav class="abas">
         <button class="aba" data-aba="calculadora">Calculadora de margem</button>
         <button class="aba" data-aba="metricas">Métricas do anúncio</button>
+        <button class="aba" data-aba="tendencia">Tendência</button>
+        <button class="aba" data-aba="ranqueamento">Ranqueamento</button>
         ${estado.info?.servidor ? `<button class="aba" data-aba="replique">${ehAnuncio() && (estado.info.clientes || []).length ? "Cadastrar no Replique" : "Abrir o Replique"}</button>` : ""}
       </nav>
       <div class="conteudo" id="g-conteudo"></div></aside>`;
@@ -1362,7 +1431,7 @@
         return window.open(estado.info.servidor + "/", "_blank", "noopener");
       }
       raiz.querySelectorAll(".aba").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
-      ({ metricas: metricasNaGaveta, replique: cadastrarNoReplique }[nome] || calculadora)(conteudo);
+      ({ metricas: metricasNaGaveta, tendencia: tendenciaNaGaveta, ranqueamento: ranqueamentoNaGaveta, replique: cadastrarNoReplique }[nome] || calculadora)(conteudo);
     };
     raiz.querySelectorAll(".aba").forEach((b) => (b.onclick = () => trocar(b.dataset.aba)));
     trocar(aba);

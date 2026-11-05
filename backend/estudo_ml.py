@@ -391,3 +391,90 @@ def analisar_busca(db: Session, usuario: Usuario, itens: list[dict]) -> dict:
         leitura.dados = {**(leitura.dados or {}), "busca": c}
     db.commit()
     return {"itens": saida, "categorias": categorias}
+
+
+def _categoria_do_termo(ad, termo: str) -> tuple[str, str]:
+    r = ad._get(f"/sites/{config.ML_SITE_ID}/domain_discovery/search", {"q": termo, "limit": 1}, auth=False)
+    if r.status_code < 400 and isinstance(r.json(), list) and r.json():
+        d = r.json()[0]
+        return d.get("category_id") or "", d.get("category_name") or ""
+    return "", ""
+
+
+def tendencia(db: Session, usuario: Usuario, termo: str = "", categoria_id: str = "", limite: int = 20) -> dict:
+    """Os mais vendidos de uma categoria (ranking oficial do ML, via /highlights).
+    Aceita um termo (descobre a categoria) ou uma categoria direto."""
+    ad = cliente_ml(db, usuario)
+    categoria_id = _texto(categoria_id, 40).upper()
+    nome_cat = ""
+    if not re.fullmatch(r"MLB\d+", categoria_id) and termo:
+        categoria_id, nome_cat = _categoria_do_termo(ad, termo.strip())
+    if not re.fullmatch(r"MLB\d+", categoria_id or ""):
+        raise ErroML("Não achei a categoria. Tente um termo de produto mais específico.")
+    if not nome_cat:
+        rc = ad._get(f"/categories/{categoria_id}", auth=False)
+        nome_cat = rc.json().get("name", categoria_id) if rc.status_code < 400 else categoria_id
+    r = ad._get(f"/highlights/{config.ML_SITE_ID}/category/{categoria_id}")
+    if r.status_code >= 400:
+        raise ErroML("O Mercado Livre não tem ranking de mais vendidos para essa categoria.")
+    conteudo = (r.json().get("content") or [])[:limite]
+
+    def resolver(c: dict) -> dict:
+        idx = _texto(c.get("id"), 40)
+        base = {"posicao": c.get("position"), "tipo": c.get("type"), "id": idx,
+                "titulo": "", "preco": None, "thumbnail": "", "permalink": "", "restrito": True}
+        if c.get("type") == "PRODUCT":
+            p = ad._get(f"/products/{idx}", auth=False)
+            if p.status_code < 400:
+                d = p.json()
+                fotos = d.get("pictures") or []
+                base.update({"titulo": d.get("name") or idx, "restrito": False,
+                             "preco": (d.get("buy_box_winner") or {}).get("price"),
+                             "thumbnail": fotos[0].get("url", "") if fotos else "",
+                             "permalink": d.get("permalink") or f"https://www.mercadolivre.com.br/p/{idx}"})
+        elif c.get("type") == "ITEM":
+            base["permalink"] = f"https://produto.mercadolivre.com.br/{idx[:3]}-{idx[3:]}"
+            it = ad._get(f"/items/{idx}")
+            if it.status_code < 400:
+                j = it.json()
+                base.update({"titulo": j.get("title", ""), "restrito": False, "preco": _num(j.get("price")),
+                             "thumbnail": (j.get("thumbnail") or "").replace("http://", "https://"),
+                             "vendidos": j.get("sold_quantity")})
+        else:
+            base["permalink"] = f"https://www.mercadolivre.com.br/up/{idx}"
+        return base
+
+    with ThreadPoolExecutor(8) as ex:
+        itens = list(ex.map(resolver, conteudo))
+    return {"categoria_id": categoria_id, "categoria": nome_cat, "itens": itens}
+
+
+def ranqueamento(db: Session, usuario: Usuario, item_id: str, termo: str, paginas: int = 2) -> dict:
+    """Em que posição um anúncio aparece na busca do ML para uma palavra-chave."""
+    ad = cliente_ml(db, usuario)
+    item_id = _texto(item_id, 40).upper()
+    termo = _texto(termo, 120).strip()
+    if not re.fullmatch(r"MLB\d{6,}", item_id):
+        raise ErroML("Informe o código do anúncio (MLB…).")
+    if not termo:
+        raise ErroML("Informe uma palavra-chave para medir o ranqueamento.")
+    por_pagina = 50
+    posicao = None
+    total = None
+    for p in range(max(paginas, 1)):
+        r = ad._get(f"/sites/{config.ML_SITE_ID}/search", {"q": termo, "limit": por_pagina, "offset": p * por_pagina})
+        if r.status_code >= 400:
+            if p == 0:
+                raise ErroML("O Mercado Livre não liberou a busca agora. Tente de novo em instantes.")
+            break
+        d = r.json()
+        total = (d.get("paging") or {}).get("total")
+        resultados = d.get("results") or []
+        for i, it in enumerate(resultados):
+            if item_id in (str(it.get("id") or "").upper(), str(it.get("catalog_product_id") or "").upper()):
+                posicao = p * por_pagina + i + 1
+                break
+        if posicao or not resultados:
+            break
+    return {"termo": termo, "item_id": item_id, "posicao": posicao,
+            "limite": max(paginas, 1) * por_pagina, "total": total}

@@ -48,6 +48,16 @@ class Estudo(BaseModel):
     itens: list[dict] = Field(min_length=1, max_length=estudo_planilha.MAX_ANUNCIOS)
 
 
+class Tendencia(BaseModel):
+    termo: str = Field(default="", max_length=120)
+    categoria_id: str = Field(default="", max_length=40)
+
+
+class Ranqueamento(BaseModel):
+    item_id: str = Field(default="", max_length=40)
+    termo: str = Field(default="", max_length=120)
+
+
 @router.get("/versao")
 def versao():
     return {"versao": config.VERSAO_EXTENSAO}
@@ -83,6 +93,22 @@ def tarifas(dados: Tarifas, u: Usuario = Depends(usuario_atual), db: Session = D
 def busca(dados: Busca, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
     try:
         return estudo_ml.analisar_busca(db, u, dados.itens)
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)
+
+
+@router.post("/tendencia")
+def tendencia(dados: Tendencia, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.tendencia(db, u, dados.termo, dados.categoria_id)
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)
+
+
+@router.post("/ranqueamento")
+def ranqueamento(dados: Ranqueamento, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.ranqueamento(db, u, dados.item_id, dados.termo)
     except ErroML as e:
         raise HTTPException(503, e.mensagem)
 

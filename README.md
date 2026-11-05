@@ -37,6 +37,7 @@ Variáveis de ambiente úteis (opcionais): `MONVATTI_SECRET` (troque em produç�
 
 - **Login só por e-mail** → token; usuário inicial já pago (`seed`); encaixe de assinatura (`assinatura_ativa`) pronto para o AbacatePay.
 - **Planilha do estudo** (`/api/extensao/estudo`): gera o `.xlsx` a partir dos itens coletados na página.
+- **Tendência por categoria** (`/api/extensao/tendencia`) e **Ranqueamento do anúncio** (`/api/extensao/ranqueamento`): mais vendidos de uma categoria (via `/highlights` do ML) e a posição de um anúncio na busca para uma palavra-chave. Aparecem como abas na gaveta da extensão. Dependem da conta do ML vinculada (503 sem ela).
 - **Estudo do anúncio** (`/api/extensao/anuncio`, `/tarifas`, `/busca`): métricas, taxas, frete e vendedor pela conta do ML que **cada usuário vincula** (portado do Replique em `backend/estudo_ml.py` + cliente `backend/ml.py`). Sem a conta vinculada, respondem 503 pedindo a vinculação.
 
 ## Vincular a conta do Mercado Livre (como no Avant)
