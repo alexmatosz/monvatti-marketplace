@@ -18,7 +18,7 @@ export default function NovidadesPagina() {
       <SiteHeader voltar />
       <section className="mx-auto max-w-conteudo px-6 py-16 sm:py-20">
         <p className="text-[13px] font-semibold uppercase tracking-wide text-azul">Novidades</p>
-        <h1 className="mt-2 font-display text-[36px] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[46px]">
+        <h1 className="mt-2 font-display text-[36px] font-extrabold leading-[1.04] tracking-tight text-ink sm:text-[46px]">
           O que mudou e o que vem por aí.
         </h1>
         <p className="mt-4 max-w-[60ch] text-[17px] leading-relaxed text-aco">

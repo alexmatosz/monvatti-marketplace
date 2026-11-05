@@ -49,7 +49,7 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
               {canal.estado === "ativo" ? "Disponível agora" : "Em breve"}
             </span>
           </div>
-          <h1 className="mt-5 max-w-[22ch] font-display text-[36px] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[48px]">
+          <h1 className="mt-5 max-w-[22ch] font-display text-[36px] font-extrabold leading-[1.04] tracking-tight text-ink sm:text-[48px]">
             {canal.tagline}
           </h1>
           <p className="mt-4 max-w-[60ch] text-[17px] leading-relaxed text-aco">{canal.resumo}</p>
@@ -61,7 +61,7 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-wide text-azul">Diferencial no canal</p>
-            <p className="mt-2 font-display text-[24px] font-semibold leading-snug text-ink">{canal.diferencial}</p>
+            <p className="mt-2 font-display text-[24px] font-bold leading-snug text-ink">{canal.diferencial}</p>
             <p className="mt-4 text-[15.5px] leading-relaxed text-aco">
               {canal.estado === "ativo"
                 ? "Tudo isso dentro da página do marketplace, no momento em que você está decidindo."

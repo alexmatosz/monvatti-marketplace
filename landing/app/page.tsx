@@ -92,7 +92,7 @@ function Showcase({
             <SeloMarketplace key={c.nome} nome={c.nome} breve={c.breve} />
           ))}
         </div>
-        <h3 className="font-display text-[26px] font-semibold leading-tight tracking-tight text-ink">{titulo}</h3>
+        <h3 className="font-display text-[26px] font-bold leading-tight tracking-tight text-ink">{titulo}</h3>
         <p className="mt-3 max-w-[46ch] text-[16px] leading-relaxed text-aco">{texto}</p>
       </Reveal>
       <Reveal delay={80} className={invertido ? "lg:order-1" : ""}>
@@ -139,8 +139,8 @@ export default function Pagina() {
             <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-white px-3 py-1 text-[12.5px] text-aco">
               <Marca size={15} /> A ferramenta da Monvatti · 150+ clientes atendidos
             </span>
-            <h1 className="mt-5 font-display text-[40px] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[52px]">
-              A inteligência do seu anúncio, dentro da página do marketplace.
+            <h1 className="mt-5 font-display text-[42px] font-extrabold leading-[1.02] tracking-tight text-ink sm:text-[54px]">
+              Venda com dados, <span className="text-azul">dentro do anúncio</span> do marketplace.
             </h1>
             <p className="mt-5 max-w-[52ch] text-[17px] leading-relaxed text-aco">
               Vendas estimadas do concorrente, métricas em tempo real, taxas e margem — tudo aparece no anúncio, sem planilha e sem sair da página.
@@ -166,56 +166,60 @@ export default function Pagina() {
       </section>
 
       {/* A Monvatti */}
-      <section id="monvatti" className="border-y border-platina/70 bg-[#FAFBFF]">
+      <section id="monvatti" className="border-y border-platina/70 bg-white">
         <div className="mx-auto max-w-conteudo px-6 py-20">
-          <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-center">
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-white px-3 py-1 text-[12.5px] text-aco">
-                <Marca size={15} /> A consultoria por trás da ferramenta
-              </span>
-              <h2 className="mt-5 max-w-[22ch] font-display text-[32px] font-semibold leading-tight tracking-tight text-ink">
-                A mesma inteligência que faz a Monvatti dar resultado.
-              </h2>
-              <p className="mt-4 max-w-[52ch] text-[17px] leading-relaxed text-aco">
-                A <strong className="font-semibold text-ink">Monvatti</strong> é a consultoria que opera mais de 150 clientes
-                em marketplaces. O que a equipe faz todo dia — pesquisa de mercado, precificação e estudo de concorrência —
-                virou o <strong className="font-semibold text-ink">Monvatti Marketplaces</strong>: a ferramenta que você usa agora.
-              </p>
-              <a href="/sobre" className="foco mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-azul hover:underline">
-                Conheça a Monvatti
-                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M5 10h10M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </a>
-            </Reveal>
-            <Reveal delay={100}>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { n: "150+", l: "clientes atendidos" },
-                  { n: "3", l: "marketplaces no radar" },
-                  { n: "Diária", l: "operação de contas reais" },
-                  { n: "0", l: "preço alterado sem você" },
-                ].map((s) => (
-                  <div key={s.l} className="rounded-2xl border border-platina bg-white p-5">
-                    <p className="font-display text-[26px] font-semibold text-ink">{s.n}</p>
-                    <p className="mt-1 text-[13px] leading-snug text-aco">{s.l}</p>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
-          </div>
+          <Reveal>
+            <p className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-azul">
+              <Marca size={16} /> A consultoria por trás da ferramenta
+            </p>
+            <h2 className="mt-4 max-w-[24ch] font-display text-[34px] font-bold leading-[1.05] tracking-tight text-ink sm:text-[42px]">
+              A mesma inteligência que faz a Monvatti dar resultado.
+            </h2>
+            <p className="mt-5 max-w-[60ch] text-[17px] leading-relaxed text-aco">
+              A <strong className="font-semibold text-ink">Monvatti</strong> é a consultoria que opera mais de 150 clientes
+              em marketplaces. O que a equipe faz todo dia — pesquisa de mercado, precificação e estudo de concorrência —
+              virou o <strong className="font-semibold text-ink">Monvatti Marketplaces</strong>: a ferramenta que você usa agora.
+            </p>
+          </Reveal>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
+          {/* Faixa de números */}
+          <Reveal delay={80}>
+            <div className="mt-10 flex flex-wrap gap-y-6 border-y-2 border-ink py-7">
+              {[
+                { n: "+150", l: "clientes operados" },
+                { n: "3", l: "marketplaces no radar" },
+                { n: "Todo dia", l: "em contas reais" },
+                { n: "Zero", l: "preço mexido sem você" },
+              ].map((s, i) => (
+                <div key={s.l} className={`min-w-[150px] flex-1 px-2 ${i > 0 ? "sm:border-l sm:border-platina sm:pl-6" : ""}`}>
+                  <p className="font-display text-[34px] font-extrabold leading-none tracking-tight text-ink">{s.n}</p>
+                  <p className="mt-2 text-[13.5px] leading-snug text-aco">{s.l}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          {/* Pilares com régua */}
+          <div className="mt-14 grid gap-x-10 gap-y-10 sm:grid-cols-3">
             {PILARES.map((p, i) => (
               <Reveal key={p.t} delay={i * 80}>
-                <div className="h-full rounded-2xl border border-platina bg-white p-6">
-                  <Marca size={22} />
-                  <h3 className="mt-4 font-display text-[18px] font-semibold text-ink">{p.t}</h3>
-                  <p className="mt-2 text-[14.5px] leading-relaxed text-aco">{p.d}</p>
+                <div className="border-t-[3px] border-azul pt-5">
+                  <span className="font-display text-[14px] font-bold text-azul">{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className="mt-2 font-display text-[20px] font-bold tracking-tight text-ink">{p.t}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-aco">{p.d}</p>
                 </div>
               </Reveal>
             ))}
           </div>
+
+          <Reveal delay={60}>
+            <a href="/sobre" className="foco mt-12 inline-flex items-center gap-1.5 text-[15px] font-semibold text-azul hover:underline">
+              Conheça a Monvatti
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M5 10h10M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          </Reveal>
         </div>
       </section>
 
@@ -223,7 +227,7 @@ export default function Pagina() {
       <section id="funcionalidades" className="mx-auto max-w-conteudo px-6 py-20">
         <Reveal>
           <div className="max-w-[46ch]">
-            <h2 className="font-display text-[32px] font-semibold leading-tight tracking-tight text-ink">
+            <h2 className="font-display text-[32px] font-bold leading-tight tracking-tight text-ink">
               Tudo para decidir, dentro do próprio anúncio.
             </h2>
             <p className="mt-3 text-[16px] leading-relaxed text-aco">
@@ -276,7 +280,7 @@ export default function Pagina() {
         <div className="mx-auto max-w-conteudo px-6 py-20">
           <Reveal>
             <div className="max-w-[46ch]">
-              <h2 className="font-display text-[32px] font-semibold tracking-tight text-ink">Antes e depois, de verdade.</h2>
+              <h2 className="font-display text-[32px] font-bold tracking-tight text-ink">Antes e depois, de verdade.</h2>
               <p className="mt-3 text-[16px] leading-relaxed text-aco">
                 Casos reais de clientes da Monvatti — pesquisa, precificação e estudo que viraram resultado. (Imagens em breve.)
               </p>
@@ -300,7 +304,7 @@ export default function Pagina() {
       <section className="mx-auto max-w-conteudo px-6 py-20">
         <Reveal>
           <div className="max-w-[46ch]">
-            <h2 className="font-display text-[32px] font-semibold tracking-tight text-ink">Em três passos, do Chrome ao anúncio.</h2>
+            <h2 className="font-display text-[32px] font-bold tracking-tight text-ink">Em três passos, do Chrome ao anúncio.</h2>
             <p className="mt-3 text-[16px] leading-relaxed text-aco">
               Sem configuração, sem planilha. Instale, vincule a sua conta uma vez e o estudo aparece em cada anúncio que você abrir.
             </p>
@@ -325,7 +329,7 @@ export default function Pagina() {
         <div className="mx-auto max-w-conteudo px-6 py-20">
           <Reveal>
             <div className="mb-10 text-center">
-              <h2 className="font-display text-[32px] font-semibold tracking-tight text-white">Escolha o seu plano.</h2>
+              <h2 className="font-display text-[32px] font-bold tracking-tight text-white">Escolha o seu plano.</h2>
               <p className="mt-3 text-[16px] text-white/60">Mercado Livre hoje; Shopee e Amazon em breve. Sem fidelidade.</p>
             </div>
           </Reveal>
@@ -338,7 +342,7 @@ export default function Pagina() {
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <Reveal>
             <div>
-              <h2 className="font-display text-[32px] font-semibold leading-tight tracking-tight text-ink">
+              <h2 className="font-display text-[32px] font-bold leading-tight tracking-tight text-ink">
                 Comece a estudar seus anúncios hoje.
               </h2>
               <p className="mt-3 max-w-[48ch] text-[16px] leading-relaxed text-aco">
@@ -356,7 +360,7 @@ export default function Pagina() {
       <section id="faq" className="border-t border-platina/70 bg-[#FAFBFF]">
         <div className="mx-auto max-w-conteudo px-6 py-20">
           <Reveal>
-            <h2 className="font-display text-[32px] font-semibold tracking-tight text-ink">Dúvidas frequentes.</h2>
+            <h2 className="font-display text-[32px] font-bold tracking-tight text-ink">Dúvidas frequentes.</h2>
           </Reveal>
           <div className="mt-8 max-w-[720px]">
             <Faq />

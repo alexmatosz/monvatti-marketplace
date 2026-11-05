@@ -75,11 +75,11 @@ export const POSTS: Post[] = [
     tag: "Planejado",
     motivo: "pix",
     cor: "#5B6472",
-    titulo: "Pagamento por Pix via AbacatePay",
+    titulo: "Pagamento por Pix e planos flexíveis",
     resumo:
       "Assinatura mensal, semestral ou anual, sem fidelidade. O acesso fica vinculado à conta que você conectar.",
     corpo: [
-      "O pagamento vai ser por Pix, via AbacatePay, com planos mensal, semestral e anual — sem fidelidade.",
+      "O pagamento vai ser por Pix, com planos mensal, semestral e anual — sem fidelidade.",
       "O acesso fica vinculado à conta de marketplace que você conectar, garantindo que cada assinatura corresponde a uma conta.",
     ],
   },

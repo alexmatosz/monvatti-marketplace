@@ -12,6 +12,7 @@ const config: Config = {
         platina: "#DFDCDB",
         nevoa: "#F2F3FF",
         aco: "#5B6472",
+        ouro: "#FFE600",
       },
       fontFamily: {
         display: ["var(--font-display)", "system-ui", "sans-serif"],

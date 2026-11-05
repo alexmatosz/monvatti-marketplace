@@ -4,7 +4,7 @@ import "./globals.css";
 
 const display = Sora({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 });

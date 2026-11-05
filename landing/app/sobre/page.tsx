@@ -26,7 +26,7 @@ export default function SobrePagina() {
           <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-white px-3 py-1 text-[12.5px] text-aco">
             <Marca size={15} /> Consultoria de marketplaces
           </span>
-          <h1 className="mt-5 max-w-[20ch] font-display text-[38px] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[50px]">
+          <h1 className="mt-5 max-w-[20ch] font-display text-[38px] font-extrabold leading-[1.04] tracking-tight text-ink sm:text-[50px]">
             A Monvatti vive de fazer conta de marketplace dar certo.
           </h1>
           <p className="mt-5 max-w-[62ch] text-[18px] leading-relaxed text-aco">
@@ -39,44 +39,44 @@ export default function SobrePagina() {
       <section className="mx-auto max-w-conteudo px-6 py-16">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <h2 className="font-display text-[28px] font-semibold tracking-tight text-ink">O que a Monvatti faz</h2>
+            <h2 className="font-display text-[28px] font-bold tracking-tight text-ink">O que a Monvatti faz</h2>
             <p className="mt-3 max-w-[52ch] text-[16px] leading-relaxed text-aco">
               A consultoria cuida da operação inteira de quem vende em marketplace — e é dessa rotina que saíram as
               leituras da ferramenta.
             </p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-3">
-            {PILARES.map((p) => (
-              <div key={p.t} className="rounded-2xl border border-platina bg-white p-6">
-                <Marca size={22} />
-                <h3 className="mt-4 font-display text-[17px] font-semibold text-ink">{p.t}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-aco">{p.d}</p>
+          <div className="grid gap-x-10 gap-y-10 sm:grid-cols-3">
+            {PILARES.map((p, i) => (
+              <div key={p.t} className="border-t-[3px] border-azul pt-5">
+                <span className="font-display text-[14px] font-bold text-azul">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="mt-2 font-display text-[19px] font-bold tracking-tight text-ink">{p.t}</h3>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-aco">{p.d}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mt-16 flex flex-wrap gap-y-6 border-y-2 border-ink py-7">
           {[
-            { n: "150+", l: "clientes atendidos" },
+            { n: "+150", l: "clientes operados" },
             { n: "3", l: "marketplaces no radar" },
-            { n: "Diária", l: "operação de contas reais" },
-            { n: "0", l: "preço mexido sem você" },
-          ].map((s) => (
-            <div key={s.l} className="rounded-2xl border border-platina bg-white p-5">
-              <p className="font-display text-[26px] font-semibold text-ink">{s.n}</p>
-              <p className="mt-1 text-[13px] leading-snug text-aco">{s.l}</p>
+            { n: "Todo dia", l: "em contas reais" },
+            { n: "Zero", l: "preço mexido sem você" },
+          ].map((s, i) => (
+            <div key={s.l} className={`min-w-[150px] flex-1 px-2 ${i > 0 ? "sm:border-l sm:border-platina sm:pl-6" : ""}`}>
+              <p className="font-display text-[34px] font-extrabold leading-none tracking-tight text-ink">{s.n}</p>
+              <p className="mt-2 text-[13.5px] leading-snug text-aco">{s.l}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-16 rounded-3xl border border-platina bg-nevoa/50 p-7 sm:p-10">
-          <h2 className="font-display text-[24px] font-semibold tracking-tight text-ink">
+          <h2 className="font-display text-[24px] font-bold tracking-tight text-ink">
             Da consultoria para a sua tela.
           </h2>
           <p className="mt-3 max-w-[60ch] text-[16px] leading-relaxed text-aco">
-            Você não precisa contratar a consultoria para ter a inteligência dela. O Monvatti Marketplaces coloca as
-            mesmas leituras dentro do seu anúncio, no momento de decidir.
+            O Monvatti Marketplaces nasce da operação da consultoria e coloca as mesmas leituras dentro do seu anúncio,
+            no momento de decidir — a mesma inteligência que a equipe usa todos os dias.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/#cadastro" className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">

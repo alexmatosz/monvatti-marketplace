@@ -166,7 +166,7 @@ export function Pricing() {
       </div>
 
       <p className="mt-6 text-center text-[12px] text-white/40">
-        Valores de lançamento, fictícios por enquanto — a confirmar. Pagamento por Pix via AbacatePay, em breve. Sem fidelidade.
+        Valores de lançamento, fictícios por enquanto — a confirmar. Pagamento por Pix, em breve. Sem fidelidade.
       </p>
     </div>
   );
