@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { MarketplacesTabs } from "@/components/MarketplacesTabs";
+import { CANAIS } from "@/lib/canais";
 
 export const metadata: Metadata = {
   title: "Marketplaces — o que a Monvatti Marketplaces faz em cada canal",
   description:
-    "Mercado Livre, Shopee e Amazon: veja o que a ferramenta entrega em cada canal de venda e o diferencial de cada um.",
+    "Mercado Livre, Shopee e Amazon: escolha um canal e veja o que a ferramenta entrega e o diferencial de cada um.",
 };
 
 export default function MarketplacesPagina() {
@@ -21,26 +21,34 @@ export default function MarketplacesPagina() {
         </h1>
         <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-aco">
           O Monvatti Marketplaces lê cada marketplace com as regras dele — taxas, busca e logística próprias.
-          Veja o que já funciona e o que está a caminho em cada canal de venda.
+          Escolha um canal para ver o que já funciona e o que está a caminho.
         </p>
 
-        <div className="mt-10">
-          <MarketplacesTabs />
-        </div>
-
-        <div className="mt-12 flex flex-wrap items-center gap-3">
-          <Link
-            href="/#cadastro"
-            className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo"
-          >
-            Começar pelo Mercado Livre
-          </Link>
-          <Link
-            href="/"
-            className="foco rounded-xl border border-platina bg-white px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-azul"
-          >
-            Voltar para o início
-          </Link>
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {CANAIS.map((c) => (
+            <Link
+              key={c.id}
+              href={`/marketplaces/${c.id}`}
+              className="foco group flex flex-col rounded-3xl border border-platina bg-white p-7 transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-30px_rgba(7,10,26,0.4)]"
+            >
+              <span className="h-12 w-12 rounded-2xl ring-1 ring-black/5" style={{ background: c.estado === "breve" ? "#EEF0F6" : c.cor }} />
+              <div className="mt-5 flex items-center gap-2">
+                <h2 className="font-display text-[20px] font-semibold text-ink">{c.nome}</h2>
+                {c.estado === "breve" ? (
+                  <span className="rounded-full bg-platina/60 px-2 py-0.5 text-[10.5px] font-semibold text-aco">em breve</span>
+                ) : (
+                  <span className="rounded-full bg-azul/10 px-2 py-0.5 text-[10.5px] font-semibold text-azul">ativo</span>
+                )}
+              </div>
+              <p className="mt-2 flex-1 text-[14.5px] leading-relaxed text-aco">{c.diferencial}</p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-azul">
+                Ver o canal
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="transition-transform group-hover:translate-x-0.5" aria-hidden="true">
+                  <path d="M5 10h10M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
       <SiteFooter />

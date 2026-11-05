@@ -2,59 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { BlogCover } from "@/components/BlogCover";
+import { POSTS } from "@/lib/novidades";
 
 export const metadata: Metadata = {
   title: "Novidades — Monvatti Marketplaces",
   description: "O que mudou e o que está a caminho no Monvatti Marketplaces.",
 };
 
-type Item = { data: string; tag: "Novo" | "Em desenvolvimento" | "Planejado"; titulo: string; texto: string };
-
-const ITENS: Item[] = [
-  {
-    data: "Novembro de 2026",
-    tag: "Novo",
-    titulo: "Cadastro aberto e extensão para o Mercado Livre",
-    texto:
-      "Painel dentro do anúncio e da busca: métricas, concorrência, calculadora de margem, ranqueamento e tendência por categoria. Cadastro pelo e-mail que depois libera o acesso.",
-  },
-  {
-    data: "Novembro de 2026",
-    tag: "Novo",
-    titulo: "Ranqueamento e tendência por categoria",
-    texto:
-      "Veja em que posição um anúncio aparece para uma palavra-chave e o ranking de mais vendidos de cada categoria, direto no painel.",
-  },
-  {
-    data: "Em breve",
-    tag: "Em desenvolvimento",
-    titulo: "Shopee",
-    texto:
-      "Concorrência da busca, vendas estimadas e calculadora de margem no padrão da Shopee — comissão, frete e cupons no cálculo do lucro.",
-  },
-  {
-    data: "Em breve",
-    tag: "Em desenvolvimento",
-    titulo: "Amazon com Buy Box",
-    texto:
-      "Quem está com a caixa de compra e o preço exato para assumir o Buy Box sem derrubar a margem, além de taxas e concorrência da Amazon.",
-  },
-  {
-    data: "Planejado",
-    tag: "Planejado",
-    titulo: "Pagamento por Pix via AbacatePay",
-    texto:
-      "Assinatura mensal, semestral ou anual, sem fidelidade. O acesso fica vinculado à conta que você conectar.",
-  },
-];
-
-const COR: Record<Item["tag"], string> = {
-  Novo: "bg-azul/10 text-azul",
-  "Em desenvolvimento": "bg-[#FF9900]/15 text-[#9a5b00]",
-  Planejado: "bg-platina/60 text-aco",
-};
-
 export default function NovidadesPagina() {
+  const [destaque, ...resto] = POSTS;
+
   return (
     <>
       <SiteHeader voltar />
@@ -64,30 +22,50 @@ export default function NovidadesPagina() {
           O que mudou e o que vem por aí.
         </h1>
         <p className="mt-4 max-w-[60ch] text-[17px] leading-relaxed text-aco">
-          Acompanhe cada melhoria da ferramenta e o que está em desenvolvimento para os próximos canais.
+          O diário da ferramenta: cada melhoria lançada e o que está em desenvolvimento para os próximos canais.
         </p>
 
-        <ol className="mt-12 max-w-[760px] space-y-8 border-l border-platina pl-6">
-          {ITENS.map((it) => (
-            <li key={it.titulo} className="relative">
-              <span className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-azul ring-1 ring-platina" aria-hidden="true" />
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-[13px] font-medium text-aco">{it.data}</span>
-                <span className={`rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold ${COR[it.tag]}`}>{it.tag}</span>
-              </div>
-              <h2 className="mt-2 font-display text-[19px] font-semibold text-ink">{it.titulo}</h2>
-              <p className="mt-1.5 text-[15px] leading-relaxed text-aco">{it.texto}</p>
-            </li>
-          ))}
-        </ol>
+        {/* Destaque */}
+        <Link
+          href={`/novidades/${destaque.slug}`}
+          className="foco group mt-10 grid overflow-hidden rounded-3xl border border-platina bg-white transition-all hover:border-azul hover:shadow-[0_30px_70px_-34px_rgba(7,10,26,0.45)] lg:grid-cols-2"
+        >
+          <BlogCover post={destaque} alto />
+          <div className="flex flex-col justify-center p-7 sm:p-9">
+            <span className="text-[13px] text-aco">{destaque.data}</span>
+            <h2 className="mt-2 font-display text-[26px] font-semibold leading-tight tracking-tight text-ink">{destaque.titulo}</h2>
+            <p className="mt-3 text-[15.5px] leading-relaxed text-aco">{destaque.resumo}</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-semibold text-azul">
+              Ler novidade
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" className="transition-transform group-hover:translate-x-0.5" aria-hidden="true">
+                <path d="M5 10h10M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </div>
+        </Link>
 
-        <div className="mt-12">
-          <Link
-            href="/#cadastro"
-            className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo"
-          >
-            Começar agora
-          </Link>
+        {/* Demais */}
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {resto.map((p) => (
+            <Link
+              key={p.slug}
+              href={`/novidades/${p.slug}`}
+              className="foco group flex flex-col overflow-hidden rounded-3xl border border-platina bg-white transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-32px_rgba(7,10,26,0.4)]"
+            >
+              <BlogCover post={p} />
+              <div className="flex flex-1 flex-col p-6">
+                <span className="text-[12.5px] text-aco">{p.data}</span>
+                <h3 className="mt-1.5 font-display text-[18px] font-semibold leading-snug text-ink">{p.titulo}</h3>
+                <p className="mt-2 flex-1 text-[14px] leading-relaxed text-aco">{p.resumo}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-azul">
+                  Ler
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className="transition-transform group-hover:translate-x-0.5" aria-hidden="true">
+                    <path d="M5 10h10M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
       <SiteFooter />

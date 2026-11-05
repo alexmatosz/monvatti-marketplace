@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { MarketplacesMenu } from "@/components/MarketplacesMenu";
 
 const LINKS = [
-  { rotulo: "Sobre a Monvatti", href: "/#monvatti" },
-  { rotulo: "Marketplaces", href: "/marketplaces" },
+  { rotulo: "Sobre a Monvatti", href: "/sobre" },
   { rotulo: "Novidades", href: "/novidades" },
   { rotulo: "Suporte", href: "/suporte" },
-  { rotulo: "Dúvidas", href: "/#faq" },
 ];
 
 export function SiteHeader({ voltar = false }: { voltar?: boolean }) {
@@ -28,6 +27,7 @@ export function SiteHeader({ voltar = false }: { voltar?: boolean }) {
           <Link href="/" className="foco"><Logo h={24} /></Link>
         </div>
         <nav className="hidden items-center gap-6 text-sm text-aco lg:flex">
+          <MarketplacesMenu />
           {LINKS.map((l) => (
             <Link key={l.href} className="foco whitespace-nowrap hover:text-ink" href={l.href}>
               {l.rotulo}

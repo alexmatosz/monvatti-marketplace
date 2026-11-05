@@ -166,27 +166,52 @@ export default function Pagina() {
       </section>
 
       {/* A Monvatti */}
-      <section id="monvatti" className="border-y border-platina/70 bg-night">
+      <section id="monvatti" className="border-y border-platina/70 bg-[#FAFBFF]">
         <div className="mx-auto max-w-conteudo px-6 py-20">
-          <Reveal>
-            <div className="max-w-[60ch]">
-              <h2 className="font-display text-[32px] font-semibold leading-tight tracking-tight text-white">
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+            <Reveal>
+              <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-white px-3 py-1 text-[12.5px] text-aco">
+                <Marca size={15} /> A consultoria por trás da ferramenta
+              </span>
+              <h2 className="mt-5 max-w-[22ch] font-display text-[32px] font-semibold leading-tight tracking-tight text-ink">
                 A mesma inteligência que faz a Monvatti dar resultado.
               </h2>
-              <p className="mt-4 text-[17px] leading-relaxed text-white/70">
-                A <strong className="font-semibold text-white">Monvatti</strong> é a consultoria que opera mais de 150 clientes
+              <p className="mt-4 max-w-[52ch] text-[17px] leading-relaxed text-aco">
+                A <strong className="font-semibold text-ink">Monvatti</strong> é a consultoria que opera mais de 150 clientes
                 em marketplaces. O que a equipe faz todo dia — pesquisa de mercado, precificação e estudo de concorrência —
-                virou o <strong className="font-semibold text-white">Monvatti Marketplaces</strong>: a ferramenta que você usa agora.
+                virou o <strong className="font-semibold text-ink">Monvatti Marketplaces</strong>: a ferramenta que você usa agora.
               </p>
-            </div>
-          </Reveal>
+              <a href="/sobre" className="foco mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-azul hover:underline">
+                Conheça a Monvatti
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 10h10M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </Reveal>
+            <Reveal delay={100}>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { n: "150+", l: "clientes atendidos" },
+                  { n: "3", l: "marketplaces no radar" },
+                  { n: "Diária", l: "operação de contas reais" },
+                  { n: "0", l: "preço alterado sem você" },
+                ].map((s) => (
+                  <div key={s.l} className="rounded-2xl border border-platina bg-white p-5">
+                    <p className="font-display text-[26px] font-semibold text-ink">{s.n}</p>
+                    <p className="mt-1 text-[13px] leading-snug text-aco">{s.l}</p>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
             {PILARES.map((p, i) => (
               <Reveal key={p.t} delay={i * 80}>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                  <Marca size={22} tom="branca" />
-                  <h3 className="mt-4 font-display text-[18px] font-semibold text-white">{p.t}</h3>
-                  <p className="mt-2 text-[14.5px] leading-relaxed text-white/60">{p.d}</p>
+                <div className="h-full rounded-2xl border border-platina bg-white p-6">
+                  <Marca size={22} />
+                  <h3 className="mt-4 font-display text-[18px] font-semibold text-ink">{p.t}</h3>
+                  <p className="mt-2 text-[14.5px] leading-relaxed text-aco">{p.d}</p>
                 </div>
               </Reveal>
             ))}

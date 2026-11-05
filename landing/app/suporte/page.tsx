@@ -16,6 +16,52 @@ const TOPICOS = [
   { t: "Leituras e estimativas", d: "De onde vêm as vendas estimadas e como usar sem errar a mão." },
 ];
 
+const CONTATOS = [
+  {
+    rotulo: "Instagram",
+    valor: "@monvatti.marketplaces",
+    href: "https://instagram.com/monvatti.marketplaces",
+    motivo: "instagram" as const,
+  },
+  {
+    rotulo: "E-mail",
+    valor: "suporte@monvattimarketplaces.com.br",
+    href: "mailto:suporte@monvattimarketplaces.com.br?subject=Suporte%20Monvatti%20Marketplaces",
+    motivo: "email" as const,
+  },
+  {
+    rotulo: "WhatsApp",
+    valor: "(11) 98888-0000",
+    href: "https://wa.me/5511988880000",
+    motivo: "whatsapp" as const,
+  },
+];
+
+function IconeContato({ nome }: { nome: "instagram" | "email" | "whatsapp" }) {
+  const comum = { fill: "none", stroke: "#001AD8", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (nome === "instagram")
+    return (
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="5" {...comum} />
+        <circle cx="12" cy="12" r="4" {...comum} />
+        <circle cx="17" cy="7" r="1.1" fill="#001AD8" stroke="none" />
+      </svg>
+    );
+  if (nome === "whatsapp")
+    return (
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 20l1.4-4A8 8 0 1 1 9 19.3L4 20Z" {...comum} />
+        <path d="M9 9.5c0 3 2.5 5.5 5.5 5.5.8 0 1.2-.8.8-1.4l-1-1.2-1.5.6-1.8-1.8.6-1.5-1.2-1c-.6-.4-1.4 0-1.4.8Z" {...comum} />
+      </svg>
+    );
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" {...comum} />
+      <path d="M4.5 7l7.5 6 7.5-6" {...comum} />
+    </svg>
+  );
+}
+
 export default function SuportePagina() {
   return (
     <>
@@ -29,7 +75,32 @@ export default function SuportePagina() {
           A mesma equipe da Monvatti que opera mais de 150 clientes atende você. Comece pelos temas abaixo ou fale direto com a gente.
         </p>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        {/* Contatos */}
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {CONTATOS.map((c) => (
+            <a
+              key={c.rotulo}
+              href={c.href}
+              target={c.motivo === "email" ? undefined : "_blank"}
+              rel="noopener noreferrer"
+              className="foco group flex items-center gap-4 rounded-2xl border border-platina bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_24px_50px_-30px_rgba(7,10,26,0.4)]"
+            >
+              <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-nevoa ring-1 ring-platina">
+                <IconeContato nome={c.motivo} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[12.5px] font-medium text-aco">{c.rotulo}</span>
+                <span className="block truncate text-[14.5px] font-semibold text-ink">{c.valor}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+        <p className="mt-3 text-[12px] text-aco/70">
+          Atendimento de segunda a sexta, das 9h às 18h. Contatos de exemplo — a confirmar antes do lançamento.
+        </p>
+
+        {/* Temas */}
+        <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {TOPICOS.map((t) => (
             <div key={t.t} className="rounded-2xl border border-platina bg-white p-5">
               <h2 className="text-[15.5px] font-semibold text-ink">{t.t}</h2>
@@ -38,31 +109,16 @@ export default function SuportePagina() {
           ))}
         </div>
 
-        <div className="mt-10 rounded-3xl border border-platina bg-nevoa/50 p-7 sm:p-9">
-          <h2 className="font-display text-[22px] font-semibold text-ink">Fale com a equipe</h2>
-          <p className="mt-2 max-w-[56ch] text-[15.5px] leading-relaxed text-aco">
-            Não achou a resposta? Escreva para a gente com o e-mail do seu cadastro que respondemos por lá.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href="mailto:alexmonvatti@gmail.com?subject=Suporte%20Monvatti%20Marketplaces"
-              className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo"
-            >
-              Enviar e-mail
-            </a>
-            <Link
-              href="/#faq"
-              className="foco rounded-xl border border-platina bg-white px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-azul"
-            >
-              Ver dúvidas frequentes
-            </Link>
-          </div>
-        </div>
-
+        {/* FAQ */}
         <div className="mt-14 max-w-[760px]">
           <h2 className="font-display text-[24px] font-semibold tracking-tight text-ink">Dúvidas frequentes</h2>
           <div className="mt-6">
             <Faq />
+          </div>
+          <div className="mt-8">
+            <Link href="/#cadastro" className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">
+              Começar agora
+            </Link>
           </div>
         </div>
       </section>
