@@ -1,87 +1,155 @@
-# Monvatti Marketplace
+# Monvatti Marketplaces
 
-Extensão do Chrome + backend próprio para estudar anúncios do Mercado Livre (vendas estimadas, ritmo, logística, taxas, calculadora de margem e planilha). Projeto independente, acesso por **login**. Pagamento (AbacatePay) e página de cadastro entram depois, sobre a mesma base.
+Ferramenta de estudo de anúncios em marketplace: uma **extensão do Chrome** + **backend próprio** que mostram vendas estimadas, métricas, taxas e margem dentro da página do anúncio. Começa pelo **Mercado Livre**; **Shopee** e **Amazon** vêm depois. Acesso por e-mail; o pagamento (Pix) e a página de cadastro entram sobre a mesma base.
 
-## Estrutura
+> **Nome:** a ferramenta é o **Monvatti Marketplaces**. A **Monvatti** é a consultoria que opera mais de 150 clientes e da qual a ferramenta nasceu.
+
+Este README é o **único documento de contexto** do projeto. Se você vai colaborar, comece por aqui.
+
+---
+
+## Estrutura do repositório
 
 ```
-extensao/     cliente Chrome (manifest, background, content, popup, icones)
-backend/      serviço FastAPI: login + estudo
-  auth.py       login, token, criar usuário (admin)
-  estudo.py     endpoints da extensão (versão, eu, estudo/planilha, anúncio/taxas/busca)
-  pagamento.py  encaixe do AbacatePay (stub por ora)
-  seed.py       cria os primeiros acessos
-  _referencia_estudo_replique.py   código do estudo como estava no Replique (para portar o ML)
+extensao/     cliente Chrome MV3 (manifest, background, content, popup, ícones)
+backend/      serviço FastAPI: login + estudo do Mercado Livre
+  auth.py         login, token, criar usuário
+  estudo.py       endpoints da extensão (eu, estudo/planilha, anúncio, tarifas, busca, tendência, ranqueamento)
+  estudo_ml.py    lógica do estudo (portada do Replique)
+  ml.py           cliente da API do ML por usuário
+  ml_conta.py     vincular/desvincular a conta do ML (OAuth)
+  cadastro.py     POST /api/cadastro público (usuário pendente)
+  pagamento.py    encaixe do Pix/AbacatePay (stub por ora)
+  seed.py         cria o primeiro acesso
+landing/      site de marketing + cadastro (Next.js + Tailwind)
 Marca/        logos e paleta (arquivos-fonte, não entram no pacote)
+requirements.txt
 ```
 
-## Rodar o backend (dev)
+---
+
+## Teste rápido (ver rodando)
+
+São duas partes: o **servidor** (uma janela de comando aberta) e a **extensão** (no Chrome).
+
+**1) Ligar o servidor** (precisa de Python 3.11+ com "Add Python to PATH"):
 
 ```
 python -m venv .venv
-.venv\Scripts\activate          # Windows
+.venv\Scripts\activate
 pip install -r requirements.txt
-python -m backend.seed          # cria admin e chefe; mostra as senhas (anote)
-uvicorn backend.main:app --reload --port 8000
+python -m backend.seed            # cria o acesso e mostra a senha (anote)
+uvicorn backend.main:app --port 8000
 ```
 
-Variáveis de ambiente úteis (opcionais): `MONVATTI_SECRET` (troque em produção), `MONVATTI_MODO_DEMO` (padrão `true`), `MONVATTI_DATABASE_URL` (padrão SQLite em `dados/`), `MONVATTI_ADMIN_SENHA` / `MONVATTI_CHEFE_SENHA` (senhas do seed).
+A última linha deixa a janela escrevendo logs — é assim mesmo, deixe aberta. O servidor fica em `http://localhost:8000`.
 
-## Instalar a extensão
+**2) Instalar a extensão no Chrome:**
 
-1. `chrome://extensions` → ligue **Modo do desenvolvedor**.
+1. Abra `chrome://extensions` e ligue o **Modo do desenvolvedor**.
 2. **Carregar sem compactação** → escolha a pasta `extensao/`.
-3. Clique no ícone da Monvatti, informe o endereço do servidor (ex.: `http://localhost:8000`), e-mail e senha, e **Entrar**. Aceite a permissão para o endereço.
+3. Clique no ícone da Monvatti, informe o endereço do servidor (`http://localhost:8000`), o e-mail (`alexmonvatti@gmail.com`) e **Entrar**. Aceite a permissão.
 
-## O que já funciona
+**O que dá para testar agora:** login por e-mail e a planilha do estudo na busca do ML. As métricas/taxas/frete dentro do anúncio só funcionam depois de **vincular uma conta do Mercado Livre** (ver abaixo); até lá essas telas pedem a vinculação — é esperado.
 
-- **Login só por e-mail** → token; usuário inicial já pago (`seed`); encaixe de assinatura (`assinatura_ativa`) pronto para o AbacatePay.
-- **Planilha do estudo** (`/api/extensao/estudo`): gera o `.xlsx` a partir dos itens coletados na página.
-- **Tendência por categoria** (`/api/extensao/tendencia`) e **Ranqueamento do anúncio** (`/api/extensao/ranqueamento`): mais vendidos de uma categoria (via `/highlights` do ML) e a posição de um anúncio na busca para uma palavra-chave. Aparecem como abas na gaveta da extensão. Dependem da conta do ML vinculada (503 sem ela).
-- **Estudo do anúncio** (`/api/extensao/anuncio`, `/tarifas`, `/busca`): métricas, taxas, frete e vendedor pela conta do ML que **cada usuário vincula** (portado do Replique em `backend/estudo_ml.py` + cliente `backend/ml.py`). Sem a conta vinculada, respondem 503 pedindo a vinculação.
+---
 
-## Vincular a conta do Mercado Livre (como no Avant)
+## Backend (dev)
 
-Cada usuário vincula a **própria** conta do ML pela extensão, e isso libera o estudo só para ele. Para isso funcionar, o servidor precisa de um app do Mercado Livre cadastrado (uma vez):
+Variáveis de ambiente (todas opcionais no dev):
 
-1. Crie um app **próprio** no Mercado Livre (developers.mercadolivre.com.br), separado do app do Replique — isola a atividade de estudo das contas reais dos clientes. Defina no ambiente: `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI`.
-2. O Mercado Livre **não aceita `localhost`** como redirect. Duas formas:
-   - **Hospedado (HTTPS):** `ML_REDIRECT_URI = https://seu-dominio/api/ml/callback` (igual no cadastro do app). Aí o fluxo é automático: o usuário clica em **Vincular minha conta do Mercado Livre** no popup, autoriza e o ML volta em `/api/ml/callback`, que guarda o token daquele usuário (quem é vem assinado no `state`). O popup passa a mostrar "Conta vinculada".
-   - **Local/dev:** use o callback do Postman (`https://oauth.pstmn.io/v1/callback`, padrão). Ao clicar em **Vincular**, o popup abre a autorização e mostra um campo para **colar o código** que o Mercado Livre exibe; cole e clique em **Confirmar vínculo** (`POST /api/ml/colar`). É o mesmo truque do Replique, para dar para testar o estudo antes de hospedar.
-3. Desvincular a qualquer momento (`POST /api/ml/desconectar`).
+| Variável | O que é | Padrão |
+|---|---|---|
+| `MONVATTI_SECRET` | assina tokens/estado (troque em produção) | aleatório |
+| `MONVATTI_MODO_DEMO` | modo demonstração | `true` |
+| `MONVATTI_DATABASE_URL` | banco | SQLite em `dados/` |
+| `MONVATTI_USUARIO_EMAIL` | e-mail do seed | `alexmonvatti@gmail.com` |
+| `ML_CLIENT_ID` / `ML_CLIENT_SECRET` / `ML_REDIRECT_URI` | app do Mercado Livre (ver abaixo) | — |
 
-Passo a passo de criar o app do ML (onde criar, o que preencher, onde pôr as chaves): veja **`CRIAR-APP-MERCADO-LIVRE.md`**.
+---
 
-> Observação: vincular a conta libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de anúncios de terceiros (visitas, data de criação) o próprio ML não entrega por essa via — o estudo contorna com avaliações/perguntas, igual no Replique.
+## Criar o app do Mercado Livre (uma vez)
 
-> O código de referência original do Replique ficou em `backend/_referencia_estudo_replique.py` (só consulta).
+O estudo lê a API do ML por OAuth, então o servidor precisa de **um app do Mercado Livre**. É um passo único, seu (não de cada usuário).
+
+> **Crie um app PRÓPRIO, separado do app do Replique.** O app do Replique é o que os clientes reais autorizaram; o app da extensão faz estudo com conta descartável. Separar protege as contas dos clientes.
+
+1. Acesse **developers.mercadolivre.com.br** e entre com a **conta de estudo** (descartável), nunca a de um cliente. Vá em **Minhas aplicações → Criar aplicação**.
+2. Preencha:
+   - **Nome:** `Monvatti Marketplaces`.
+   - **Redirect URI:** o ML **não aceita `localhost`**.
+     - Testar na sua máquina: `https://oauth.pstmn.io/v1/callback`
+     - Hospedado (HTTPS): `https://SEU-DOMINIO/api/ml/callback`
+     - O valor tem que ser **idêntico** ao `ML_REDIRECT_URI` do servidor (dá para trocar depois).
+   - **Escopos:** `read` e `offline_access`. **Não** marque `write` — o estudo só lê.
+3. Salve. O ML mostra o **App ID** (= `ML_CLIENT_ID`) e a **Secret Key** (= `ML_CLIENT_SECRET`).
+4. Informe as chaves na mesma janela antes de subir o servidor:
+
+   ```
+   set ML_CLIENT_ID=o-app-id
+   set ML_CLIENT_SECRET=a-secret-key
+   set ML_REDIRECT_URI=https://oauth.pstmn.io/v1/callback
+   uvicorn backend.main:app --port 8000
+   ```
+
+   (No PowerShell: `$env:ML_CLIENT_ID = "..."`. Ao hospedar, troque o `ML_REDIRECT_URI` pelo `https://SEU-DOMINIO/api/ml/callback` e ajuste o mesmo valor no cadastro do app.)
+
+### Vincular a conta pela extensão
+
+Cada usuário vincula a **própria** conta do ML, e isso libera o estudo só para ele.
+
+1. No popup (logado), clique em **Vincular minha conta do Mercado Livre** e autorize na aba que abre.
+2. **Modo local (callback do Postman):** o ML mostra um **código**; cole no campo do popup e **Confirmar vínculo**.
+   **Modo hospedado (HTTPS):** o ML volta sozinho e o popup já mostra "Conta vinculada".
+3. Desvincular a qualquer momento pelo popup.
+
+> Vincular libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de terceiros (visitas, data de criação) o ML não entrega por essa via — o estudo contorna com avaliações/perguntas, como no Replique.
+
+---
 
 ## Landing page (`landing/`)
 
-Site de marketing + cadastro, em **Next.js** (App Router) + Tailwind, com a marca Monvatti.
+Site de marketing + cadastro, em **Next.js** (App Router) + Tailwind, com a marca Monvatti. Páginas: home, `/sobre`, `/marketplaces` (e por canal), `/novidades` (blog) e `/suporte`.
 
 ```
 cd landing
 npm install
-npm run dev     # http://localhost:3000
+npm run dev       # http://localhost:3000
 ```
 
-O formulário de cadastro chama `POST /api/cadastro` no backend (cria um usuário
-**pendente**, sem assinatura — só libera quando o pagamento entrar). Defina o
-endereço do backend em `NEXT_PUBLIC_API_URL` (ex.: `http://localhost:8000` no
-dev; a URL hospedada em produção). Os valores dos planos são de exemplo, a
-confirmar; o pagamento (AbacatePay) entra na próxima fase.
+O cadastro chama `POST /api/cadastro` no backend (cria usuário **pendente**, sem assinatura). Defina o endereço do backend em `NEXT_PUBLIC_API_URL` (dev: `http://localhost:8000`; produção: a URL hospedada). Os valores dos planos são de exemplo, a confirmar.
 
-## AbacatePay (próximo passo)
+### Hospedar a landing na Vercel
 
-Implemente `registrar_evento_abacatepay` em `backend/pagamento.py` (o webhook liga/desliga `assinatura_ativa`). O resto do sistema já só pergunta `assinatura_valida`.
+A landing é um **subdiretório** (`landing/`), então o ajuste importante é **Root Directory = `landing`**.
+
+1. Entre em https://vercel.com e faça login **com o GitHub** (`alexmatosz`).
+2. **Add New… → Project** → importe `alexmatosz/monvatti-marketplace` (se não aparecer, **Adjust GitHub App Permissions**).
+3. Em **Root Directory** clique **Edit** e selecione **`landing`**. O **Framework** detecta **Next.js** sozinho; o resto fica no padrão.
+4. **Deploy** → sai uma URL `https://<nome>.vercel.app`. A partir daí, **todo push na `main` publica sozinho**.
+5. Quando o backend tiver URL HTTPS, defina `NEXT_PUBLIC_API_URL` em **Project → Settings → Environment Variables** e refaça o deploy.
+
+Pela linha de comando (precisa de login interativo seu): `npm i -g vercel`, `vercel login`, depois `vercel --prod` a partir de `landing/`.
+
+---
+
+## Pagamento (próximo passo)
+
+Implemente o webhook em `backend/pagamento.py` (liga/desliga `assinatura_ativa`); o resto do sistema já só pergunta `assinatura_valida`. Pix via AbacatePay. O nome do provedor **não aparece** no site público.
+
+---
 
 ## Marca
 
-- Logo: monograma Monvatti (triângulo invertido), gradiente azul.
-- Cores: Chrysler Blue `#001AD8`, RISD Blue `#3145FF`, Gunmetal `#2B333B`, Black `#000000`, Platinum `#DFDCDB`.
+- Logo: monograma Monvatti (triângulo invertido), gradiente azul. Use os arquivos reais em `Marca/` — nunca recriar à mão.
+- Cores: Chrysler Blue `#001AD8`, RISD Blue `#3145FF`, Gunmetal `#2B333B`, Platinum `#DFDCDB`, amarelo ML `#FFE600`.
 
 ## Regras
 
-- Vendas estimadas e ritmo são aproximações a partir do número público ("+50 mil vendidos"); não são dados oficiais do Mercado Livre.
-- O estudo usa uma conta do Mercado Livre de estudo (descartável), nunca a conta de um cliente real.
+- Vendas estimadas e ritmo são aproximações a partir do número público ("+50 mil vendidos"); não são dados oficiais do marketplace.
+- O estudo usa uma conta do Mercado Livre de **estudo** (descartável), nunca a conta de um cliente real; nunca altera preços de anúncios.
+- Segredos (`.env`, chaves do ML, banco) **não** entram no Git — cada pessoa tem o seu.
+
+## Colaborar
+
+Trabalho em equipe é pelo GitHub: ninguém trabalha direto na `main` — crie um branch, faça o commit e abra um **Pull Request** para revisar e juntar. Antes de começar, `git pull`.
