@@ -1,20 +1,5 @@
 import type { Metadata } from "next";
-import { Sora, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
-
-const display = Sora({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const sans = Hanken_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-sans",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Monvatti Marketplaces — inteligência de anúncios no Mercado Livre, Shopee e Amazon",
@@ -24,7 +9,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${display.variable} ${sans.variable}`}>
+    <html lang="pt-BR">
+      <head>
+        {/* Satoshi (Fontshare): mesma família do estilo de referência. */}
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

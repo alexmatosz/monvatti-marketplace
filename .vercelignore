@@ -1,0 +1,11 @@
+landing/
+extensao/
+Marca/
+dados/
+.venv/
+*.db
+.env
+.env.*
+dist/
+__pycache__/
+*.pyc

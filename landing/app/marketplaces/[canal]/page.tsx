@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CANAIS, canalPorId } from "@/lib/canais";
-import { ConcorrenciaMock, CalculadoraMock, TendenciaMock, BuyBoxMock } from "@/components/Mockups";
+import { ConcorrenciaMock, CalculadoraMock, BuyBoxMock } from "@/components/Mockups";
+import { Print } from "@/components/Print";
 
 export function generateStaticParams() {
   return CANAIS.map((c) => ({ canal: c.id }));
@@ -20,7 +21,7 @@ export function generateMetadata({ params }: { params: { canal: string } }): Met
 }
 
 const MOCKS: Record<string, React.ReactNode[]> = {
-  "mercado-livre": [<ConcorrenciaMock key="c" />, <CalculadoraMock key="m" />, <TendenciaMock key="t" />],
+  "mercado-livre": [<Print key="v" nome="painelVendas" prioridade maxW={420} className="mx-auto" />, <Print key="c" nome="calculadora" maxW={420} className="mx-auto" />],
   shopee: [<CalculadoraMock key="m" />, <ConcorrenciaMock key="c" />],
   amazon: [<BuyBoxMock key="b" />],
 };
@@ -41,7 +42,7 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
       <section className="border-b border-platina/70 bg-nevoa/40">
         <div className="mx-auto max-w-conteudo px-6 py-14 sm:py-20">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex h-9 items-center gap-2 rounded-full border border-platina bg-white px-3 text-[13px] font-semibold text-ink">
+            <span className="inline-flex h-9 items-center gap-2 rounded-full border border-platina bg-card px-3 text-[13px] font-semibold text-ink">
               <span className="h-3 w-3 rounded-full ring-1 ring-black/10" style={{ background: canal.estado === "breve" ? "#DFDCDB" : canal.cor }} />
               {canal.nome}
             </span>
@@ -83,7 +84,7 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
             {canal.itens.map((it) => (
               <div key={it.t} className="flex gap-3 border-t border-platina pt-5">
                 <svg width="18" height="18" viewBox="0 0 20 20" className="mt-0.5 flex-none" aria-hidden="true">
-                  <path d="m5 10.5 3.2 3.2L15 7" stroke={canal.estado === "breve" ? "#5B6472" : "#001AD8"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <path d="m5 10.5 3.2 3.2L15 7" stroke={canal.estado === "breve" ? "#5B6472" : "currentColor"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 </svg>
                 <div>
                   <h3 className="text-[15.5px] font-semibold text-ink">{it.t}</h3>
@@ -102,7 +103,7 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
               <Link
                 key={c.id}
                 href={`/marketplaces/${c.id}`}
-                className="foco inline-flex items-center gap-2 rounded-full border border-platina bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-azul"
+                className="foco inline-flex items-center gap-2 rounded-full border border-platina bg-card px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-azul"
               >
                 <span className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10" style={{ background: c.estado === "breve" ? "#DFDCDB" : c.cor }} />
                 {c.nome}
@@ -113,10 +114,10 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
         </div>
 
         <div className="mt-12 flex flex-wrap gap-3">
-          <Link href="/#cadastro" className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">
+          <Link href="/#planos" className="foco rounded-xl bg-marca px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-forte">
             {canal.estado === "ativo" ? `Começar pelo ${canal.nome}` : "Entrar na lista de espera"}
           </Link>
-          <Link href="/marketplaces" className="foco rounded-xl border border-platina bg-white px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-azul">
+          <Link href="/marketplaces" className="foco rounded-xl border border-platina bg-card px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-azul">
             Ver todos os canais
           </Link>
         </div>

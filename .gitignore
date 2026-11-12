@@ -8,3 +8,7 @@ dados/
 *.db-shm
 *.log
 .env
+dist/
+
+.vercel
+.env*

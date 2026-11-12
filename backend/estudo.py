@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from backend import config, estudo_ml, estudo_planilha
 from backend.auth import usuario_atual
 from backend.db import get_db
-from backend.ml import ErroML
+from backend.ml import ErroML, conta_ml_do_usuario
 from backend.models import ContaML, Usuario
 
 router = APIRouter(prefix="/api/extensao", tags=["extensao"])
@@ -53,6 +53,25 @@ class Tendencia(BaseModel):
     categoria_id: str = Field(default="", max_length=40)
 
 
+class Metricas(BaseModel):
+    item_id: str = Field(max_length=40)
+
+
+class RadarNovo(BaseModel):
+    item_id: str = Field(max_length=40)
+    produto_id: str = Field(default="", max_length=40)
+    titulo: str = Field(default="", max_length=300)
+    thumbnail: str = Field(default="", max_length=400)
+    permalink: str = Field(default="", max_length=400)
+    termo: str = Field(default="", max_length=120)
+    preco: float | None = None
+    posicao: int | None = None
+
+
+class RadarAtualizar(BaseModel):
+    posicoes: dict[str, int | None] = Field(default_factory=dict)
+
+
 class Ranqueamento(BaseModel):
     item_id: str = Field(default="", max_length=40)
     termo: str = Field(default="", max_length=120)
@@ -60,16 +79,23 @@ class Ranqueamento(BaseModel):
 
 @router.get("/versao")
 def versao():
-    return {"versao": config.VERSAO_EXTENSAO}
+    return {"versao": config.VERSAO_EXTENSAO, "landing": config.LANDING_URL, "suporte": config.EMAIL_SUPORTE}
 
 
 @router.get("/eu")
 def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
-    conta = db.query(ContaML).filter(ContaML.usuario_id == u.id).first()
-    conectado = bool(conta and (conta.credenciais or {}).get("access_token"))
-    return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao,
-            "conta": {"conta": conta_ml or "deslogado"},
-            "ml_conectado": conectado, "ml_apelido": conta.apelido if conta else "",
+    propria = db.query(ContaML).filter(ContaML.usuario_id == u.id).first()
+    usada = conta_ml_do_usuario(db, u)
+    # A extensão só monta o painel do anúncio com conta.liberado; a assinatura já
+    # foi conferida em usuario_atual, então o que falta é haver uma conta do ML
+    # (a própria ou a central da Monvatti).
+    return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao, "papel": u.papel,
+            "assinatura_ate": u.assinatura_ate.isoformat() if u.assinatura_ate else None,
+            "conta": {"conta": conta_ml or "deslogado", "liberado": bool(usada),
+                      "motivo": "" if usada else
+                      "O estudo está temporariamente indisponível (conta de estudo desconectada). Fale com o suporte da Monvatti."},
+            "ml_conectado": bool(propria and (propria.credenciais or {}).get("access_token")),
+            "ml_apelido": propria.apelido if propria else "",
             "clientes": []}
 
 
@@ -120,3 +146,38 @@ def estudo(dados: Estudo, u: Usuario = Depends(usuario_atual), _db: Session = De
     nome = "estudo-monvatti.xlsx"
     return Response(conteudo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": f'attachment; filename="{nome}"'})
+
+
+@router.post("/metricas")
+def metricas(dados: Metricas, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.metricas_do_anuncio(db, u, dados.item_id)
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)
+
+
+@router.get("/radar")
+def radar(u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    return {"itens": estudo_ml.radar_listar(db, u)}
+
+
+@router.post("/radar")
+def radar_novo(dados: RadarNovo, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return estudo_ml.radar_adicionar(db, u, dados.model_dump())
+    except ErroML as e:
+        raise HTTPException(400, e.mensagem)
+
+
+@router.delete("/radar/{item_id}")
+def radar_tirar(item_id: str, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    estudo_ml.radar_remover(db, u, item_id)
+    return {"ok": True}
+
+
+@router.post("/radar/atualizar")
+def radar_atualizar(dados: RadarAtualizar, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    try:
+        return {"itens": estudo_ml.radar_atualizar(db, u, dados.posicoes)}
+    except ErroML as e:
+        raise HTTPException(503, e.mensagem)

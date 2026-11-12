@@ -7,9 +7,9 @@ const MARCAS: Record<string, string> = {
 };
 
 export function SeloMarketplace({ nome, breve = false }: { nome: string; breve?: boolean }) {
-  const cor = MARCAS[nome] ?? "#001AD8";
+  const cor = MARCAS[nome] ?? "currentColor";
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-platina bg-white px-2.5 py-1 text-[11.5px] font-medium text-aco">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-platina bg-card px-2.5 py-1 text-[11.5px] font-medium text-aco">
       <span
         className="h-2.5 w-2.5 rounded-full ring-1 ring-black/5"
         style={{ background: breve ? "#DFDCDB" : cor }}
@@ -23,8 +23,8 @@ export function SeloMarketplace({ nome, breve = false }: { nome: string; breve?:
 
 function Frame({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-platina/80 bg-white shadow-[0_28px_60px_-28px_rgba(7,10,26,0.4)]">
-      <div className="flex items-center gap-2 border-b border-platina/70 bg-[#F7F8FB] px-4 py-2.5">
+    <div className="overflow-hidden rounded-2xl border border-platina/80 bg-card shadow-[0_28px_60px_-28px_rgba(7,10,26,0.4)]">
+      <div className="flex items-center gap-2 border-b border-platina/70 bg-card2 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
@@ -112,7 +112,7 @@ export function BuyBoxMock() {
           <div
             key={quem}
             className={`flex items-center justify-between rounded-lg px-3 py-2 text-[12.5px] ${
-              ganha ? "bg-nevoa" : "bg-[#F7F8FB]"
+              ganha ? "bg-nevoa" : "bg-card2"
             }`}
           >
             <span className={ganha ? "font-semibold text-ink" : "text-ink/80"}>{quem}</span>
@@ -159,7 +159,7 @@ export function TendenciaMock() {
 /* Prints compactos dos três passos. */
 function MiniFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`overflow-hidden rounded-xl border border-platina bg-white shadow-[0_18px_40px_-24px_rgba(7,10,26,0.35)] ${className}`}>
+    <div className={`overflow-hidden rounded-2xl border border-platina bg-card shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)] ${className}`}>
       {children}
     </div>
   );
@@ -168,8 +168,8 @@ function MiniFrame({ children, className = "" }: { children: React.ReactNode; cl
 export function PassoInstalar() {
   return (
     <MiniFrame>
-      <div className="flex items-center gap-2 bg-[#F7F8FB] px-3 py-2">
-        <span className="flex-1 truncate rounded-md bg-white px-2.5 py-1 text-[10.5px] text-aco ring-1 ring-platina">
+      <div className="flex items-center gap-2 bg-card2 px-3 py-2">
+        <span className="flex-1 truncate rounded-md bg-card px-2.5 py-1 text-[10.5px] text-aco ring-1 ring-platina">
           mercadolivre.com.br
         </span>
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-azul/10 ring-1 ring-azul/30">
@@ -182,29 +182,29 @@ export function PassoInstalar() {
           <p className="text-[11.5px] font-semibold text-ink">Monvatti Marketplaces</p>
           <p className="text-[10px] text-aco">adicionada ao Chrome</p>
         </div>
-        <span className="rounded-md bg-[#28c840]/15 px-2 py-0.5 text-[10px] font-semibold text-[#1a8a2e]">ativa</span>
+        <span className="rounded-md bg-[#28c840]/15 px-2 py-0.5 text-[10px] font-semibold text-[#4ade80]">ativa</span>
       </div>
     </MiniFrame>
   );
 }
 
-export function PassoVincular() {
+export function PassoCodigo() {
   return (
     <MiniFrame>
       <div className="flex items-center gap-2 border-b border-platina px-3 py-2">
         <Marca size={14} />
-        <span className="text-[11px] font-semibold text-ink">Sua conta</span>
+        <span className="text-[11px] font-semibold text-ink">Entrar</span>
       </div>
       <div className="px-3 py-3">
-        <div className="mb-2 flex items-center gap-2 rounded-lg bg-[#F7F8FB] px-2.5 py-1.5">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#FFE600" }} />
-          <span className="text-[11px] text-ink/80">Mercado Livre</span>
-          <span className="ml-auto text-[10px] text-aco">não vinculada</span>
+        <p className="text-[10px] text-aco">Enviamos um código para voce@email.com</p>
+        <div className="mt-2 grid grid-cols-6 gap-1.5">
+          {["4", "8", "2", "1", "9", "6"].map((n, i) => (
+            <span key={i} className="tnum rounded-md bg-card2 py-1.5 text-center text-[13px] font-semibold text-ink ring-1 ring-platina">
+              {n}
+            </span>
+          ))}
         </div>
-        <span className="block rounded-lg bg-azul px-3 py-2 text-center text-[11.5px] font-semibold text-white">
-          Vincular minha conta
-        </span>
-        <p className="mt-2 text-center text-[9.5px] text-aco">uma autorização, uma vez</p>
+        <p className="mt-2 text-center text-[9.5px] text-azul">Reenviar código</p>
       </div>
     </MiniFrame>
   );
@@ -214,10 +214,10 @@ export function PassoPainel() {
   return (
     <MiniFrame>
       <div className="flex gap-1 border-b border-platina px-3 pt-2.5 text-[10px]">
-        {["Métricas", "Concorrência", "Margem", "Tendência"].map((aba, i) => (
+        {["Vendas", "Margem", "Busca", "Datas"].map((aba, i) => (
           <span
             key={aba}
-            className={`rounded-t-md px-2 py-1 ${i === 0 ? "bg-white font-semibold text-azul ring-1 ring-platina" : "text-aco"}`}
+            className={`rounded-t-md px-2 py-1 ${i === 0 ? "bg-card font-semibold text-azul ring-1 ring-platina" : "text-aco"}`}
           >
             {aba}
           </span>
@@ -225,11 +225,11 @@ export function PassoPainel() {
       </div>
       <div className="grid grid-cols-3 gap-2 px-3 py-3">
         {[
-          ["Visitas", "318.914"],
-          ["Conversão", "3,14%"],
-          ["Vendas/mês", "1.552"],
+          ["Estimadas", "15.525"],
+          ["Ritmo", "656/mês"],
+          ["Margem", "39,16%"],
         ].map(([k, v]) => (
-          <div key={k} className="rounded-lg bg-[#F7F8FB] px-2 py-1.5">
+          <div key={k} className="rounded-lg bg-card2 px-2 py-1.5">
             <p className="text-[9px] text-aco">{k}</p>
             <p className="tnum text-[12px] font-semibold text-ink">{v}</p>
           </div>

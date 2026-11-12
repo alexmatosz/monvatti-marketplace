@@ -2,46 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Paleta oficial da Monvatti: Chrysler Blue #001AD8, RISD Blue #3145FF,
+  Gunmetal #2B333B e Platinum. Base clara (cinza bem leve + branco);
+  as faixas .noite usam o Gunmetal com um brilho azul.
+*/
 :root {
   color-scheme: light;
+  --font-display: "Satoshi", system-ui, sans-serif;
+  --font-sans: "Satoshi", system-ui, sans-serif;
+  --fundo: 245 246 248;
+  --card: 255 255 255;
+  --card2: 240 241 245;
+  --ink: 22 27 34;
+  --aco: 88 96 110;
+  --platina: 228 230 236;
+  --nevoa: 235 238 255;
+  --azul: 0 26 216;
+  --vivo: 49 69 255;
 }
 
-html {
-  scroll-behavior: smooth;
+.noite {
+  color-scheme: dark;
+  --fundo: 30 36 44;
+  --card: 43 51 59;
+  --card2: 36 43 51;
+  --ink: 246 247 249;
+  --aco: 172 180 192;
+  --platina: 62 71 84;
+  --nevoa: 46 56 84;
+  --azul: 138 152 255;
+  --vivo: 160 172 255;
+  color: rgb(var(--ink));
 }
 
 body {
-  background: #ffffff;
-  color: #2b333b;
+  background: rgb(var(--card));
+  color: rgb(var(--ink));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
+/* Fundo escuro com brilho azul (topo e planos). */
+.fundo-noite {
+  background:
+    radial-gradient(ellipse 70% 60% at 88% 95%, rgba(49, 69, 255, 0.38), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 0% 0%, rgba(0, 26, 216, 0.22), transparent 70%),
+    linear-gradient(160deg, #161b22 0%, #2b333b 100%);
+}
+
+/* Seções empilhadas como folhas: cantos de baixo arredondados, a próxima sobe por trás. */
+.folha {
+  position: relative;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+.folha + .folha {
+  margin-top: -40px;
+  padding-top: 40px;
+}
+
+/* Recorte orgânico do topo (no lugar da foto). */
+.recorte {
+  border-radius: 46% 54% 40% 60% / 52% 44% 56% 48%;
+}
+
+/* Troca de tela na demonstração. */
+@keyframes surgir {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.surge {
+  animation: surgir 0.35s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   * {
     animation: none !important;
     transition: none !important;
   }
 }
 
-/* Numeração tabular para as métricas do painel. */
 .tnum {
   font-variant-numeric: tabular-nums;
 }
 
-/* Malha fina de fundo, evocando uma grade de dados. */
-.malha {
-  background-image:
-    linear-gradient(to right, rgba(49, 69, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(49, 69, 255, 0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
 .foco:focus-visible {
-  outline: 2px solid #001ad8;
+  outline: 2px solid rgb(var(--vivo));
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 999px;
 }

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const TOPICOS = [
   { t: "Instalação", d: "Como adicionar a extensão ao Chrome e entrar com o seu e-mail." },
-  { t: "Vincular a conta", d: "A autorização que libera o estudo e prende o acesso à sua conta." },
+  { t: "Código de acesso", d: "O código de 6 números que chega no seu e-mail: onde achar e como pedir outro." },
   { t: "Assinatura e acesso", d: "Planos, cobrança e como o e-mail do cadastro libera a ferramenta." },
   { t: "Leituras e estimativas", d: "De onde vêm as vendas estimadas e como usar sem errar a mão." },
 ];
@@ -38,13 +38,13 @@ const CONTATOS = [
 ];
 
 function IconeContato({ nome }: { nome: "instagram" | "email" | "whatsapp" }) {
-  const comum = { fill: "none", stroke: "#001AD8", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const comum = { className: "text-azul", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   if (nome === "instagram")
     return (
       <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3.5" y="3.5" width="17" height="17" rx="5" {...comum} />
         <circle cx="12" cy="12" r="4" {...comum} />
-        <circle cx="17" cy="7" r="1.1" fill="#001AD8" stroke="none" />
+        <circle cx="17" cy="7" r="1.1" fill="currentColor" stroke="none" />
       </svg>
     );
   if (nome === "whatsapp")
@@ -76,7 +76,7 @@ export default function SuportePagina() {
         </p>
 
         {/* Contatos — um painel só */}
-        <div className="mt-10 overflow-hidden rounded-3xl border border-platina bg-white">
+        <div className="mt-10 overflow-hidden rounded-3xl border border-platina bg-card">
           <div className="grid divide-y divide-platina sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {CONTATOS.map((c) => (
               <a
@@ -86,7 +86,7 @@ export default function SuportePagina() {
                 rel="noopener noreferrer"
                 className="foco group flex items-center gap-4 p-6 transition-colors hover:bg-nevoa"
               >
-                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-nevoa ring-1 ring-platina transition-colors group-hover:bg-white">
+                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-nevoa ring-1 ring-platina transition-colors group-hover:bg-card">
                   <IconeContato nome={c.motivo} />
                 </span>
                 <span className="min-w-0">
@@ -121,7 +121,7 @@ export default function SuportePagina() {
             <Faq />
           </div>
           <div className="mt-8">
-            <Link href="/#cadastro" className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">
+            <Link href="/#planos" className="foco rounded-xl bg-marca px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-forte">
               Começar agora
             </Link>
           </div>

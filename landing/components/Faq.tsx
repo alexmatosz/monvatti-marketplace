@@ -5,7 +5,7 @@ import { useState } from "react";
 const ITENS = [
   {
     q: "Como a Monvatti Marketplaces se conecta ao Mercado Livre?",
-    a: "Você instala a extensão no Chrome e vincula a sua conta do Mercado Livre uma vez. A partir daí o painel aparece sozinho dentro dos anúncios e da busca.",
+    a: "Você instala a extensão no Chrome e entra com o e-mail da compra, confirmando com um código que chega no seu e-mail. A partir daí o painel aparece sozinho dentro dos anúncios e da busca.",
   },
   {
     q: "Quais marketplaces já funcionam?",
@@ -13,7 +13,7 @@ const ITENS = [
   },
   {
     q: "Preciso de conhecimento técnico?",
-    a: "Não. É instalar a extensão, entrar com o seu e-mail e vincular a conta. O resto aparece na própria página do Mercado Livre.",
+    a: "Não. É instalar a extensão e entrar com o seu e-mail. O resto aparece na própria página do Mercado Livre.",
   },
   {
     q: "As vendas estimadas são números oficiais?",
@@ -21,7 +21,7 @@ const ITENS = [
   },
   {
     q: "Posso usar em mais de uma conta?",
-    a: "O acesso fica vinculado à conta do Mercado Livre que você conectar. Para usar em outra conta, fale com a gente.",
+    a: "O acesso é pessoal e fica ligado ao e-mail da compra, um computador por vez: se você entrar em outro, o primeiro é desconectado. Funciona em qualquer anúncio do Mercado Livre que você abrir.",
   },
   {
     q: "Qual navegador é compatível?",

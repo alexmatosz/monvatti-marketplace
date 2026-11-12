@@ -164,12 +164,30 @@ class MercadoLivre:
                 "vendedor_id": str(perguntas[0].get("seller_id") or "") if perguntas else ""}
 
 
+def _conectada(conta) -> bool:
+    return bool(conta and (conta.credenciais or {}).get("access_token"))
+
+
+def conta_ml_do_usuario(db: Session, usuario):
+    """A conta do ML que o estudo deste usuário usa: a dele, se vinculou; senão a
+    conta CENTRAL da Monvatti (a que um administrador vinculou). Assim o cliente
+    entra só com o e-mail e já estuda; o vínculo próprio fica como opção futura."""
+    from backend.models import Usuario
+    propria = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first()
+    if _conectada(propria):
+        return propria
+    admins = [u.id for u in db.query(Usuario).filter(Usuario.papel == "admin", Usuario.ativo.is_(True)).order_by(Usuario.id)]
+    for conta in db.query(ContaML).filter(ContaML.usuario_id.in_(admins or [-1])).order_by(ContaML.atualizado_em.desc()):
+        if _conectada(conta):
+            return conta
+    return None
+
+
 def cliente_ml(db: Session, usuario) -> MercadoLivre:
-    """A conta do Mercado Livre que este usuário vinculou. Levanta ErroML se ele
-    ainda não conectou a sua (é o que mantém o estudo trancado até vincular)."""
-    conta = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first()
-    if not conta or not (conta.credenciais or {}).get("access_token"):
-        raise ErroML("Conecte sua conta do Mercado Livre na extensão para liberar o estudo.")
+    """Cliente da API do ML pela conta que vale para este usuário (própria ou central)."""
+    conta = conta_ml_do_usuario(db, usuario)
+    if not conta:
+        raise ErroML("A conta de estudo do Mercado Livre não está conectada. Fale com o suporte da Monvatti.")
 
     def salvar(cred: dict):
         conta.credenciais = dict(cred)

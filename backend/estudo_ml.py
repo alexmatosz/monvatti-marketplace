@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from backend import config
 from backend.ml import ErroML, cliente_ml
-from backend.models import LeituraEstudo, Usuario, agora
+from backend.models import LeituraEstudo, RadarItem, Usuario, agora
 
 FATOR_PATAMAR = 1.5525
 PAGINAS_AVALIACOES = 5
@@ -89,6 +89,25 @@ def avaliacao_mais_antiga(item_id: str, paginas: int = PAGINAS_AVALIACOES) -> st
     with ThreadPoolExecutor(paginas) as ex:
         datas = [d for lista in ex.map(pagina, range(0, paginas * 20, 20)) for d in lista]
     return min(datas) + "Z" if datas else None
+
+
+def data_de_vida(primeira_avaliacao: str | None, primeira_pergunta: str | None,
+                 catalogo_criado: str | None, em_catalogo: bool) -> tuple[str | None, str | None]:
+    """Desde quando o anúncio está no ar, pela evidência mais antiga que é DELE.
+
+    Em anúncio de catálogo as avaliações são do produto inteiro (todos os vendedores,
+    anúncios antigos), então não servem para datar este anúncio: vale a criação do
+    catálogo. Fora do catálogo, a avaliação mais antiga é do próprio anúncio. A 1ª
+    pergunta é sempre do anúncio, nos dois casos.
+    """
+    candidatos = [(primeira_pergunta, "pergunta")]
+    candidatos.append((catalogo_criado, "catalogo") if em_catalogo else (primeira_avaliacao, "avaliacao"))
+    candidatos = [(d, f) for d, f in candidatos if d]
+    if not candidatos and catalogo_criado:
+        candidatos = [(catalogo_criado, "catalogo")]
+    if not candidatos:
+        return None, None
+    return max(candidatos, key=lambda x: _dias_desde(x[0]) or 0)
 
 
 def nome_logistica(codigo: str, flex: bool = False) -> str:
@@ -223,19 +242,14 @@ def analisar(db: Session, usuario: Usuario, pagina: dict) -> dict:
     except httpx.HTTPError as e:
         raise ErroML("O Mercado Livre não respondeu agora. Recarregue a página em alguns segundos.") from e
     primeira_pergunta = _iso(perguntas.get("primeira"))
-    primeira_avaliacao = None if criado_em else _iso(avaliacao_mais_antiga(item_id))
-    evidencias = sorted(((d, f) for d, f in ((primeira_avaliacao, "avaliacao"), (primeira_pergunta, "pergunta")) if d),
-                        key=lambda x: -(_dias_desde(x[0]) or 0))
+    em_catalogo = bool(produto_id)
+    primeira_avaliacao = None if criado_em or em_catalogo else _iso(avaliacao_mais_antiga(item_id))
     if criado_em:
         no_ar_desde, fonte_data = criado_em, "anuncio"
-    elif evidencias:
-        no_ar_desde, fonte_data = evidencias[0]
-    elif catalogo_criado:
-        no_ar_desde, fonte_data = catalogo_criado, "catalogo"
     else:
-        no_ar_desde, fonte_data = None, None
+        no_ar_desde, fonte_data = data_de_vida(primeira_avaliacao, primeira_pergunta, catalogo_criado, em_catalogo)
     dias_anuncio = _dias_desde(no_ar_desde)
-    dias_vida = max(dias_anuncio or 0, _dias_desde(catalogo_criado) or 0) or None
+    dias_vida = dias_anuncio
     saida = {"item_id": item_id, "produto_id": produto_id, "titulo": _texto(pagina.get("titulo"), 300),
              "preco": preco, "categoria_id": categoria, "tipo_id": tipo, "tipo_anuncio": _TIPOS.get(tipo, tipo),
              "logistica": nome_logistica(_texto(pagina.get("logistica"), 30), bool(pagina.get("flex"))),
@@ -326,7 +340,9 @@ def analisar_busca(db: Session, usuario: Usuario, itens: list[dict]) -> dict:
                     catalogo_criado = p.json().get("date_created")
         except (ErroML, httpx.HTTPError):
             perguntas, frete = {}, None
-        return {"preco": _num(it.get("preco")), "primeira_avaliacao": _iso(avaliacao_mais_antiga(it["item_id"])),
+        em_catalogo = bool(re.fullmatch(r"MLB\d+", produto_id))
+        return {"preco": _num(it.get("preco")), "em_catalogo": em_catalogo,
+                "primeira_avaliacao": None if em_catalogo else _iso(avaliacao_mais_antiga(it["item_id"])),
                 "primeira_pergunta": _iso(perguntas.get("primeira")), "perguntas": perguntas.get("total"),
                 "vendedor_id": vendedor_id, "frete": frete["custo"] if frete else None,
                 "vendedores_catalogo": vendedores_catalogo, "catalogo_criado": catalogo_criado}
@@ -359,10 +375,10 @@ def analisar_busca(db: Session, usuario: Usuario, itens: list[dict]) -> dict:
         vendidos, patamar = numero_vendidos(_texto(it.get("vendidos_texto"), 60))
         if vendidos is None:
             vendidos, patamar = 0, False
-        datas = [d for d in (c["primeira_avaliacao"], c["primeira_pergunta"]) if d]
-        no_ar_desde = max(datas, key=lambda d: _dias_desde(d) or 0) if datas else _iso(c.get("catalogo_criado"))
-        dias = _dias_desde(no_ar_desde)
-        dias_vida = max(dias or 0, _dias_desde(c.get("catalogo_criado")) or 0) or None
+        em_catalogo = c.get("em_catalogo", bool(c.get("catalogo_criado")))
+        no_ar_desde, fonte_data = data_de_vida(None if em_catalogo else c["primeira_avaliacao"], c["primeira_pergunta"],
+                                               _iso(c.get("catalogo_criado")), em_catalogo)
+        dias = dias_vida = _dias_desde(no_ar_desde)
         try:
             t = tarifas(preco or 0, categoria)
         except (ErroML, httpx.HTTPError):
@@ -371,9 +387,7 @@ def analisar_busca(db: Session, usuario: Usuario, itens: list[dict]) -> dict:
             categorias[categoria] = {k: v["pct"] for k, v in t.items()}
         m = metricas(vendidos, patamar, preco, None, dias_vida, dias)
         saida.append({"item_id": it["item_id"], "no_ar_desde": no_ar_desde, "dias": dias,
-                      "fonte_data": "avaliacao" if no_ar_desde and no_ar_desde == c["primeira_avaliacao"] else
-                                    "pergunta" if no_ar_desde and no_ar_desde == c["primeira_pergunta"] else
-                                    ("catalogo" if no_ar_desde else None),
+                      "fonte_data": fonte_data,
                       "perguntas": c["perguntas"], "frete": c["frete"], "tarifas": t,
                       "vendedores_catalogo": c.get("vendedores_catalogo"),
                       "tipo": _texto(it.get("tipo"), 30), "logistica": _texto(it.get("logistica"), 30),
@@ -428,8 +442,9 @@ def tendencia(db: Session, usuario: Usuario, termo: str = "", categoria_id: str 
             if p.status_code < 400:
                 d = p.json()
                 fotos = d.get("pictures") or []
-                base.update({"titulo": d.get("name") or idx, "restrito": False,
-                             "preco": (d.get("buy_box_winner") or {}).get("price"),
+                vencedor = d.get("buy_box_winner") or {}
+                base.update({"titulo": d.get("name") or idx, "restrito": False, "item_ref": vencedor.get("item_id") or "",
+                             "preco": vencedor.get("price"),
                              "thumbnail": fotos[0].get("url", "") if fotos else "",
                              "permalink": d.get("permalink") or f"https://www.mercadolivre.com.br/p/{idx}"})
         elif c.get("type") == "ITEM":
@@ -437,7 +452,7 @@ def tendencia(db: Session, usuario: Usuario, termo: str = "", categoria_id: str 
             it = ad._get(f"/items/{idx}")
             if it.status_code < 400:
                 j = it.json()
-                base.update({"titulo": j.get("title", ""), "restrito": False, "preco": _num(j.get("price")),
+                base.update({"titulo": j.get("title", ""), "restrito": False, "preco": _num(j.get("price")), "item_ref": idx,
                              "thumbnail": (j.get("thumbnail") or "").replace("http://", "https://"),
                              "vendidos": j.get("sold_quantity")})
         else:
@@ -446,7 +461,36 @@ def tendencia(db: Session, usuario: Usuario, termo: str = "", categoria_id: str 
 
     with ThreadPoolExecutor(8) as ex:
         itens = list(ex.map(resolver, conteudo))
-    return {"categoria_id": categoria_id, "categoria": nome_cat, "itens": itens}
+    _visitas_do_ranking(ad, itens)
+    precos = [x["preco"] for x in itens if x.get("preco")]
+    resumo = {"preco_min": min(precos) if precos else None, "preco_max": max(precos) if precos else None,
+              "preco_medio": round(sum(precos) / len(precos), 2) if precos else None,
+              "visitas_total": sum(x.get("visitas") or 0 for x in itens) or None,
+              "vendidos_total": sum(x.get("vendidos") or 0 for x in itens) or None}
+    return {"categoria_id": categoria_id, "categoria": nome_cat, "itens": itens, "resumo": resumo}
+
+
+def _dias_atras(n: int) -> str:
+    from datetime import timedelta
+    return (date.today() - timedelta(days=n)).isoformat()
+
+
+def _visitas_do_ranking(ad, itens: list[dict]) -> None:
+    """Visitas dos últimos 30 dias de cada anúncio do ranking (num produto de
+    catálogo, as do anúncio que está ganhando a compra)."""
+    ids = [x["item_ref"] for x in itens if x.get("item_ref")]
+    for n in range(0, len(ids), 50):
+        lote = ids[n:n + 50]
+        try:
+            r = ad._get("/visits/items", {"ids": ",".join(lote), "date_from": _dias_atras(30), "date_to": _dias_atras(0)})
+        except httpx.HTTPError:
+            continue
+        if r.status_code >= 400 or not isinstance(r.json(), dict):
+            continue
+        dados = r.json()
+        for x in itens:
+            if x.get("item_ref") in dados:
+                x["visitas"] = int(dados[x["item_ref"]] or 0)
 
 
 def ranqueamento(db: Session, usuario: Usuario, item_id: str, termo: str, paginas: int = 2) -> dict:
@@ -478,3 +522,141 @@ def ranqueamento(db: Session, usuario: Usuario, item_id: str, termo: str, pagina
             break
     return {"termo": termo, "item_id": item_id, "posicao": posicao,
             "limite": max(paginas, 1) * por_pagina, "total": total}
+
+
+# ---------------------------------------------------------------- métricas
+
+def metricas_do_anuncio(db: Session, usuario: Usuario, item_id: str) -> dict:
+    """O que mudou no anúncio: preço (promoção x preço cheio e histórico visto pela
+    Monvatti) e visitas dia a dia nos últimos 30 dias."""
+    item_id = _texto(item_id, 40).upper()
+    if not re.fullmatch(r"MLB\d{6,}", item_id):
+        raise ErroML("Não achei o código do anúncio (MLB…) nesta página.")
+    ad = cliente_ml(db, usuario)
+    preco = {"atual": None, "cheio": None}
+    visitas: list[dict] = []
+    try:
+        r = ad._get(f"/items/{item_id}")
+        if r.status_code < 400:
+            it = r.json()
+            preco = {"atual": _num(it.get("price")), "cheio": _num(it.get("original_price"))}
+        v = ad._get(f"/items/{item_id}/visits/time_window", {"last": 30, "unit": "day"})
+        if v.status_code < 400:
+            for x in (v.json() or {}).get("results") or []:
+                dia = str(x.get("date") or "")[:10]
+                if dia:
+                    visitas.append({"dia": dia, "visitas": int(x.get("total") or 0)})
+    except httpx.HTTPError as e:
+        raise ErroML("O Mercado Livre não respondeu agora. Tente de novo em alguns segundos.") from e
+    return {"item_id": item_id, "preco": preco, "visitas": visitas, "historico": historico(db, item_id)}
+
+
+# ---------------------------------------------------------------- radar
+
+LIMITE_RADAR = 50
+
+
+def _radar_json(db: Session, x: RadarItem) -> dict:
+    return {"item_id": x.item_id, "produto_id": x.produto_id, "titulo": x.titulo, "thumbnail": x.thumbnail,
+            "permalink": x.permalink, "termo": x.termo, "preco_inicial": x.preco_inicial,
+            "preco_anterior": x.preco_anterior, "preco_atual": x.preco_atual, "posicao_inicial": x.posicao_inicial,
+            "posicao_anterior": x.posicao_anterior, "posicao_atual": x.posicao_atual,
+            "criado_em": x.criado_em.isoformat() if x.criado_em else None,
+            "verificado_em": x.verificado_em.isoformat() if x.verificado_em else None,
+            "mudou_em": x.mudou_em.isoformat() if x.mudou_em else None,
+            "historico": [{"dia": h["dia"], "preco": h["preco"]} for h in historico(db, x.item_id, 30) if h["preco"]]}
+
+
+def radar_listar(db: Session, usuario: Usuario) -> list[dict]:
+    itens = (db.query(RadarItem).filter_by(usuario_id=usuario.id, ativo=True)
+             .order_by(RadarItem.criado_em.desc()).all())
+    return [_radar_json(db, x) for x in itens]
+
+
+def radar_adicionar(db: Session, usuario: Usuario, dados: dict) -> dict:
+    item_id = _texto(dados.get("item_id"), 40).upper()
+    if not re.fullmatch(r"MLB\d{6,}", item_id):
+        raise ErroML("Não achei o código do anúncio (MLB…).")
+    x = db.query(RadarItem).filter_by(usuario_id=usuario.id, item_id=item_id).first()
+    if not x or not x.ativo:
+        ativos = db.query(RadarItem).filter_by(usuario_id=usuario.id, ativo=True).count()
+        if ativos >= LIMITE_RADAR:
+            raise ErroML(f"O radar já tem {LIMITE_RADAR} anúncios. Tire algum antes de colocar outro.")
+    if not x:
+        x = RadarItem(usuario_id=usuario.id, item_id=item_id)
+        db.add(x)
+    preco = _num(dados.get("preco"))
+    posicao = dados.get("posicao") if isinstance(dados.get("posicao"), int) and dados.get("posicao") > 0 else None
+    x.ativo = True
+    x.produto_id = _texto(dados.get("produto_id"), 40).upper()
+    x.titulo = _texto(dados.get("titulo"), 300) or x.titulo or ""
+    x.thumbnail = _texto(dados.get("thumbnail"), 400) or x.thumbnail or ""
+    x.permalink = _texto(dados.get("permalink"), 400) or x.permalink or ""
+    x.termo = _texto(dados.get("termo"), 120).strip()
+    x.preco_inicial = x.preco_anterior = x.preco_atual = preco
+    x.posicao_inicial = x.posicao_anterior = x.posicao_atual = posicao
+    x.criado_em = agora()
+    x.verificado_em = agora()
+    x.mudou_em = None
+    db.commit()
+    return _radar_json(db, x)
+
+
+def radar_remover(db: Session, usuario: Usuario, item_id: str) -> None:
+    x = db.query(RadarItem).filter_by(usuario_id=usuario.id, item_id=_texto(item_id, 40).upper()).first()
+    if x:
+        x.ativo = False
+        db.commit()
+
+
+def radar_atualizar(db: Session, usuario: Usuario, posicoes: dict) -> list[dict]:
+    """Confere o preço de todos os anúncios do radar (API do ML, de 20 em 20) e grava
+    a posição na busca que a extensão mediu no navegador da pessoa."""
+    itens = db.query(RadarItem).filter_by(usuario_id=usuario.id, ativo=True).all()
+    if not itens:
+        return []
+    ad = cliente_ml(db, usuario)
+    precos: dict[str, float] = {}
+    ids = [x.item_id for x in itens]
+    for n in range(0, len(ids), 20):
+        try:
+            r = ad._get("/items", {"ids": ",".join(ids[n:n + 20]), "attributes": "id,price"})
+        except httpx.HTTPError:
+            continue
+        if r.status_code >= 400 or not isinstance(r.json(), list):
+            continue
+        for linha in r.json():
+            corpo = (linha or {}).get("body") or {}
+            if linha.get("code") == 200 and corpo.get("id") and _num(corpo.get("price")) is not None:
+                precos[corpo["id"]] = _num(corpo["price"])
+    hoje = date.today()
+    for x in itens:
+        mudou = False
+        novo = precos.get(x.item_id)
+        if novo is not None:
+            if x.preco_atual is not None and abs(novo - x.preco_atual) >= 0.01:
+                x.preco_anterior = x.preco_atual
+                mudou = True
+            x.preco_atual = novo
+            if x.preco_inicial is None:
+                x.preco_inicial = novo
+            leitura = db.query(LeituraEstudo).filter_by(item_id=x.item_id, dia=hoje).first()
+            if not leitura:
+                db.add(LeituraEstudo(item_id=x.item_id, dia=hoje, usuario_id=usuario.id, titulo=x.titulo or "",
+                                     produto_id=x.produto_id or "", preco=novo, dados={"origem": "radar"}))
+            elif leitura.preco is None:
+                leitura.preco = novo
+        if x.item_id in posicoes:
+            pos = posicoes[x.item_id]
+            pos = pos if isinstance(pos, int) and pos > 0 else None
+            if pos != x.posicao_atual and not (pos is None and x.posicao_atual is None):
+                x.posicao_anterior = x.posicao_atual
+                mudou = True
+            x.posicao_atual = pos
+            if x.posicao_inicial is None:
+                x.posicao_inicial = pos
+        x.verificado_em = agora()
+        if mudou:
+            x.mudou_em = agora()
+    db.commit()
+    return radar_listar(db, usuario)

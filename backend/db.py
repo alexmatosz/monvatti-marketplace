@@ -38,3 +38,25 @@ def get_db():
 def init_db():
     from backend import models  # noqa: F401
     Base.metadata.create_all(engine)
+    _garantir_admin()
+
+
+def _garantir_admin():
+    """Em produção não dá para rodar o seed na mão: MONVATTI_ADMIN_EMAIL cria (uma
+    vez) o administrador, que tem acesso sem vencimento e vincula a conta central
+    do Mercado Livre pela extensão."""
+    import os
+
+    from backend.models import Usuario
+    email = os.getenv("MONVATTI_ADMIN_EMAIL", "").strip().lower()
+    if not email:
+        return
+    with SessionLocal() as db:
+        u = db.query(Usuario).filter(Usuario.email == email).first()
+        if not u:
+            db.add(Usuario(nome="Monvatti", email=email, papel="admin", assinatura_ativa=True))
+        elif u.papel != "admin" or not u.assinatura_ativa:
+            u.papel, u.assinatura_ativa, u.ativo = "admin", True, True
+        else:
+            return
+        db.commit()

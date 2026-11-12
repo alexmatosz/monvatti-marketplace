@@ -5,13 +5,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#2B333B",
-        night: "#070A1A",
-        azul: "#001AD8",
-        vivo: "#3145FF",
-        platina: "#DFDCDB",
-        nevoa: "#F2F3FF",
-        aco: "#5B6472",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        aco: "rgb(var(--aco) / <alpha-value>)",
+        platina: "rgb(var(--platina) / <alpha-value>)",
+        nevoa: "rgb(var(--nevoa) / <alpha-value>)",
+        azul: "rgb(var(--azul) / <alpha-value>)",
+        vivo: "rgb(var(--vivo) / <alpha-value>)",
+        fundo: "rgb(var(--fundo) / <alpha-value>)",
+        card: "rgb(var(--card) / <alpha-value>)",
+        card2: "rgb(var(--card2) / <alpha-value>)",
+        night: "#161B22",
+        marca: { DEFAULT: "#3145FF", forte: "#001AD8" },
         ouro: "#FFE600",
       },
       fontFamily: {

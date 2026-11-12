@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from backend import config, ml, security
-from backend.auth import usuario_atual
+from backend.auth import exigir_admin, usuario_atual
 from backend.db import get_db
 from backend.models import ContaML, Usuario
 
@@ -49,7 +49,7 @@ def _guardar(db: Session, usuario_id: int, cred: dict) -> ContaML:
 
 
 @router.get("/conectar")
-def conectar(u: Usuario = Depends(usuario_atual)):
+def conectar(u: Usuario = Depends(exigir_admin)):
     state = security.criar_state_ml(u.id)
     try:
         url = ml.url_autorizacao(state)
@@ -78,7 +78,7 @@ def callback(code: str = "", state: str = "", db: Session = Depends(get_db)):
 
 
 @router.post("/colar")
-def colar(dados: Codigo, u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+def colar(dados: Codigo, u: Usuario = Depends(exigir_admin), db: Session = Depends(get_db)):
     if security.ler_state_ml(dados.state) != u.id:
         raise HTTPException(400, "Vínculo inválido. Clique em Vincular de novo e refaça.")
     code = dados.code.strip()
@@ -102,7 +102,7 @@ def situacao(u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db))
 
 
 @router.post("/desconectar")
-def desconectar(u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+def desconectar(u: Usuario = Depends(exigir_admin), db: Session = Depends(get_db)):
     conta = db.query(ContaML).filter(ContaML.usuario_id == u.id).first()
     if conta:
         db.delete(conta)

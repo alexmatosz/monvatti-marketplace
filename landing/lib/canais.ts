@@ -21,14 +21,14 @@ export const CANAIS: Canal[] = [
     diferencial:
       "Vendas estimadas do concorrente a partir do número público do anúncio — a leitura que a API não entrega pronta.",
     itens: [
-      { t: "Métricas do anúncio", d: "Visitas, vendas por dia e por mês, conversão e faturamento estimado." },
+      { t: "Métricas do anúncio", d: "Vendas estimadas, ritmo atual, vendas por dia e por mês, avaliações e faturamento." },
       { t: "Concorrência da busca", d: "Quem disputa a 1ª e as demais páginas, com vendas, preço e logística." },
       { t: "Calculadora de margem", d: "Comissão, taxa fixa, frete grátis e imposto descontados do seu preço." },
       { t: "Ranqueamento do anúncio", d: "Em que posição o anúncio aparece para uma palavra-chave." },
       { t: "Tendência por categoria", d: "O ranking oficial de mais vendidos para achar oportunidade de produto." },
       { t: "Logística e tipo", d: "Full, Flex, Coleta ou Correios, e se é Clássico ou Premium." },
       { t: "Exportação para Excel", d: "A busca inteira em uma planilha com um clique." },
-      { t: "Conta protegida", d: "Roda pela sua conta vinculada; nunca alteramos preços dos seus anúncios." },
+      { t: "Conta protegida", d: "Só leitura: nunca mexemos nos seus anúncios nem nos seus preços." },
     ],
   },
   {
