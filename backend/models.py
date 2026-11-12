@@ -20,10 +20,10 @@ def agora() -> datetime:
 
 
 class ContaML(Base):
-    """A conta do Mercado Livre que um usuário vinculou (OAuth). Uma por usuário:
-    cada um conecta a sua e libera o estudo só para si (como no Avant). As
-    credenciais (access_token, refresh_token, obtido_em, expires_in, user_id)
-    ficam em `credenciais`; o estudo lê a API do ML por essa conta."""
+    """Conta do Mercado Livre vinculada por OAuth. A conta de estudo CENTRAL é a
+    linha com usuario_id NULL: o admin vincula uma vez e todos os clientes usam
+    (como no Avant, o cliente não vincula nada). As credenciais (access_token,
+    refresh_token, obtido_em, expires_in, user_id) ficam em `credenciais`."""
 
     __tablename__ = "conta_ml"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -70,3 +70,17 @@ class Usuario(Base):
     assinatura_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)
     ultimo_acesso_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class CodigoLogin(Base):
+    """Código de 6 dígitos mandado por e-mail para entrar na extensão. Guarda só
+    o hash; vale 10 minutos, 5 tentativas e um uso."""
+
+    __tablename__ = "codigos_login"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(200), index=True)
+    codigo_hash: Mapped[str] = mapped_column(String(64))
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)
+    expira_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tentativas: Mapped[int] = mapped_column(Integer, default=0)
+    usado: Mapped[bool] = mapped_column(Boolean, default=False)

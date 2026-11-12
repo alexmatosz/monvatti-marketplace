@@ -1,13 +1,15 @@
 """Lógica do estudo de anúncios do Mercado Livre.
 
-Portada do Replique (backend/_referencia_estudo_replique.py), adaptada para a
+Lógica do estudo, adaptada para a
 conta de estudo única (ml.cliente_ml) e para o usuário por login (sem empresa
-nem pareamento). As estimativas de venda seguem a mesma régua do Replique.
+nem pareamento). As estimativas de venda partem do número público de vendidos.
 """
 
 from __future__ import annotations
 
 import re
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 
@@ -78,7 +80,26 @@ def _iso(valor: str | None) -> str | None:
         return None
 
 
+# A avaliação mais antiga custa até 5 leituras da página de avaliações por
+# anúncio; ela quase não muda, então fica guardada (7 dias; sem avaliação, 1 dia).
+_avaliacoes: dict[str, tuple[float, str | None]] = {}
+_trava_avaliacoes = threading.Lock()
+
+
 def avaliacao_mais_antiga(item_id: str, paginas: int = PAGINAS_AVALIACOES) -> str | None:
+    with _trava_avaliacoes:
+        guardada = _avaliacoes.get(item_id)
+    if guardada and guardada[0] > time.time():
+        return guardada[1]
+    resultado = _avaliacao_mais_antiga(item_id, paginas)
+    with _trava_avaliacoes:
+        if len(_avaliacoes) > 50_000:
+            _avaliacoes.clear()
+        _avaliacoes[item_id] = (time.time() + (7 if resultado else 1) * 86400, resultado)
+    return resultado
+
+
+def _avaliacao_mais_antiga(item_id: str, paginas: int) -> str | None:
     def pagina(offset: int) -> list[str]:
         try:
             r = httpx.get(_AVALIACOES_URL.format(item=item_id), headers=_NAVEGADOR, timeout=12,

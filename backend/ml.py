@@ -1,24 +1,89 @@
 """Cliente enxuto do Mercado Livre para o estudo (só leitura + OAuth).
 
-Portado do adaptador do Replique, com só o que a extensão precisa: conectar a
-conta de estudo (OAuth, uma por servidor) e ler tarifas, frete, vendedor, itens
-e perguntas. As chamadas ao ML só podem ser testadas com uma conta real.
+Cliente da API do ML com só o que a extensão precisa: conectar a
+conta de cada cliente (OAuth, autorizada na landing ou no popup) e ler
+tarifas, frete, vendedor, itens e perguntas. Quem ainda não conectou usa a
+conta de estudo central (reserva, vinculada pelo admin). As chamadas ao ML só
+podem ser testadas com uma conta real.
 """
 
 from __future__ import annotations
 
+import re
+import threading
 import time
+from collections import OrderedDict
 from urllib.parse import urlencode
 
 import httpx
 from sqlalchemy.orm import Session
 
 from backend import config
+from backend.db import SessionLocal
 from backend.models import ContaML, agora
 from backend.security import pkce_do_state
 
 API = "https://api.mercadolibre.com"
 AUTH_URL = "https://auth.mercadolivre.com.br/authorization"
+
+INDISPONIVEL = "O estudo do Mercado Livre está indisponível no momento. Fale com o suporte da Monvatti."
+CONECTE = ("Conecte a sua conta do Mercado Livre para liberar o estudo: clique no ícone da Monvatti "
+           "e em “Conectar minha conta do Mercado Livre”.")
+
+# O refresh_token do ML só vale UMA vez. Se dois pedidos do mesmo cliente (ou
+# dois clientes na conta central) renovarem ao mesmo tempo, o segundo derruba a
+# conexão; a trava garante uma renovação por vez (vale para um processo: rode
+# com 1 worker).
+_TRAVA_RENOVACAO = threading.Lock()
+
+
+# ---------------------------------------------------------------- cache
+# Taxas, vendedor, frete e catálogo mudam pouco e são iguais para todos os
+# clientes (são dados públicos de anúncios de terceiros). Guardar a resposta no
+# servidor corta a maior parte das chamadas ao ML: uma busca de 50 anúncios
+# que custava ~500 chamadas cai para quase nada quando alguém já estudou os
+# mesmos anúncios no dia. Só respostas 200 entram; /users/me e visitas nunca.
+_REGRAS_CACHE = [
+    (re.compile(r"^/sites/MLB/listing_prices$"), 24 * 3600),          # tabela de taxas
+    (re.compile(r"^/users/\d+$"), 24 * 3600),                         # vendedor (reputação, medalha, cidade)
+    (re.compile(r"^/users/\d+/shipping_options/free$"), 24 * 3600),   # frete grátis do anúncio
+    (re.compile(r"^/products/MLB\d+$"), 7 * 24 * 3600),               # data do catálogo
+    (re.compile(r"^/products/MLB\d+/items$"), 6 * 3600),              # vendedores no catálogo
+    (re.compile(r"^/items/MLB\d+$"), 6 * 3600),                       # anúncio (data de criação, tipo)
+    (re.compile(r"^/questions/search$"), 6 * 3600),                   # 1ª pergunta e total
+    (re.compile(r"^/categories/"), 7 * 24 * 3600),                    # categoria e medidas
+    (re.compile(r"^/sites/MLB/domain_discovery/search$"), 24 * 3600),
+    (re.compile(r"^/highlights/"), 6 * 3600),                         # mais vendidos da categoria
+    (re.compile(r"^/sites/MLB/search$"), 3600),
+]
+_CACHE_MAX = 50_000
+_cache: OrderedDict[str, tuple[float, int, object]] = OrderedDict()
+_trava_cache = threading.Lock()
+cache_estatistica = {"acertos": 0, "chamadas": 0}
+
+
+def _validade(caminho: str) -> int:
+    return next((s for regra, s in _REGRAS_CACHE if regra.search(caminho)), 0)
+
+
+def _chave(caminho: str, params: dict | None) -> str:
+    return caminho + "?" + urlencode(sorted((params or {}).items()))
+
+
+class _RespostaGuardada:
+    """Imita o pedaço do httpx.Response que o estudo usa."""
+
+    def __init__(self, status_code: int, dados):
+        self.status_code = status_code
+        self._dados = dados
+
+    def json(self):
+        return self._dados
+
+
+def limpar_cache() -> None:
+    with _trava_cache:
+        _cache.clear()
 
 
 class ErroML(Exception):
@@ -52,34 +117,67 @@ def trocar_code_por_token(http: httpx.Client, code: str, state: str = "") -> dic
 
 
 class MercadoLivre:
-    def __init__(self, cred: dict, salvar=None):
+    def __init__(self, cred: dict, salvar=None, recarregar=None):
         self.cred = cred or {}
         self._salvar = salvar or (lambda _c: None)
+        self._recarregar = recarregar or (lambda: None)
         self.http = httpx.Client(timeout=20)
+
+    def _expirado(self) -> bool:
+        return time.time() > self.cred.get("obtido_em", 0) + self.cred.get("expires_in", 21600) - 120
 
     def _token(self) -> str | None:
         if not self.cred.get("access_token"):
             return None
-        expira = self.cred.get("obtido_em", 0) + self.cred.get("expires_in", 21600) - 120
-        if time.time() > expira:
-            if not self.cred.get("refresh_token"):
-                raise ErroML("A conexão com o Mercado Livre expirou. Reconecte a conta de estudo.")
-            r = self.http.post(f"{API}/oauth/token", data={
-                "grant_type": "refresh_token", "client_id": config.ML_CLIENT_ID,
-                "client_secret": config.ML_CLIENT_SECRET, "refresh_token": self.cred["refresh_token"]})
-            if r.status_code >= 400:
-                raise ErroML("A conexão com o Mercado Livre expirou. Reconecte a conta de estudo.")
-            novo = r.json()
-            novo["obtido_em"] = time.time()
-            self.cred.update(novo)
-            self._salvar(self.cred)
+        if self._expirado():
+            with _TRAVA_RENOVACAO:
+                # outro pedido pode ter renovado enquanto este esperava a trava
+                atual = self._recarregar()
+                if atual and atual.get("access_token"):
+                    self.cred = dict(atual)
+                if self._expirado():
+                    self._renovar()
         return self.cred["access_token"]
 
+    def _renovar(self):
+        if not self.cred.get("refresh_token"):
+            raise ErroML(INDISPONIVEL)
+        r = self.http.post(f"{API}/oauth/token", data={
+            "grant_type": "refresh_token", "client_id": config.ML_CLIENT_ID,
+            "client_secret": config.ML_CLIENT_SECRET, "refresh_token": self.cred["refresh_token"]})
+        if r.status_code >= 400:
+            raise ErroML(INDISPONIVEL)
+        novo = r.json()
+        novo["obtido_em"] = time.time()
+        self.cred.update(novo)
+        self._salvar(self.cred)
+
     def _get(self, caminho: str, params: dict | None = None, auth: bool = True):
+        validade = _validade(caminho)
+        chave = _chave(caminho, params) if validade else ""
+        if validade:
+            with _trava_cache:
+                guardado = _cache.get(chave)
+                if guardado and guardado[0] > time.time():
+                    _cache.move_to_end(chave)
+                    cache_estatistica["acertos"] += 1
+                    return _RespostaGuardada(guardado[1], guardado[2])
         headers = {}
         if auth and (tok := self._token()):
             headers["Authorization"] = f"Bearer {tok}"
-        return self.http.get(f"{API}{caminho}", params=params, headers=headers)
+        r = self.http.get(f"{API}{caminho}", params=params, headers=headers)
+        cache_estatistica["chamadas"] += 1
+        if validade and r.status_code == 200:
+            try:
+                dados = r.json()
+            except ValueError:
+                return r
+            with _trava_cache:
+                _cache[chave] = (time.time() + validade, 200, dados)
+                _cache.move_to_end(chave)
+                while len(_cache) > _CACHE_MAX:
+                    _cache.popitem(last=False)
+        return r
 
     def _user_id(self) -> str:
         if not self.cred.get("user_id"):
@@ -89,6 +187,11 @@ class MercadoLivre:
         return self.cred.get("user_id", "")
 
     def _req(self, metodo: str, caminho: str, contexto: str, **kw):
+        if metodo == "GET":
+            r = self._get(caminho, kw.get("params"))
+            if r.status_code >= 400:
+                raise ErroML(f"Mercado Livre — {contexto}: HTTP {r.status_code}")
+            return r.json()
         tok = self._token()
         headers = {"Authorization": f"Bearer {tok}"} if tok else {}
         r = self.http.request(metodo, f"{API}{caminho}", headers=headers, **kw)
@@ -164,16 +267,33 @@ class MercadoLivre:
                 "vendedor_id": str(perguntas[0].get("seller_id") or "") if perguntas else ""}
 
 
-def cliente_ml(db: Session, usuario) -> MercadoLivre:
-    """A conta do Mercado Livre que este usuário vinculou. Levanta ErroML se ele
-    ainda não conectou a sua (é o que mantém o estudo trancado até vincular)."""
-    conta = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first()
-    if not conta or not (conta.credenciais or {}).get("access_token"):
-        raise ErroML("Conecte sua conta do Mercado Livre na extensão para liberar o estudo.")
+def conta_central(db: Session) -> ContaML | None:
+    """A conta de estudo do servidor (a linha sem usuario_id)."""
+    return db.query(ContaML).filter(ContaML.usuario_id.is_(None)).order_by(ContaML.id).first()
+
+
+def _conectada(conta: ContaML | None) -> bool:
+    return bool(conta and (conta.credenciais or {}).get("access_token"))
+
+
+def cliente_ml(db: Session, usuario=None) -> MercadoLivre:
+    """A conta do ML que este cliente autorizou; se ele ainda não conectou, a
+    conta de estudo central (reserva). Levanta ErroML se não houver nenhuma."""
+    conta = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first() if usuario else None
+    if not _conectada(conta):
+        conta = conta_central(db)
+    if not _conectada(conta):
+        raise ErroML(CONECTE if usuario else INDISPONIVEL)
+    conta_id = conta.id
 
     def salvar(cred: dict):
         conta.credenciais = dict(cred)
         conta.atualizado_em = agora()
         db.commit()
 
-    return MercadoLivre(dict(conta.credenciais), salvar)
+    def recarregar() -> dict | None:
+        with SessionLocal() as s:
+            c = s.get(ContaML, conta_id)
+            return dict(c.credenciais or {}) if c else None
+
+    return MercadoLivre(dict(conta.credenciais), salvar, recarregar)

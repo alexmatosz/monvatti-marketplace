@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { ConectarML } from "@/components/ConectarML";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-type Estado = { tipo: "parado" | "enviando" | "ok" | "erro"; msg?: string };
+type Estado = { tipo: "parado" | "enviando" | "ok" | "erro"; msg?: string; convite?: string };
 
 export function Signup() {
   const [nome, setNome] = useState("");
@@ -26,10 +27,15 @@ export function Signup() {
         setEstado({ tipo: "erro", msg: typeof dados.detail === "string" ? dados.detail : "Não consegui concluir o cadastro. Tente de novo." });
         return;
       }
-      setEstado({ tipo: "ok", msg: "Cadastro recebido. Assim que o pagamento abrir, a gente libera o seu acesso por e-mail." });
+      setEstado({ tipo: "ok", convite: typeof dados.convite === "string" ? dados.convite : undefined,
+        msg: "Cadastro recebido. Assim que o pagamento abrir, a gente libera o seu acesso por e-mail." });
     } catch {
       setEstado({ tipo: "erro", msg: "Não consegui falar com o servidor. Tente de novo em instantes." });
     }
+  }
+
+  if (estado.tipo === "ok" && estado.convite) {
+    return <ConectarML convite={estado.convite} nome={nome.trim().split(" ")[0]} />;
   }
 
   if (estado.tipo === "ok") {

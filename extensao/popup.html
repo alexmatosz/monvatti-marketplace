@@ -25,6 +25,13 @@
   .linha { display: flex; gap: 8px; align-items: end; }
   .linha > div { flex: 1; }
   [hidden] { display: none !important; }
+  .codigo { letter-spacing: .4em; font-size: 18px; font-weight: 600; text-align: center; }
+  .dica { margin: 0; color: var(--suave); font-size: 12px; }
+  .link { background: none; border: 0; padding: 0; color: var(--azul); font-weight: 600; cursor: pointer; font-size: 12px; }
+  .link:hover { background: none; text-decoration: underline; }
+  details { font-size: 12px; color: var(--suave); }
+  details summary { cursor: pointer; }
+  details > div { display: grid; gap: 8px; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -32,23 +39,44 @@
 <main>
   <div id="msg" class="caixa" hidden></div>
   <section id="desligada" hidden>
-    <div style="display:grid;gap:10px">
-      <div><label for="servidor">Endereço do servidor Monvatti</label><input id="servidor" type="url" placeholder="https://app.monvatti.com.br"></div>
-      <div><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" placeholder="voce@monvatti.com.br"></div>
-      <button id="entrar">Entrar</button>
-      <p style="margin:0;color:var(--suave);font-size:12px">Entre com o e-mail liberado. Em breve o cadastro e o pagamento serão feitos na página da Monvatti.</p>
+    <div id="passo-email" style="display:grid;gap:10px">
+      <div><label for="email">E-mail do cadastro</label><input id="email" type="email" autocomplete="email" placeholder="voce@empresa.com.br"></div>
+      <button id="pedir-codigo">Receber código por e-mail</button>
+      <p class="dica">Mandamos um código de 6 dígitos para o e-mail que você usou no cadastro da Monvatti.</p>
     </div>
+    <div id="passo-codigo" hidden style="display:grid;gap:10px">
+      <p class="dica" id="codigo-para"></p>
+      <div><label for="codigo">Código</label><input id="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+      <button id="entrar">Entrar</button>
+      <div style="display:flex;justify-content:space-between"><button class="link" id="reenviar">Mandar outro código</button><button class="link" id="trocar-email">Trocar e-mail</button></div>
+    </div>
+    <details style="margin-top:14px">
+      <summary>Avançado</summary>
+      <div>
+        <div><label for="servidor">Servidor (só para testes)</label><input id="servidor" type="url"></div>
+        <button class="sec" id="salvar-servidor">Usar este servidor</button>
+      </div>
+    </details>
   </section>
   <section id="ligada" hidden>
     <div style="display:grid;gap:10px">
       <div id="quem" class="caixa"></div>
       <div id="ml" class="caixa"></div>
-      <button id="conectar-ml" hidden>Vincular minha conta do Mercado Livre</button>
+      <button id="conectar-ml" hidden>Conectar minha conta do Mercado Livre</button>
       <div id="ml-manual" hidden style="display:grid;gap:8px">
         <div><label for="ml-code">Cole o código que o Mercado Livre mostrou</label><input id="ml-code" type="text" placeholder="TG-..."></div>
-        <button id="confirmar-ml">Confirmar vínculo</button>
+        <button id="confirmar-ml">Confirmar conexão</button>
       </div>
-      <button class="sec" id="desconectar-ml" hidden>Desvincular do Mercado Livre</button>
+      <button class="sec" id="desconectar-ml" hidden>Desconectar minha conta do Mercado Livre</button>
+      <div id="central-bloco" hidden style="display:grid;gap:8px;border-top:1px solid var(--borda);padding-top:10px">
+        <div id="central" class="caixa"></div>
+        <button class="sec" id="conectar-central" hidden>Vincular a conta de estudo central</button>
+        <div id="central-manual" hidden style="display:grid;gap:8px">
+          <div><label for="central-code">Código da conta de estudo</label><input id="central-code" type="text" placeholder="TG-..."></div>
+          <button id="confirmar-central">Confirmar conta central</button>
+        </div>
+        <button class="sec" id="desconectar-central" hidden>Desvincular a conta de estudo central</button>
+      </div>
       <div id="conta" class="caixa"></div>
       <div class="linha"><div><label for="imposto">Imposto padrão na calculadora (%)</label><input id="imposto" type="number" min="0" max="100" step="0.01"></div>
         <button class="sec" id="salvar-imposto">Salvar</button></div>

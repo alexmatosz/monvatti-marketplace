@@ -1,3 +1,7 @@
+// Endereço fixo do servidor Monvatti: o cliente não digita nada técnico. Ao
+// hospedar, troque aqui (e em host_permissions do manifest) pelo domínio real.
+// O campo "servidor" no storage só existe para testes (popup › Avançado).
+const SERVIDOR_PADRAO = "http://localhost:8000";
 const PADRAO = { servidor: "", token: "", chave: "", imposto: 7 };
 
 function novaChave() {
@@ -7,6 +11,7 @@ function novaChave() {
 
 async function configuracao() {
   const c = await chrome.storage.local.get(PADRAO);
+  c.servidor = c.servidor || SERVIDOR_PADRAO;
   if (!c.chave) {
     c.chave = novaChave();
     await chrome.storage.local.set({ chave: c.chave });
@@ -25,7 +30,6 @@ async function contaML() {
 
 async function chamar(caminho, { metodo = "GET", corpo, semToken = false } = {}) {
   const c = await configuracao();
-  if (!c.servidor) throw new Error("Endereço do servidor Monvatti não configurado. Clique no ícone da extensão.");
   if (!semToken && !c.token) throw new Error("Faça login na extensão: clique no ícone da Monvatti.");
   const headers = { "Content-Type": "application/json", "X-Extensao-Chave": c.chave };
   if (!semToken) headers.Authorization = "Bearer " + c.token;
@@ -33,17 +37,18 @@ async function chamar(caminho, { metodo = "GET", corpo, semToken = false } = {})
   try {
     r = await fetch(c.servidor + caminho, { method: metodo, headers, body: corpo ? JSON.stringify(corpo) : undefined });
   } catch {
-    throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
+    throw new Error("Não consegui falar com o servidor Monvatti. Confira a internet e tente de novo.");
   }
   const dados = await r.json().catch(() => ({}));
-  if (r.status === 401 && !semToken) await chrome.storage.local.set({ token: "" });
+  if (r.status === 401 && !semToken) {
+    await chrome.storage.local.set({ token: "", motivo_saida: typeof dados.detail === "string" ? dados.detail : "" });
+  }
   if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "O servidor Monvatti recusou o pedido (" + r.status + ").");
   return dados;
 }
 
 async function versaoNoServidor() {
   const { servidor } = await configuracao();
-  if (!servidor) return "";
   try {
     const r = await fetch(servidor + "/api/extensao/versao", { cache: "no-store" });
     return r.ok ? (await r.json()).versao || "" : "";
@@ -97,7 +102,7 @@ const acoes = {
   },
   async estudo({ pesquisa, filtro, imposto, itens }) {
     const c = await configuracao();
-    if (!c.servidor || !c.token) throw new Error("Faça login na extensão: clique no ícone da Monvatti.");
+    if (!c.token) throw new Error("Faça login na extensão: clique no ícone da Monvatti.");
     let r;
     try {
       r = await fetch(c.servidor + "/api/extensao/estudo", {
@@ -106,7 +111,7 @@ const acoes = {
         body: JSON.stringify({ pesquisa, filtro, imposto, itens }),
       });
     } catch {
-      throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
+      throw new Error("Não consegui falar com o servidor Monvatti. Confira a internet e tente de novo.");
     }
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
@@ -132,7 +137,7 @@ const acoes = {
   },
   async estado() {
     const c = await configuracao();
-    if (!c.servidor || !c.token) return { ligado: false, servidor: c.servidor, imposto: c.imposto };
+    if (!c.token) return { ligado: false, servidor: c.servidor, imposto: c.imposto };
     const eu = await chamar("/api/extensao/eu?conta_ml=" + encodeURIComponent(await contaML()));
     return { ligado: true, servidor: c.servidor, imposto: c.imposto, ...eu };
   },
@@ -151,48 +156,57 @@ const acoes = {
   async ranqueamento({ termo, item_id }) {
     return chamar("/api/extensao/ranqueamento", { metodo: "POST", corpo: { termo, item_id } });
   },
-  async copiar({ cliente_id, pagina }) {
-    return chamar("/api/extensao/copiar", { metodo: "POST", corpo: { cliente_id, pagina } });
+  async pedirCodigo({ email }) {
+    return chamar("/api/auth/codigo", { metodo: "POST", corpo: { email }, semToken: true });
   },
-  async salvarFotos({ pagina, cliente_id }) {
-    return chamar("/api/extensao/fotos", { metodo: "POST", corpo: { pagina, cliente_id: cliente_id ?? null } });
-  },
-  async entrar({ servidor, email }) {
-    await chrome.storage.local.set({ servidor });
-    let r;
-    try {
-      r = await fetch(servidor + "/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-    } catch {
-      throw new Error("Não consegui falar com o servidor Monvatti. Confira o endereço e a internet.");
-    }
-    const dados = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "Não consegui entrar (" + r.status + ").");
-    await chrome.storage.local.set({ token: dados.token });
+  async entrar({ email, codigo }) {
+    const dados = await chamar("/api/auth/login", { metodo: "POST", corpo: { email, codigo }, semToken: true });
+    await chrome.storage.local.set({ token: dados.token, email, motivo_saida: "" });
     return { ligado: true, usuario: dados.usuario };
   },
-  async conectarML() {
-    const { url, state, manual } = await chamar("/api/ml/conectar");
-    await chrome.storage.local.set({ ml_state: state || "" });
+  async servidor({ servidor }) {
+    // Só para testes: aponta a extensão para outro servidor ("" volta ao padrão).
+    await chrome.storage.local.set({ servidor: servidor === SERVIDOR_PADRAO ? "" : servidor, token: "" });
+    return { servidor: servidor || SERVIDOR_PADRAO, padrao: SERVIDOR_PADRAO };
+  },
+  async conectarML({ central = false } = {}) {
+    const { url, state, manual } = await chamar(central ? "/api/ml/central/conectar" : "/api/ml/conectar");
+    await chrome.storage.local.set({ [central ? "ml_state_central" : "ml_state"]: state || "" });
     await chrome.tabs.create({ url });
     return { manual: !!manual };
   },
-  async colarCodigoML({ code }) {
-    const { ml_state } = await chrome.storage.local.get({ ml_state: "" });
-    if (!ml_state) throw new Error("Clique em Vincular antes de colar o código.");
-    const r = await chamar("/api/ml/colar", { metodo: "POST", corpo: { code, state: ml_state } });
-    await chrome.storage.local.remove("ml_state");
+  async colarCodigoML({ code, central = false }) {
+    const chave = central ? "ml_state_central" : "ml_state";
+    const guardado = (await chrome.storage.local.get({ [chave]: "" }))[chave];
+    if (!guardado) throw new Error("Clique em Conectar antes de colar o código.");
+    const r = await chamar(central ? "/api/ml/central/colar" : "/api/ml/colar", { metodo: "POST", corpo: { code, state: guardado } });
+    await chrome.storage.local.remove(chave);
     return r;
+  },
+  async retornoML({ code, state }, remetente) {
+    const { servidor } = await configuracao();
+    let r;
+    try {
+      r = await fetch(servidor + "/api/ml/retorno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, state }),
+      });
+    } catch {
+      throw new Error("servidor Monvatti fora do ar");
+    }
+    const dados = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "o servidor recusou (" + r.status + ")");
+    await chrome.storage.local.remove(dados.central ? "ml_state_central" : "ml_state");
+    if (remetente?.tab?.id) setTimeout(() => chrome.tabs.remove(remetente.tab.id).catch(() => {}), 2500);
+    return dados;
   },
   async situacaoML() {
     return chamar("/api/ml/situacao");
   },
-  async desconectarML() {
-    await chrome.storage.local.remove("ml_state");
-    return chamar("/api/ml/desconectar", { metodo: "POST" });
+  async desconectarML({ central = false } = {}) {
+    await chrome.storage.local.remove(central ? "ml_state_central" : "ml_state");
+    return chamar(central ? "/api/ml/central/desconectar" : "/api/ml/desconectar", { metodo: "POST" });
   },
   async desligar() {
     await chrome.storage.local.set({ token: "" });
@@ -204,9 +218,9 @@ const acoes = {
   },
 };
 
-chrome.runtime.onMessage.addListener((msg, _remetente, responder) => {
+chrome.runtime.onMessage.addListener((msg, remetente, responder) => {
   const acao = acoes[msg?.tipo];
   if (!acao) return false;
-  acao(msg).then((dados) => responder({ ok: true, dados })).catch((e) => responder({ ok: false, erro: e.message }));
+  acao(msg, remetente).then((dados) => responder({ ok: true, dados })).catch((e) => responder({ ok: false, erro: e.message }));
   return true;
 });

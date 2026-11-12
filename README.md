@@ -1,6 +1,6 @@
 # Monvatti Marketplaces
 
-Ferramenta de estudo de anúncios em marketplace: uma **extensão do Chrome** + **backend próprio** que mostram vendas estimadas, métricas, taxas e margem dentro da página do anúncio. Começa pelo **Mercado Livre**; **Shopee** e **Amazon** vêm depois. Acesso por e-mail; o pagamento (Pix) e a página de cadastro entram sobre a mesma base.
+Ferramenta de estudo de anúncios em marketplace: uma **extensão do Chrome** + **backend próprio** que mostram vendas estimadas, métricas, taxas e margem dentro da página do anúncio. Funciona **sozinha**, sem depender de nenhum outro sistema. Começa pelo **Mercado Livre**; **Shopee** e **Amazon** vêm depois. Acesso por e-mail; o pagamento (Pix) e a página de cadastro entram sobre a mesma base.
 
 > **Nome:** a ferramenta é o **Monvatti Marketplaces**. A **Monvatti** é a consultoria que opera mais de 150 clientes e da qual a ferramenta nasceu.
 
@@ -15,9 +15,9 @@ extensao/     cliente Chrome MV3 (manifest, background, content, popup, ícones)
 backend/      serviço FastAPI: login + estudo do Mercado Livre
   auth.py         login, token, criar usuário
   estudo.py       endpoints da extensão (eu, estudo/planilha, anúncio, tarifas, busca, tendência, ranqueamento)
-  estudo_ml.py    lógica do estudo (portada do Replique)
+  estudo_ml.py    lógica do estudo (vendas estimadas, taxas, frete, tendência, ranqueamento)
   ml.py           cliente da API do ML por usuário
-  ml_conta.py     vincular/desvincular a conta do ML (OAuth)
+  ml_conta.py     conectar o ML: convite da landing, conta própria pelo popup, conta central (admin)
   cadastro.py     POST /api/cadastro público (usuário pendente)
   pagamento.py    encaixe do Pix/AbacatePay (stub por ora)
   seed.py         cria o primeiro acesso
@@ -48,9 +48,10 @@ A última linha deixa a janela escrevendo logs — é assim mesmo, deixe aberta.
 
 1. Abra `chrome://extensions` e ligue o **Modo do desenvolvedor**.
 2. **Carregar sem compactação** → escolha a pasta `extensao/`.
-3. Clique no ícone da Monvatti, informe o endereço do servidor (`http://localhost:8000`), o e-mail (`alexmonvatti@gmail.com`) e **Entrar**. Aceite a permissão.
+3. Clique no ícone da Monvatti, informe o e-mail (`alexmonvatti@gmail.com`) e **Receber código por e-mail**. Digite o código de 6 dígitos e **Entrar**. O endereço do servidor é fixo na extensão (`SERVIDOR_PADRAO` em `extensao/background.js`); para testar outro servidor, use **Avançado** no popup.
+   - Sem SMTP configurado, o código aparece no log do servidor e, com `MONVATTI_MODO_DEMO=true`, o popup já preenche sozinho. Em produção (`MONVATTI_MODO_DEMO=false`) sem SMTP, o login fica bloqueado.
 
-**O que dá para testar agora:** login por e-mail e a planilha do estudo na busca do ML. As métricas/taxas/frete dentro do anúncio só funcionam depois de **vincular uma conta do Mercado Livre** (ver abaixo); até lá essas telas pedem a vinculação — é esperado.
+**O que dá para testar agora:** login por código, a planilha do estudo na busca do ML e a aba **Estudos** (monte um estudo juntando anúncios de páginas e buscas diferentes: **+ Adicionar ao estudo** no anúncio, **+ Estudo** em cada cartão da busca ou **+ Juntar ao estudo** no topo; a planilha sai na aba Estudos da gaveta). As métricas/taxas/frete dentro do anúncio só funcionam depois de **conectar uma conta do Mercado Livre** (a do cliente ou a central; ver abaixo); até lá essas telas pedem a conexão — é esperado.
 
 ---
 
@@ -65,6 +66,10 @@ Variáveis de ambiente (todas opcionais no dev):
 | `MONVATTI_DATABASE_URL` | banco | SQLite em `dados/` |
 | `MONVATTI_USUARIO_EMAIL` | e-mail do seed | `alexmonvatti@gmail.com` |
 | `ML_CLIENT_ID` / `ML_CLIENT_SECRET` / `ML_REDIRECT_URI` | app do Mercado Livre (ver abaixo) | — |
+| `MONVATTI_LANDING_URL` | para onde o cliente volta depois de conectar o ML | `http://localhost:3000` |
+| `SMTP_HOST` / `SMTP_PORTA` / `SMTP_USUARIO` / `SMTP_SENHA` / `SMTP_REMETENTE` | envio do código de login por e-mail | — (código vai para o log) |
+
+**Cache do Mercado Livre:** o servidor guarda em memória as respostas que mudam pouco e são iguais para todos (taxas, vendedor e frete por 24 h, anúncio/perguntas/catálogo de 6 h a 7 dias, avaliação mais antiga por 7 dias). Estudar de novo os mesmos anúncios quase não chama o ML. O cache zera quando o servidor reinicia.
 
 ---
 
@@ -72,9 +77,9 @@ Variáveis de ambiente (todas opcionais no dev):
 
 O estudo lê a API do ML por OAuth, então o servidor precisa de **um app do Mercado Livre**. É um passo único, seu (não de cada usuário).
 
-> **Crie um app PRÓPRIO, separado do app do Replique.** O app do Replique é o que os clientes reais autorizaram; o app da extensão faz estudo com conta descartável. Separar protege as contas dos clientes.
+> **Crie um app PRÓPRIO para a extensão**, separado do app que os clientes da consultoria já autorizaram. Os clientes da extensão vão autorizar este app (só leitura); se um dia o ML suspender o app da extensão, as integrações da consultoria não são afetadas.
 
-1. Acesse **developers.mercadolivre.com.br** e entre com a **conta de estudo** (descartável), nunca a de um cliente. Vá em **Minhas aplicações → Criar aplicação**.
+1. Acesse **developers.mercadolivre.com.br** e entre com uma conta **da Monvatti** (dona do app), nunca a de um cliente. Vá em **Minhas aplicações → Criar aplicação**.
 2. Preencha:
    - **Nome:** `Monvatti Marketplaces`.
    - **Redirect URI:** o ML **não aceita `localhost`**.
@@ -94,16 +99,21 @@ O estudo lê a API do ML por OAuth, então o servidor precisa de **um app do Mer
 
    (No PowerShell: `$env:ML_CLIENT_ID = "..."`. Ao hospedar, troque o `ML_REDIRECT_URI` pelo `https://SEU-DOMINIO/api/ml/callback` e ajuste o mesmo valor no cadastro do app.)
 
-### Vincular a conta pela extensão
+### Como o cliente conecta o Mercado Livre
 
-Cada usuário vincula a **própria** conta do ML, e isso libera o estudo só para ele.
+Cada cliente autoriza o app do ML com a **própria** conta (só leitura), como era no Replique. Assim ninguém divide conta: 100 clientes são 100 autorizações, e se uma cair só aquele cliente é afetado.
 
-1. No popup (logado), clique em **Vincular minha conta do Mercado Livre** e autorize na aba que abre.
-2. **Modo local (callback do Postman):** o ML mostra um **código**; cole no campo do popup e **Confirmar vínculo**.
-   **Modo hospedado (HTTPS):** o ML volta sozinho e o popup já mostra "Conta vinculada".
-3. Desvincular a qualquer momento pelo popup.
+1. **Na landing, logo após o cadastro** (depois, após o pagamento): o cadastro devolve um **convite** assinado (7 dias) e a landing mostra o **Passo 2 — Conectar ao Mercado Livre**. O cliente autoriza na tela oficial do ML.
+   - **Hospedado (HTTPS):** o ML volta para `/api/ml/callback`, que guarda o token e manda o cliente para `/conectado` na landing (`MONVATTI_LANDING_URL`).
+   - **Local (callback do Postman):** o ML mostra um **código**; o cliente cola na própria landing.
+   - O link `/conectar?convite=...` faz o mesmo passo (para mandar por e-mail).
+2. **Pelo popup da extensão**, para quem pulou o passo: **Conectar minha conta do Mercado Livre**. Dá para desconectar a qualquer momento.
 
-> Vincular libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de terceiros (visitas, data de criação) o ML não entrega por essa via — o estudo contorna com avaliações/perguntas, como no Replique.
+**Conta de estudo central (reserva, só admin):** o admin (`papel = "admin"`, o `seed` já cria assim) vê no popup **Vincular a conta de estudo central**. Ela só é usada por quem ainda não conectou a própria conta. O estudo usa nesta ordem: conta do cliente → conta central → pede para conectar.
+
+> O token do ML é renovado sozinho; uma trava garante uma renovação por vez (o refresh token do ML só vale uma vez). Por isso o servidor deve rodar com **um** processo (`uvicorn` sem `--workers`).
+
+> Vincular libera as leituras autenticadas (taxas, frete, vendedor). Alguns dados de terceiros (visitas, data de criação) o ML não entrega por essa via — o estudo contorna com avaliações/perguntas.
 
 ---
 
