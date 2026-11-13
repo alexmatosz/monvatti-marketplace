@@ -362,6 +362,9 @@
     .cartao-cab { display: flex; align-items: center; gap: 6px; padding: 6px 9px; background: var(--fundo); border-bottom: 1px solid var(--borda);
       font-size: 11.5px; }
     .cartao-cab .chip { margin-left: auto; font-size: 10px; padding: 2px 6px; }
+    .cartao-cab .selo-cat { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: #3483FA; color: #fff;
+      text-decoration: none; letter-spacing: .02em; }
+    .cartao-cab .selo-cat:hover { background: #2968C8; }
     .marca.mini { width: 16px; height: 16px; font-size: 9.5px; border-radius: 4px; }
     .cartao-dados { display: grid; grid-template-columns: 1fr 1fr; }
     .cartao-dados > div { padding: 5px 9px; border-bottom: 1px solid var(--borda); min-width: 0; cursor: help; }
@@ -1411,6 +1414,26 @@
     if (limpar) limpar.onclick = () => { estado.filtros = []; estado.vendasMin = null; estado.vendasMax = null; filtrosMudaram(); };
   }
 
+  // Quadradinho "Catálogo" em cima da foto do resultado da busca, para achar os anúncios de catálogo de relance.
+  function seloCatalogoNaFoto(it) {
+    const el = it.el;
+    if (!el) return;
+    const existente = el.querySelector(".monvatti-selo-cat");
+    if (!it.catalogo) { existente?.remove(); return; }
+    if (existente) return;
+    const img = el.querySelector(".poly-card__portada img, .poly-component__picture, img");
+    const caixa = img?.closest(".poly-card__portada") || img?.parentElement;
+    if (!caixa) return;
+    if (getComputedStyle(caixa).position === "static") caixa.style.position = "relative";
+    const selo = document.createElement("span");
+    selo.className = "monvatti-selo-cat";
+    selo.textContent = "Catálogo";
+    selo.title = "Anúncio de catálogo (Monvatti)";
+    selo.style.cssText = "position:absolute;top:6px;left:6px;z-index:3;background:#3483FA;color:#fff;font:700 11px/1 system-ui,sans-serif;" +
+      "padding:4px 7px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none;letter-spacing:.02em;";
+    caixa.appendChild(selo);
+  }
+
   function desenharCartao(it, soma) {
     const raiz = it.raiz;
     if (!raiz) return;
@@ -1425,6 +1448,7 @@
     raiz.innerHTML = `<div class="cartao">
       <div class="cartao-cab"><span class="marca mini"></span><b>Monvatti Marketplace</b>
         ${curvaDe(it) ? `<span class="selo-curva curva-${curvaDe(it).toLowerCase()}" title="${esc(EXPLICA_CURVA)}">Curva ${curvaDe(it)}</span>` : ""}
+        ${it.catalogo ? `<a class="selo-cat" href="https://www.mercadolivre.com.br/p/${esc(it.produto_id)}" target="_blank" rel="noopener" title="Anúncio de catálogo: clique para abrir a página do produto, com todos os vendedores">Catálogo</a>` : ""}
         ${it.patrocinado ? '<span class="chip">Patrocinado</span>' : ""}
         ${it.item_id ? `<button class="add-estudo ${noEstudo(it.item_id) ? "no-estudo" : "sec"}" title="${noEstudo(it.item_id) ? "Tirar do estudo" : "Adicionar este anúncio ao estudo (aba Estudos)"}">${noEstudo(it.item_id) ? "✓ No estudo" : "+ Estudo"}</button>` : ""}</div>
       <div class="cartao-dados">
@@ -1448,6 +1472,7 @@
       </div>
       ${!d ? `<div class="cartao-pe">${carregando ? '<span class="girando"></span>Carregando…' : "Sem dados deste anúncio."}</div>` : ""}
     </div>`;
+    seloCatalogoNaFoto(it);
     const add = raiz.querySelector(".add-estudo");
     if (add) add.onclick = async (e) => {
       e.preventDefault();

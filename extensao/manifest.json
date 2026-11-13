@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Monvatti Marketplace",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Monvatti Marketplace: estude anúncios do Mercado Livre — vendas estimadas, logística, taxas e margem, direto na página do anúncio e da busca, e monte estudos em planilha.",
   "permissions": [
     "storage",
