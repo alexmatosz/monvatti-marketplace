@@ -81,7 +81,32 @@
     .gaveta header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--borda); }
     .gaveta header b { font-size: 14px; }
     .gaveta header button { margin-left: auto; }
-    .abas { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--borda); }
+    .abas { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--borda); }
+    .aba .conta { display: inline-block; min-width: 18px; margin-left: 5px; padding: 0 5px; border-radius: 999px; background: var(--azul);
+      color: #fff; font-size: 10.5px; line-height: 17px; text-align: center; }
+    .aba .conta:empty { display: none; }
+    .est-campos { grid-template-columns: 1fr 120px; }
+    .est-resumo { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--azul-borda); border-radius: 10px;
+      background: linear-gradient(180deg, #f5f8ff, var(--azul-suave)); overflow: hidden; }
+    .est-resumo > div { padding: 9px 12px; min-width: 0; }
+    .est-resumo > div + div { border-left: 1px solid var(--azul-borda); }
+    .est-resumo span { display: block; font-size: 11px; color: var(--suave); }
+    .est-resumo b { display: block; font-size: 17px; color: var(--azul-forte); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .est-lista { display: grid; border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; }
+    .est-item { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; padding: 9px 10px; border-top: 1px solid var(--borda); }
+    .est-item:first-child { border-top: 0; }
+    .est-item img, .est-item .sem-foto { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; background: var(--fundo); border: 1px solid var(--borda); }
+    .est-info { min-width: 0; display: grid; gap: 2px; }
+    .est-info a { color: var(--texto); font-weight: 600; font-size: 12.5px; text-decoration: none; overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .est-info a:hover { color: var(--azul); text-decoration: underline; }
+    .est-info span { font-size: 11.5px; color: var(--suave); font-variant-numeric: tabular-nums; }
+    .est-info .falta { color: var(--amarelo); }
+    .est-remover { background: transparent; color: var(--tenue); padding: 4px 8px; font-size: 16px; line-height: 1; }
+    .est-remover:hover { background: var(--vermelho-claro); color: var(--vermelho); }
+    button.no-estudo { background: var(--verde-claro); color: var(--verde); border: 1px solid #b7e4cf; }
+    button.no-estudo:hover { background: #d3efe2; }
+    .cartao-cab .add-estudo { margin-left: auto; padding: 3px 8px; font-size: 11px; border-radius: 999px; }
     .aba { background: transparent; color: var(--suave); padding: 6px 10px; font-weight: 600; }
     .aba:hover { background: var(--fundo); }
     .aba.ativa { background: var(--azul-suave); color: var(--azul-forte); }
@@ -586,7 +611,62 @@
     };
   }
 
-  const estado = { info: null, dados: null, pagina: null, imposto: 7 };
+  const estado = { info: null, dados: null, pagina: null, imposto: 7, estudo: { nome: "", imposto: null, itens: [] } };
+
+  // ---------------------------------------------------------------- estudo
+  // O estudo em montagem fica no chrome.storage: vale para todas as abas do
+  // Mercado Livre abertas e não se perde ao fechar o navegador.
+  const CHAVE_ESTUDO = "estudo_atual";
+  const MAX_ESTUDO = 200;
+  const estudoVazio = () => ({ nome: "", imposto: null, itens: [] });
+
+  async function carregarEstudo() {
+    try {
+      estado.estudo = { ...estudoVazio(), ...(await chrome.storage.local.get({ [CHAVE_ESTUDO]: estudoVazio() }))[CHAVE_ESTUDO] };
+    } catch {
+      estado.estudo = estudoVazio();
+    }
+    return estado.estudo;
+  }
+
+  async function salvarEstudo(mudar) {
+    const atual = await carregarEstudo();
+    const novo = mudar({ ...atual, itens: [...atual.itens] }) || atual;
+    estado.estudo = novo;
+    try {
+      await chrome.storage.local.set({ [CHAVE_ESTUDO]: novo });
+    } catch {
+      throw new Error("A extensão foi atualizada. Aperte F5 nesta página do Mercado Livre e tente de novo.");
+    }
+    return novo;
+  }
+
+  const noEstudo = (id) => !!id && estado.estudo.itens.some((x) => x.item_id === id);
+
+  async function adicionarAoEstudo(linhas) {
+    let novos = 0;
+    let cheio = false;
+    await salvarEstudo((e) => {
+      for (const l of linhas) {
+        if (!l?.item_id) continue;
+        const i = e.itens.findIndex((x) => x.item_id === l.item_id);
+        if (i >= 0) { e.itens[i] = { ...e.itens[i], ...l, adicionado_em: e.itens[i].adicionado_em }; continue; }
+        if (e.itens.length >= MAX_ESTUDO) { cheio = true; continue; }
+        e.itens.push({ ...l, adicionado_em: new Date().toISOString() });
+        novos++;
+      }
+      return e;
+    });
+    return { novos, cheio };
+  }
+
+  const tirarDoEstudo = (id) => salvarEstudo((e) => ({ ...e, itens: e.itens.filter((x) => x.item_id !== id) }));
+
+  function fotoDoCartao(el) {
+    const img = el.querySelector("img.poly-component__picture") || el.querySelector("img");
+    const src = img?.getAttribute("data-src") || img?.currentSrc || img?.src || "";
+    return src.startsWith("data:") ? "" : src;
+  }
 
   function aviso(raiz, texto, tipo = "info") {
     raiz.innerHTML = `<div class="painel"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b></div>
@@ -896,6 +976,11 @@
             <button class="sec" data-gaveta="tendencia">Tendência</button>
             <button class="sec" data-gaveta="ranqueamento">Radar</button>
           </div>
+          <div class="atalhos-painel">
+            <button id="m-estudo-add"></button>
+            <button class="sec" id="m-estudo-ver"></button>
+          </div>
+          <div id="m-retorno"></div>
           <p class="nota">Dados públicos da página e da API oficial, lidos pela conta de estudo. Vendas estimadas, ritmo, períodos e datas “aprox.” são estimativas. Visitas e conversão o Mercado Livre só mostra ao dono do anúncio.</p>
         </div>
       </div></div>`;
@@ -903,6 +988,51 @@
     ligarExplicacoes(raiz, d);
     raiz.querySelector("#m-calc").onclick = () => abrirGaveta("calculadora");
     raiz.querySelectorAll("[data-gaveta]").forEach((b) => (b.onclick = () => abrirGaveta(b.dataset.gaveta)));
+    raiz.querySelector("#m-estudo-ver").onclick = () => abrirGaveta("estudos");
+    raiz.querySelector("#m-estudo-add").onclick = async () => {
+      const retorno = raiz.querySelector("#m-retorno");
+      try {
+        if (noEstudo(estado.dados?.item_id)) {
+          await tirarDoEstudo(estado.dados.item_id);
+          retorno.innerHTML = "";
+        } else {
+          const { cheio } = await adicionarAoEstudo([linhaDoAnuncio()]);
+          retorno.innerHTML = cheio ? `<div class="aviso erro">O estudo já tem ${MAX_ESTUDO} anúncios. Gere a planilha ou tire alguns.</div>`
+            : '<div class="aviso ok">Adicionado ao estudo. Continue navegando e adicione outros; a planilha sai na aba Estudos.</div>';
+        }
+      } catch (err) {
+        retorno.innerHTML = `<div class="aviso erro">${esc(err.message)}</div>`;
+      }
+      botaoEstudoDoAnuncio();
+    };
+    botaoEstudoDoAnuncio();
+  }
+
+  function linhaDoAnuncio() {
+    const d = estado.dados;
+    const p = estado.pagina || {};
+    if (!d?.item_id) return null;
+    const tipo = d.tipo_id || "gold_special";
+    const tarifa = d.tarifas?.[tipo] || d.tarifas?.gold_special;
+    return {
+      item_id: d.item_id, titulo: d.titulo || p.titulo || "", link: p.link || location.href.split("#")[0], foto: (p.fotos || [])[0] || "",
+      preco: d.preco, vendidos: d.vendidos,
+      vendidos_texto: (String(p.vendidos_texto || "").match(/\+?\s*[\d.,]+\s*(mil|mi)?\s*vendid\w*/i) || [""])[0].trim(), vendas_dia: d.vendas_dia_exata ?? d.vendas_dia,
+      vendas_mes: d.vendas_mes, catalogo: d.produto_id ? "Sim" : "Não", comissao_pct: tarifa?.pct ?? null,
+      taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete, tipo: tipo === "gold_pro" ? "Premium" : "Clássico",
+      logistica: d.logistica || "", criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "", vendedor: d.vendedor?.apelido || "",
+    };
+  }
+
+  function botaoEstudoDoAnuncio() {
+    const raiz = estado.painel?.raiz;
+    const b = raiz?.querySelector("#m-estudo-add");
+    if (!b) return;
+    const dentro = noEstudo(estado.dados?.item_id);
+    b.className = dentro ? "no-estudo" : "";
+    b.textContent = dentro ? "✓ No estudo (tirar)" : "+ Adicionar ao estudo";
+    const ver = raiz.querySelector("#m-estudo-ver");
+    if (ver) ver.textContent = `Ver estudo (${estado.estudo.itens.length})`;
   }
 
   function desenharFaturamento(raiz, d) {
@@ -1295,7 +1425,8 @@
     raiz.innerHTML = `<div class="cartao">
       <div class="cartao-cab"><span class="marca mini"></span><b>Monvatti Marketplace</b>
         ${curvaDe(it) ? `<span class="selo-curva curva-${curvaDe(it).toLowerCase()}" title="${esc(EXPLICA_CURVA)}">Curva ${curvaDe(it)}</span>` : ""}
-        ${it.patrocinado ? '<span class="chip">Patrocinado</span>' : ""}</div>
+        ${it.patrocinado ? '<span class="chip">Patrocinado</span>' : ""}
+        ${it.item_id ? `<button class="add-estudo ${noEstudo(it.item_id) ? "no-estudo" : "sec"}" title="${noEstudo(it.item_id) ? "Tirar do estudo" : "Adicionar este anúncio ao estudo (aba Estudos)"}">${noEstudo(it.item_id) ? "✓ No estudo" : "+ Estudo"}</button>` : ""}</div>
       <div class="cartao-dados">
         ${l("Vendidos", inteiro(it.vendidos), "Número público (piso) do Mercado Livre")}
         ${l("Estimadas", inteiro(d?.vendas_estimadas ?? estimar(it.vendidos, it.patamar)), "1,55 × o número público")}
@@ -1317,6 +1448,21 @@
       </div>
       ${!d ? `<div class="cartao-pe">${carregando ? '<span class="girando"></span>Carregando…' : "Sem dados deste anúncio."}</div>` : ""}
     </div>`;
+    const add = raiz.querySelector(".add-estudo");
+    if (add) add.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      add.disabled = true;
+      try {
+        if (noEstudo(it.item_id)) await tirarDoEstudo(it.item_id);
+        else await adicionarAoEstudo([linhaDaBusca(it)]);
+      } catch (err) {
+        add.textContent = "Erro";
+        add.title = err.message;
+        return;
+      }
+      desenharCartao(it, soma);
+    };
   }
 
   async function carregarBusca(url) {
@@ -1405,7 +1551,10 @@
             <span>${visiveis} anúncio${visiveis === 1 ? "" : "s"}${temFiltro() ? ` · ${esc(descricaoFiltros())}` : " · use os filtros da esquerda para escolher"}. Gera o Excel com produto, preço, venda/dia, venda/mês, comissão, frete e a margem que se calcula quando o cliente preenche o custo.</span></div></div>
           <label class="imposto-estudo" title="Alíquota de imposto que o cliente paga. Vai para todas as linhas da planilha e pode ser trocada lá numa célula só.">Imposto do cliente
             <span><input id="m-imposto-estudo" type="number" min="0" max="100" step="0.01" value="${estado.impostoEstudo ?? estado.imposto}">%</span></label>
-          <button id="m-estudo" ${b.carregando || estado.gerandoEstudo || !visiveis ? "disabled" : ""}>${estado.gerandoEstudo ? '<span class="girando"></span>Gerando planilha…' : "Gerar estudo"}</button>
+          <div style="display:grid;gap:6px">
+            <button id="m-estudo" ${b.carregando || estado.gerandoEstudo || !visiveis ? "disabled" : ""}>${estado.gerandoEstudo ? '<span class="girando"></span>Gerando planilha…' : "Gerar estudo"}</button>
+            <button class="sec" id="m-estudo-add-todos" ${!visiveis ? "disabled" : ""} title="Junta estes anúncios ao estudo da aba Estudos (dá para juntar de várias buscas)">+ Juntar ao estudo</button>
+          </div>
         </div>
         ${estado.estudoMsg ? `<div class="aviso ${estado.estudoMsg.tipo}">${esc(estado.estudoMsg.texto)}</div>` : ""}
         <div class="acoes">
@@ -1418,6 +1567,7 @@
     const recarregar = raiz.querySelector("#m-carregar");
     if (recarregar) recarregar.onclick = () => carregarBusca(location.href);
     raiz.querySelector("#m-estudo").onclick = gerarEstudo;
+    raiz.querySelector("#m-estudo-add-todos").onclick = adicionarVisiveisAoEstudo;
     raiz.querySelector("#m-imposto-estudo").oninput = (e) => (estado.impostoEstudo = e.target.value === "" ? null : +e.target.value);
   }
 
@@ -1444,6 +1594,34 @@
     return caminho.replace(/_.*$/, "").replace(/-/g, " ").trim();
   }
 
+  function linhaDaBusca(i) {
+    const d = estado.busca?.dados?.[i.item_id] || {};
+    const tipo = tipoDe(i);
+    const tarifa = d.tarifas?.[tipo];
+    const link = i.el.querySelector('a[href*="mercadolivre.com.br/"]:not([href*="mclics"])')?.href?.split("#")[0]
+      || `https://produto.mercadolivre.com.br/MLB-${i.item_id.slice(3)}`;
+    return {
+      item_id: i.item_id, titulo: i.titulo, link, foto: fotoDoCartao(i.el), preco: i.preco, vendidos: d.vendidos ?? i.vendidos,
+      vendidos_texto: i.vendidos_texto, vendas_dia: d.vendas_dia_exata ?? d.vendas_dia, vendas_mes: d.vendas_mes,
+      catalogo: i.catalogo ? "Sim" : "Não", comissao_pct: tarifa?.pct ?? null, taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete,
+      tipo: tipo === "gold_pro" ? "Premium" : "Clássico", logistica: nomeLogistica(i),
+      criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "", vendedor: nomeVendedor(i, d),
+    };
+  }
+
+  async function adicionarVisiveisAoEstudo() {
+    const visiveis = (estado.itensBusca || []).filter((i) => i.item_id && passaNoFiltro(i));
+    try {
+      const { novos, cheio } = await adicionarAoEstudo(visiveis.map(linhaDaBusca));
+      const quantos = novos ? `${novos} anúncio${novos === 1 ? "" : "s"} adicionado${novos === 1 ? "" : "s"} ao estudo` : "Esses anúncios já estavam no estudo";
+      estado.estudoMsg = { tipo: cheio ? "erro" : "ok", texto: quantos
+        + (cheio ? `. O estudo chegou ao limite de ${MAX_ESTUDO}.` : `. O estudo tem ${estado.estudo.itens.length} no total; abra a aba Estudos para gerar a planilha.`) };
+    } catch (err) {
+      estado.estudoMsg = { tipo: "erro", texto: err.message };
+    }
+    desenharTudoBusca();
+  }
+
   const impostoDoEstudo = () => Math.min(Math.max(estado.impostoEstudo ?? estado.imposto ?? 0, 0), 100);
 
   async function gerarEstudo() {
@@ -1453,21 +1631,8 @@
       await carregarBusca(location.href);
       if (!estado.busca?.dados) return;
     }
-    const dados = estado.busca.dados;
-    const linhas = (estado.itensBusca || []).filter((i) => i.item_id && passaNoFiltro(i)).map((i) => {
-      const d = dados[i.item_id] || {};
-      const tipo = tipoDe(i);
-      const tarifa = d.tarifas?.[tipo];
-      const link = i.el.querySelector('a[href*="mercadolivre.com.br/"]:not([href*="mclics"])')?.href?.split("#")[0]
-        || `https://produto.mercadolivre.com.br/MLB-${i.item_id.slice(3)}`;
-      return {
-        titulo: i.titulo, link, preco: i.preco, vendidos: d.vendidos ?? i.vendidos, vendidos_texto: i.vendidos_texto,
-        vendas_dia: d.vendas_dia_exata ?? d.vendas_dia, vendas_mes: d.vendas_mes, catalogo: i.catalogo ? "Sim" : "Não",
-        comissao_pct: tarifa?.pct ?? null, taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete,
-        tipo: tipo === "gold_pro" ? "Premium" : "Clássico", logistica: nomeLogistica(i),
-        criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "",
-      };
-    }).sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0));
+    const linhas = (estado.itensBusca || []).filter((i) => i.item_id && passaNoFiltro(i)).map(linhaDaBusca)
+      .sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0));
     if (!linhas.length) {
       estado.estudoMsg = { tipo: "erro", texto: "Nenhum anúncio visível com o filtro escolhido." };
       return desenharResumo();
@@ -1962,14 +2127,129 @@
     carregarRadar();
   }
 
+  function estudosNaGaveta(conteudo) {
+    const e = estado.estudo;
+    const itens = e.itens;
+    const inteiro = (x) => (x == null || isNaN(x) ? "—" : Math.round(x).toLocaleString("pt-BR"));
+    const somaMes = itens.reduce((a, x) => a + (x.vendas_mes || 0), 0);
+    const comPreco = itens.filter((x) => x.preco);
+    const precoMedio = comPreco.length ? comPreco.reduce((a, x) => a + x.preco, 0) / comPreco.length : null;
+    const imposto = e.imposto ?? estado.imposto;
+    const linha = (x) => {
+      const partes = [brl(x.preco), x.vendas_mes != null ? `${inteiro(x.vendas_mes)}/mês` : "sem ritmo", x.logistica,
+        x.comissao_pct != null ? `${x.tipo} ${pct(x.comissao_pct)}` : x.tipo].filter(Boolean);
+      const falta = x.comissao_pct == null || x.vendas_mes == null;
+      return `<div class="est-item">
+        ${x.foto ? `<img src="${esc(x.foto)}" alt="" loading="lazy">` : '<span class="sem-foto"></span>'}
+        <div class="est-info"><a href="${esc(x.link)}" target="_blank" rel="noopener" title="${esc(x.titulo)}">${esc(x.titulo || x.item_id)}</a>
+          <span>${esc(partes.join(" · "))}</span>
+          ${falta ? '<span class="falta">Sem taxa ou ritmo: entrou antes de carregar os dados. Abra o anúncio e adicione de novo para completar.</span>' : ""}
+          ${x.vendedor ? `<span>${esc(x.vendedor)}</span>` : ""}</div>
+        <button class="est-remover" data-tirar="${esc(x.item_id)}" title="Tirar do estudo" aria-label="Tirar do estudo">×</button>
+      </div>`;
+    };
+    conteudo.innerHTML = `
+      <div class="campos est-campos">
+        <label>Cliente ou nome do estudo<input id="e-nome" maxlength="120" placeholder="Ex.: Loja da Ana · fones bluetooth" value="${esc(e.nome)}"></label>
+        <label title="Alíquota do cliente. Vai para todas as linhas da planilha e dá para trocar lá numa célula só.">Imposto do cliente (%)<input id="e-imposto" type="number" min="0" max="100" step="0.01" value="${imposto}"></label>
+      </div>
+      ${itens.length ? `
+        <div class="est-resumo">
+          <div><span>Anúncios</span><b>${itens.length}</b></div>
+          <div title="Soma de venda/mês (média desde o início) dos anúncios do estudo"><span>Vendas/mês somadas</span><b>${inteiro(somaMes)}</b></div>
+          <div><span>Preço médio</span><b>${brl(precoMedio)}</b></div>
+        </div>
+        <div class="est-lista">${itens.map(linha).join("")}</div>
+        <div class="acoes">
+          <button id="e-gerar" ${estado.gerandoEstudoAba ? "disabled" : ""}>${estado.gerandoEstudoAba ? '<span class="girando"></span>Gerando planilha…' : `Gerar planilha (${itens.length})`}</button>
+          <button class="sec" id="e-limpar">${estado.confirmarLimpar ? "Clique de novo para apagar tudo" : "Limpar estudo"}</button>
+        </div>
+        <div id="e-msg">${estado.estudoAbaMsg ? `<div class="aviso ${estado.estudoAbaMsg.tipo}">${esc(estado.estudoAbaMsg.texto)}</div>` : ""}</div>
+        <p class="nota">A planilha sai do anúncio que mais vende para o que menos vende, com a coluna amarela de custo para o cliente preencher; a margem se calcula sozinha. O estudo fica guardado neste navegador até você limpar.</p>`
+      : `<div class="aviso info">Nenhum anúncio no estudo ainda. Para montar:<br>
+          • na página de um anúncio, clique em <b>+ Adicionar ao estudo</b>;<br>
+          • numa busca, use <b>+ Estudo</b> em cada cartão ou <b>+ Juntar ao estudo</b> no topo para levar todos os filtrados.<br>
+          Dá para juntar anúncios de várias buscas. Depois é só voltar aqui e gerar a planilha.</div>`}`;
+    let espera;
+    const guardarCampos = () => {
+      clearTimeout(espera);
+      espera = setTimeout(() => {
+        const nome = conteudo.querySelector("#e-nome").value.trim();
+        const v = conteudo.querySelector("#e-imposto").value;
+        salvarEstudo((x) => ({ ...x, nome, imposto: v === "" ? null : Math.min(Math.max(+v, 0), 100) })).catch(() => {});
+      }, 300);
+    };
+    conteudo.querySelector("#e-nome").oninput = guardarCampos;
+    conteudo.querySelector("#e-imposto").oninput = guardarCampos;
+    conteudo.querySelectorAll("[data-tirar]").forEach((b) => (b.onclick = () => tirarDoEstudo(b.dataset.tirar).catch(() => {})));
+    const limpar = conteudo.querySelector("#e-limpar");
+    if (limpar) limpar.onclick = async () => {
+      if (!estado.confirmarLimpar) {
+        estado.confirmarLimpar = true;
+        setTimeout(() => {
+          estado.confirmarLimpar = false;
+          if (conteudo.isConnected && estado.gaveta?.aba === "estudos") estudosNaGaveta(conteudo);
+        }, 4000);
+        return estudosNaGaveta(conteudo);
+      }
+      estado.confirmarLimpar = false;
+      estado.estudoAbaMsg = null;
+      await salvarEstudo((x) => ({ ...estudoVazio(), nome: x.nome, imposto: x.imposto })).catch(() => {});
+    };
+    const gerar = conteudo.querySelector("#e-gerar");
+    if (gerar) gerar.onclick = async () => {
+      if (estado.gerandoEstudoAba) return;
+      estado.gerandoEstudoAba = true;
+      estado.estudoAbaMsg = null;
+      estudosNaGaveta(conteudo);
+      const atual = estado.estudo;
+      const linhas = [...atual.itens].sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0));
+      try {
+        const r = await enviar({ tipo: "estudo", pesquisa: atual.nome || "anúncios selecionados", filtro: "",
+          imposto: Math.min(Math.max(atual.imposto ?? estado.imposto ?? 0, 0), 100), itens: linhas });
+        const bytes = Uint8Array.from(atob(r.base64), (c) => c.charCodeAt(0));
+        await baixarBlob(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), r.nome);
+        estado.estudoAbaMsg = { tipo: "ok", texto: `Planilha “${r.nome}” baixada com ${linhas.length} anúncios. Abra no Excel ou importe no Google Planilhas e preencha a coluna amarela de custo.` };
+      } catch (err) {
+        estado.estudoAbaMsg = { tipo: "erro", texto: err.message };
+      } finally {
+        estado.gerandoEstudoAba = false;
+        if (conteudo.isConnected) estudosNaGaveta(conteudo);
+      }
+    };
+  }
+
+  // Quando o estudo muda (nesta aba do navegador ou em outra), atualiza o que
+  // estiver na tela: botão do anúncio, cartões da busca e a aba Estudos.
+  let assinaturaEstudo = "";
+  try {
+    chrome.storage.onChanged.addListener((mudancas, area) => {
+      if (area !== "local" || !mudancas[CHAVE_ESTUDO]) return;
+      estado.estudo = { ...estudoVazio(), ...(mudancas[CHAVE_ESTUDO].newValue || {}) };
+      const assinatura = estado.estudo.itens.map((x) => x.item_id).join(",");
+      const mudouLista = assinatura !== assinaturaEstudo;
+      assinaturaEstudo = assinatura;
+      botaoEstudoDoAnuncio();
+      const conta = estado.gaveta?.raiz?.querySelector('.aba[data-aba="estudos"] .conta');
+      if (conta) conta.textContent = estado.estudo.itens.length || "";
+      if (!mudouLista) return;
+      if (estado.gaveta?.aba === "estudos" && estado.gaveta.conteudo.isConnected) estudosNaGaveta(estado.gaveta.conteudo);
+      if (estado.itensBusca?.length && estado.resumoBusca) {
+        const soma = estado.itensBusca.reduce((a, i) => a + (i.vendidos || 0), 0);
+        estado.itensBusca.forEach((it) => desenharCartao(it, soma));
+      }
+    });
+  } catch {}
+
   function abrirGaveta(aba = "calculadora") {
     const { host, raiz } = hospedeiro("monvatti-gaveta");
     document.body.append(host);
-    const fechar = () => host.remove();
+    const fechar = () => { host.remove(); estado.gaveta = null; };
     raiz.innerHTML = `<div class="fundo-gaveta"></div><aside class="gaveta" role="dialog" aria-label="Monvatti Marketplace">
       <header><span class="marca"></span><b>Monvatti Marketplace</b><button class="sec" id="g-fechar">Fechar</button></header>
       <nav class="abas">
         <button class="aba" data-aba="calculadora">Calculadora</button>
+        <button class="aba" data-aba="estudos">Estudos<span class="conta">${estado.estudo.itens.length || ""}</span></button>
         <button class="aba" data-aba="metricas">Métricas</button>
         <button class="aba" data-aba="tendencia">Tendência</button>
         <button class="aba" data-aba="ranqueamento">Ranking e radar</button>
@@ -1979,8 +2259,9 @@
     raiz.querySelector("#g-fechar").onclick = fechar;
     const conteudo = raiz.querySelector("#g-conteudo");
     const trocar = (nome) => {
+      estado.gaveta = { raiz, conteudo, aba: nome };
       raiz.querySelectorAll(".aba").forEach((b) => b.classList.toggle("ativa", b.dataset.aba === nome));
-      ({ metricas: metricasNaGaveta, tendencia: tendenciaNaGaveta, ranqueamento: ranqueamentoNaGaveta }[nome] || calculadora)(conteudo);
+      ({ metricas: metricasNaGaveta, tendencia: tendenciaNaGaveta, ranqueamento: ranqueamentoNaGaveta, estudos: estudosNaGaveta }[nome] || calculadora)(conteudo);
     };
     raiz.querySelectorAll(".aba").forEach((b) => (b.onclick = () => trocar(b.dataset.aba)));
     trocar(aba);
@@ -2126,6 +2407,8 @@
     estado.painel = null;
     estado.dados = null;
     estado.calc = null;
+    await carregarEstudo();
+    assinaturaEstudo = estado.estudo.itens.map((x) => x.item_id).join(",");
     botaoFlutuante();
     garantirPainel();
     botaoDownload();

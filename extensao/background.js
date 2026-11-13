@@ -285,10 +285,28 @@ const acoes = {
   },
   async colarCodigoML({ code }) {
     const { ml_state } = await chrome.storage.local.get({ ml_state: "" });
-    if (!ml_state) throw new Error("Clique em Vincular antes de colar o código.");
+    if (!ml_state) throw new Error("Clique em Conectar antes de colar o código.");
     const r = await chamar("/api/ml/colar", { metodo: "POST", corpo: { code, state: ml_state } });
     await chrome.storage.local.remove("ml_state");
     return r;
+  },
+  async retornoML({ code, state }, remetente) {
+    const { servidor } = await configuracao();
+    let r;
+    try {
+      r = await fetch(servidor + "/api/ml/retorno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, state }),
+      });
+    } catch {
+      throw new Error("servidor Monvatti fora do ar");
+    }
+    const dados = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(typeof dados.detail === "string" ? dados.detail : "o servidor recusou (" + r.status + ")");
+    await chrome.storage.local.remove(dados.central ? "ml_state_central" : "ml_state");
+    if (remetente?.tab?.id) setTimeout(() => chrome.tabs.remove(remetente.tab.id).catch(() => {}), 2500);
+    return dados;
   },
   async situacaoML() {
     return chamar("/api/ml/situacao");
@@ -320,9 +338,9 @@ const acoes = {
   },
 };
 
-chrome.runtime.onMessage.addListener((msg, _remetente, responder) => {
+chrome.runtime.onMessage.addListener((msg, remetente, responder) => {
   const acao = acoes[msg?.tipo];
   if (!acao) return false;
-  acao(msg).then((dados) => responder({ ok: true, dados })).catch((e) => responder({ ok: false, erro: e.message }));
+  acao(msg, remetente).then((dados) => responder({ ok: true, dados })).catch((e) => responder({ ok: false, erro: e.message }));
   return true;
 });

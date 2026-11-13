@@ -8,6 +8,22 @@ import os
 from pathlib import Path
 
 
+def _carregar_env(arquivo: Path) -> None:
+    """Lê CHAVE=valor do .env da raiz (sem dependência), para rodar na máquina.
+    O que já estiver no ambiente tem prioridade. O .env não vai para o Git."""
+    if not arquivo.is_file():
+        return
+    for linha in arquivo.read_text(encoding="utf-8").splitlines():
+        linha = linha.strip()
+        if not linha or linha.startswith("#") or "=" not in linha:
+            continue
+        chave, valor = linha.split("=", 1)
+        os.environ.setdefault(chave.strip(), valor.strip().strip('"').strip("'"))
+
+
+_carregar_env(Path(__file__).resolve().parent.parent / ".env")
+
+
 def _env(nome: str, padrao: str = "") -> str:
     return os.getenv(nome, padrao).strip()
 
@@ -41,7 +57,7 @@ MODO_DEMONSTACAO = _env("MONVATTI_MODO_DEMO", "false" if EM_PRODUCAO else "true"
 
 IMPOSTO_PADRAO = float(_env("MONVATTI_IMPOSTO_PADRAO", "7"))
 
-VERSAO_EXTENSAO = _env("MONVATTI_VERSAO_EXTENSAO", "0.5.0")
+VERSAO_EXTENSAO = _env("MONVATTI_VERSAO_EXTENSAO", "0.6.0")
 
 # Sessão longa: o código por e-mail só é pedido de novo quando ela vence.
 TOKEN_VALIDADE_DIAS = int(_env("MONVATTI_TOKEN_DIAS", "90"))

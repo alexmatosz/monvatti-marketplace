@@ -55,13 +55,21 @@ async function desenhar() {
   $("#quem").textContent = `Conectado como ${e.nome}${ate ? ` · acesso até ${ate}` : ""}.`;
   $("#imposto").value = e.imposto;
   const admin = e.papel === "admin";
-  $("#bloco-admin").hidden = !admin;
-  if (!admin) return;
-  const mlConectado = !!e.ml_conectado;
-  $("#ml").className = "caixa " + (mlConectado ? "ok" : "neutra");
-  $("#ml").textContent = mlConectado
-    ? `Conta de estudo vinculada${e.ml_apelido ? ` (${e.ml_apelido})` : ""}. Todos os clientes estudam por ela.`
-    : "Nenhuma conta de estudo vinculada: os clientes não conseguem ver os dados.";
+  $("#bloco-admin").hidden = false;
+  const mlConectado = !!e.ml_propria;
+  $("#titulo-ml").textContent = admin ? "Conta central de estudo (administrador)" : "Sua conta do Mercado Livre";
+  $("#conectar-ml").textContent = admin ? "Vincular a conta de estudo do Mercado Livre" : "Conectar minha conta do Mercado Livre";
+  $("#desconectar-ml").textContent = admin ? "Desvincular a conta de estudo" : "Desconectar minha conta do Mercado Livre";
+  $("#ml").className = "caixa " + (mlConectado ? "ok" : e.ml_central ? "neutra" : "erro");
+  $("#ml").textContent = admin
+    ? (mlConectado
+      ? `Conta de estudo vinculada${e.ml_apelido ? ` (${e.ml_apelido})` : ""}. É a reserva de quem não conectou a própria conta.`
+      : "Nenhuma conta de estudo vinculada: clientes sem conta própria conectada ficam sem os dados.")
+    : (mlConectado
+      ? `Sua conta do Mercado Livre está conectada${e.ml_apelido ? ` (${e.ml_apelido})` : ""}. Estudo liberado.`
+      : e.ml_central
+        ? "Estudo liberado pela conta da Monvatti. Conecte a sua para não depender dela. É só leitura: nada muda na sua conta."
+        : "Conecte a sua conta do Mercado Livre para liberar o estudo. É só leitura: a Monvatti não altera nada na sua conta.");
   $("#conectar-ml").hidden = mlConectado;
   $("#desconectar-ml").hidden = !mlConectado;
   const { ml_state } = await chrome.storage.local.get({ ml_state: "" });
@@ -131,9 +139,9 @@ $("#conectar-ml").onclick = (e) => ocupado(e.currentTarget, async () => {
   const { manual } = await enviar({ tipo: "conectarML" });
   if (manual) {
     $("#ml-manual").hidden = false;
-    aviso("Abri o Mercado Livre numa aba. Autorize com a conta de estudo, copie o código e cole aqui.", "ok");
+    aviso("Abri o Mercado Livre numa aba. Autorize e a conexão termina sozinha (a aba fecha). Reabra esta janela para ver. Se não terminar, cole aqui o código que aparecer.", "ok");
   } else {
-    aviso("Abri o Mercado Livre numa aba. Autorize com a conta de estudo e depois reabra esta janela.", "ok");
+    aviso("Abri o Mercado Livre numa aba. Autorize e depois reabra esta janela.", "ok");
   }
 });
 
@@ -143,13 +151,13 @@ $("#confirmar-ml").onclick = (e) => ocupado(e.currentTarget, async () => {
   await enviar({ tipo: "colarCodigoML", code });
   $("#ml-code").value = "";
   await desenhar();
-  aviso("Conta de estudo vinculada!", "ok");
+  aviso("Conta do Mercado Livre conectada!", "ok");
 });
 
 $("#desconectar-ml").onclick = (e) => ocupado(e.currentTarget, async () => {
   await enviar({ tipo: "desconectarML" });
   await desenhar();
-  aviso("Conta de estudo desvinculada.", "ok");
+  aviso("Conta do Mercado Livre desconectada.", "ok");
 });
 
 $("#salvar-imposto").onclick = async () => {

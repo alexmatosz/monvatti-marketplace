@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Monvatti Marketplace",
-  "version": "0.5.0",
-  "description": "Monvatti Marketplace: estude anúncios do Mercado Livre — vendas estimadas, logística, taxas e margem, direto na página do anúncio e da busca.",
+  "version": "0.6.0",
+  "description": "Monvatti Marketplace: estude anúncios do Mercado Livre — vendas estimadas, logística, taxas e margem, direto na página do anúncio e da busca, e monte estudos em planilha.",
   "permissions": [
     "storage",
     "cookies",
@@ -37,6 +37,15 @@
       ],
       "js": [
         "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://oauth.pstmn.io/v1/*"
+      ],
+      "js": [
+        "retorno-ml.js"
       ],
       "run_at": "document_idle"
     }

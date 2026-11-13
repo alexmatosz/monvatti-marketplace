@@ -50,25 +50,47 @@ def criar_token(usuario_id: int, sessao_versao: int) -> str:
     return f"{corpo}.{_assinar(corpo)}"
 
 
-def criar_state_ml(usuario_id: int) -> str:
-    """State do OAuth do ML que carrega, assinado, quem está conectando. O
-    callback do Mercado Livre não traz o token da sessão, então é por aqui que
-    o servidor sabe de quem é a conta que voltou."""
-    corpo = f"{usuario_id}.{secrets.token_urlsafe(6)}"
+def criar_state_ml(usuario_id: int, central: bool = False) -> str:
+    """State do OAuth do ML que carrega, assinado, quem está conectando e se é a
+    conta central. O callback do Mercado Livre não traz o token da sessão, então
+    é por aqui que o servidor sabe de quem é a conta que voltou."""
+    corpo = f"{usuario_id}.{'c' if central else 'u'}{secrets.token_urlsafe(6)}"
     return f"{corpo}.{_assinar(corpo)}"
 
 
-def ler_state_ml(state: str) -> int | None:
+def ler_state_ml(state: str) -> tuple[int, bool] | None:
+    """(usuario_id, central) ou None se o state não for nosso."""
     try:
         uid, nonce, assinatura = (state or "").split(".", 2)
     except ValueError:
         return None
-    if not hmac.compare_digest(assinatura, _assinar(f"{uid}.{nonce}")):
+    if not hmac.compare_digest(assinatura, _assinar(f"{uid}.{nonce}")) or nonce[:1] not in ("c", "u"):
         return None
     try:
-        return int(uid)
+        return int(uid), nonce[0] == "c"
     except ValueError:
         return None
+
+
+def criar_convite(usuario_id: int, dias: int = 7) -> str:
+    """Link da landing para o cliente conectar o Mercado Livre logo após o
+    cadastro/pagamento, sem login. Assinado e com vencimento; só serve para
+    conectar a conta do ML dele."""
+    corpo = _b64(json.dumps({"convite": usuario_id, "exp": int(time.time()) + dias * 86400}).encode())
+    return f"{corpo}.{_assinar('convite|' + corpo)}"
+
+
+def ler_convite(convite: str) -> int | None:
+    try:
+        corpo, assinatura = (convite or "").split(".", 1)
+        if not hmac.compare_digest(assinatura, _assinar("convite|" + corpo)):
+            return None
+        dados = json.loads(_db64(corpo))
+    except (ValueError, TypeError):
+        return None
+    if dados.get("exp", 0) < time.time():
+        return None
+    return dados.get("convite") if isinstance(dados.get("convite"), int) else None
 
 
 def pkce_do_state(state: str) -> tuple[str, str]:
@@ -93,3 +115,11 @@ def ler_token(token: str) -> dict | None:
     if dados.get("exp", 0) < time.time():
         return None
     return dados
+
+
+def novo_codigo_login() -> str:
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def hash_codigo_login(email: str, codigo: str) -> str:
+    return hmac.new(config.SECRET.encode(), f"login|{email}|{codigo}".encode(), hashlib.sha256).hexdigest()

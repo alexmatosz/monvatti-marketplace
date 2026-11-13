@@ -4,15 +4,18 @@
 - /eu      — quem está logado, imposto padrão e conta do ML detectada;
 - /estudo  — gera a planilha .xlsx a partir dos itens coletados na página;
 - /anuncio, /tarifas, /busca — métricas e taxas do anúncio pela conta de estudo
-             do Mercado Livre (conecte em /api/ml/conectar). Sem a conta conectada,
-             respondem 503 com a mensagem pedindo a conexão.
+             do Mercado Livre — a conta que o cliente autorizou (landing ou
+             popup) ou, na falta dela, a conta central. Sem nenhuma, 503.
 """
+
+import re
+import unicodedata
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from backend import config, estudo_ml, estudo_planilha
+from backend import config, estudo_ml, estudo_planilha, ml
 from backend.auth import usuario_atual
 from backend.db import get_db
 from backend.ml import ErroML, conta_ml_do_usuario
@@ -77,6 +80,12 @@ class Ranqueamento(BaseModel):
     termo: str = Field(default="", max_length=120)
 
 
+def _slug(texto: str) -> str:
+    """Nome de arquivo só com a-z, 0-9 e hífen (o cabeçalho HTTP não aceita acento)."""
+    sem_acento = unicodedata.normalize("NFD", texto or "").encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", sem_acento.lower()).strip("-")[:50]
+
+
 @router.get("/versao")
 def versao():
     return {"versao": config.VERSAO_EXTENSAO, "landing": config.LANDING_URL, "suporte": config.EMAIL_SUPORTE}
@@ -84,18 +93,17 @@ def versao():
 
 @router.get("/eu")
 def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual), db: Session = Depends(get_db)):
+    admin = u.papel == "admin"
     propria = db.query(ContaML).filter(ContaML.usuario_id == u.id).first()
-    usada = conta_ml_do_usuario(db, u)
-    # A extensão só monta o painel do anúncio com conta.liberado; a assinatura já
-    # foi conferida em usuario_atual, então o que falta é haver uma conta do ML
-    # (a própria ou a central da Monvatti).
-    return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao, "papel": u.papel,
+    central = ml.conta_central(db)
+    tem_propria, tem_central = ml._conectada(propria), ml._conectada(central)
+    liberado = tem_propria or tem_central
+    return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao, "admin": admin, "papel": u.papel,
             "assinatura_ate": u.assinatura_ate.isoformat() if u.assinatura_ate else None,
-            "conta": {"conta": conta_ml or "deslogado", "liberado": bool(usada),
-                      "motivo": "" if usada else
-                      "O estudo está temporariamente indisponível (conta de estudo desconectada). Fale com o suporte da Monvatti."},
-            "ml_conectado": bool(propria and (propria.credenciais or {}).get("access_token")),
-            "ml_apelido": propria.apelido if propria else "",
+            "conta": {"conta": conta_ml or "deslogado", "liberado": liberado, "motivo": "" if liberado else ml.CONECTE},
+            "ml_conectado": liberado,
+            "ml_propria": tem_propria, "ml_apelido": propria.apelido if tem_propria else "",
+            "ml_central": tem_central, "ml_central_apelido": central.apelido if tem_central and admin else "",
             "clientes": []}
 
 
@@ -143,7 +151,7 @@ def ranqueamento(dados: Ranqueamento, u: Usuario = Depends(usuario_atual), db: S
 def estudo(dados: Estudo, u: Usuario = Depends(usuario_atual), _db: Session = Depends(get_db)):
     imposto = dados.imposto if dados.imposto > 0 else u.imposto_padrao
     conteudo = estudo_planilha.planilha(dados.pesquisa, dados.filtro, imposto, dados.itens)
-    nome = "estudo-monvatti.xlsx"
+    nome = f"estudo-{_slug(dados.pesquisa) or 'monvatti'}.xlsx"
     return Response(conteudo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": f'attachment; filename="{nome}"'})
 
