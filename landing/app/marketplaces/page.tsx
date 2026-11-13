@@ -29,7 +29,7 @@ export default function MarketplacesPagina() {
             <Link
               key={c.id}
               href={`/marketplaces/${c.id}`}
-              className="foco group flex flex-col rounded-3xl border border-platina bg-white p-7 transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-30px_rgba(7,10,26,0.4)]"
+              className="foco group flex flex-col rounded-3xl border border-platina bg-card p-7 transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-30px_rgba(7,10,26,0.4)]"
             >
               <span className="h-12 w-12 rounded-2xl ring-1 ring-black/5" style={{ background: c.estado === "breve" ? "#EEF0F6" : c.cor }} />
               <div className="mt-5 flex items-center gap-2">

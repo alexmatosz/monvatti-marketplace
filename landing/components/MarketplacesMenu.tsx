@@ -43,7 +43,7 @@ export function MarketplacesMenu() {
           role="menu"
           className="absolute left-1/2 top-full z-50 w-[300px] -translate-x-1/2 pt-3"
         >
-          <div className="overflow-hidden rounded-2xl border border-platina bg-white p-1.5 shadow-[0_24px_60px_-24px_rgba(7,10,26,0.45)]">
+          <div className="overflow-hidden rounded-2xl border border-platina bg-card p-1.5 shadow-[0_24px_60px_-24px_rgba(7,10,26,0.45)]">
             {CANAIS.map((c) => (
               <Link
                 key={c.id}
@@ -72,7 +72,7 @@ export function MarketplacesMenu() {
               onClick={() => setAberto(false)}
               className="foco mt-1 block rounded-xl px-3 py-2 text-[12.5px] font-semibold text-azul transition-colors hover:bg-nevoa"
             >
-              Ver todos os canais →
+              Ver todos os canais
             </Link>
           </div>
         </div>

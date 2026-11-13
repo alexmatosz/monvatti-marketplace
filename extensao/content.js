@@ -62,6 +62,19 @@
     .fab { position: fixed; right: 24px; bottom: 96px; width: 52px; height: 52px; border-radius: 50%;
       background: var(--azul) url("${chrome.runtime.getURL("icones/icone-branco-48.png")}") center/58% no-repeat;
       box-shadow: 0 12px 32px -8px rgba(15, 23, 42, .35); cursor: pointer; z-index: 2147483000; border: 0; padding: 0; }
+    .fab.entrar { width: auto; height: 44px; border-radius: 999px; padding: 0 18px 0 46px; color: #fff; font: 600 14px/1 Inter, "Segoe UI", system-ui, sans-serif;
+      background-position: 14px center; background-size: 22px; }
+    .fab.entrar:hover { background-color: var(--azul-forte); }
+    .entrar-card { position: fixed; right: 24px; bottom: 152px; width: 320px; z-index: 2147483003; background: #fff; border: 1px solid var(--borda);
+      border-radius: 14px; box-shadow: 0 24px 60px -20px rgba(15, 23, 42, .45); overflow: hidden; }
+    .entrar-card .corpo { gap: 10px; }
+    .entrar-card label { display: block; font-size: 12px; color: var(--suave); margin-bottom: 4px; }
+    .entrar-card input { width: 100%; }
+    .entrar-card .codigo { font-size: 22px; letter-spacing: 8px; text-align: center; font-weight: 700; }
+    .entrar-card button.cheio { width: 100%; }
+    .entrar-card .links { display: flex; justify-content: space-between; }
+    button.link { padding: 0; background: none; color: var(--azul); font-size: 12px; }
+    button.link:hover { background: none; text-decoration: underline; }
     .fundo-gaveta { position: fixed; inset: 0; background: rgba(7, 10, 23, .25); z-index: 2147483001; }
     .gaveta { position: fixed; top: 0; right: 0; height: 100vh; width: min(460px, 100vw); background: #fff; z-index: 2147483002;
       box-shadow: -12px 0 32px -8px rgba(15, 23, 42, .25); display: flex; flex-direction: column; }
@@ -129,7 +142,9 @@
     .kpis b small { font-size: 11px; font-weight: 500; color: var(--suave); }
     .kpis em { display: block; font-style: normal; font-size: 10.5px; color: var(--tenue); }
     .segmento { display: inline-flex; background: var(--fundo); border: 1px solid var(--borda); border-radius: 8px; padding: 2px; gap: 2px; }
-    .segmento button { background: transparent; color: var(--suave); padding: 4px 8px; font-size: 11px; font-weight: 600; border-radius: 6px; }
+    .segmento button { background: transparent; color: var(--suave); padding: 4px 8px; font-size: 11px; font-weight: 600; border-radius: 6px; white-space: nowrap; }
+    .segmento.cheio { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 10px; }
+    .segmento.cheio button { padding: 6px 4px; }
     .segmento button:hover { background: #fff; color: var(--texto); }
     .segmento button.ativo { background: #fff; color: var(--azul-forte); box-shadow: 0 1px 2px rgba(15, 23, 42, .12); }
     .fat { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -158,21 +173,26 @@
     .vendas-tipos { display: grid; gap: 8px; }
     .tipo { border: 1px solid var(--borda); border-radius: 10px; padding: 9px 11px 10px; min-width: 0; }
     .tipo.este { border-color: var(--azul-borda); background: linear-gradient(180deg, #f7f9ff, #fff 45%); box-shadow: 0 0 0 1px var(--azul-borda) inset; }
-    .tipo-cab { display: flex; align-items: center; gap: 6px; padding-bottom: 7px; margin-bottom: 6px; border-bottom: 1px solid var(--borda); }
+    .tipo-cab { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
     .tipo-cab > b { font-size: 13px; }
-    .tipo-cab .chip { font-size: 9.5px; padding: 2px 6px; }
-    .tipo-recebe { margin-left: auto; font-size: 10.5px; color: var(--suave); white-space: nowrap; cursor: help; }
-    .tipo-recebe b { font-size: 14px; color: var(--verde); font-variant-numeric: tabular-nums; }
-    .tipo-recebe em { font-style: normal; color: var(--tenue); margin-left: 2px; }
-    .tipo-corpo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }
-    .vl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 2px 0; font-size: 11.5px; cursor: help; }
-    .vl span { color: var(--suave); white-space: nowrap; }
-    .vl b { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .vl b i { font-style: normal; font-weight: 400; color: var(--tenue); font-size: 10.5px; margin-right: 5px; }
-    .tipo-faixa { display: grid; gap: 5px; }
-    .tipo-faixa > div { border: 1px solid var(--azul-borda); background: var(--azul-suave); border-radius: 7px; padding: 4px 8px; text-align: right; cursor: help; }
-    .tipo-faixa span { display: block; font-size: 9.5px; color: var(--suave); white-space: nowrap; }
-    .tipo-faixa b { font-size: 12px; color: var(--azul-forte); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tipo-cab .chip { font-size: 10px; padding: 2px 7px; }
+    .tipo-recebe { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; padding: 7px 10px; margin-bottom: 8px;
+      border-radius: 8px; background: var(--verde-claro); cursor: help; }
+    .tipo-recebe span { font-size: 11px; color: var(--verde); font-weight: 600; }
+    .tipo-recebe b { font-size: 16px; color: var(--verde); font-variant-numeric: tabular-nums; }
+    .tipo-recebe em { font-style: normal; font-size: 11px; color: var(--suave); margin-left: auto; }
+    .custos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .custo { display: grid; gap: 1px; padding: 6px 9px; border-radius: 7px; background: var(--fundo); cursor: help; min-width: 0; }
+    .custo span { font-size: 10.5px; color: var(--suave); white-space: nowrap; }
+    .custo span i { font-style: normal; color: var(--tenue); }
+    .custo b { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .faixa-custo { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .faixa-custo > div { display: grid; gap: 1px; padding: 6px 9px; border-radius: 7px; border: 1px solid var(--azul-borda); background: var(--azul-suave); cursor: help; }
+    .faixa-custo span { font-size: 10.5px; color: var(--suave); white-space: nowrap; }
+    .faixa-custo b { font-size: 13px; color: var(--azul-forte); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .atalhos-painel { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 6px; }
+    .atalhos-painel button { padding: 8px 6px; font-size: 12px; text-align: center; white-space: nowrap; }
+    .carregando-busca { display: inline-flex; align-items: center; font-size: 12px; color: var(--azul-forte); font-weight: 600; }
     .baixar { position: relative; font: 13px/1.4 Inter, "Segoe UI", system-ui, sans-serif; }
     .baixar-btn { width: 36px; height: 36px; padding: 0; border-radius: 10px; display: grid; place-items: center;
       box-shadow: 0 6px 16px -6px rgba(15, 23, 42, .45); }
@@ -277,7 +297,56 @@
       padding: 9px 10px; border-radius: 9px; font-weight: 600; font-size: 12.5px; }
     .aba-vendedores .ic { color: var(--azul); }
     .aba-vendedores span { flex: 1; text-align: left; }
-    .aba-vendedores i { display: grid; transition: transform .15s; } .aba-vendedores i.aberto { transform: rotate(180deg); }
+    .aba-vendedores .seta { display: grid; transition: transform .15s; } .aba-vendedores .seta.aberto { transform: rotate(180deg); }
+    .aba-vendedores .seta svg { width: 14px; height: 14px; }
+    /* Barra lateral da busca: identidade própria (Gunmetal + triângulo da marca, filtros como linhas com barra de fatia). */
+    .lateral { border-color: #d5d8de; }
+    .lat-topo { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #2B333B; color: #fff; }
+    .lat-topo .marca { background-image: url("${chrome.runtime.getURL("icones/icone-branco-48.png")}"); }
+    .lat-topo b { display: block; font-size: 13.5px; letter-spacing: .01em; }
+    .lat-topo small { display: block; font-size: 10.5px; color: #c4c9d1; }
+    .tri { width: 0; height: 0; flex: none; border-left: 5px solid transparent; border-right: 5px solid transparent;
+      border-top: 8px solid var(--azul-vivo); display: inline-block; }
+    .lat-cab { gap: 7px; margin-bottom: 8px; }
+    .lat-cab h5 { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); }
+    .lat-placar { display: grid; gap: 1px; padding: 12px 14px; border-radius: 10px; background: var(--fundo); border-left: 4px solid var(--azul-vivo); cursor: help; }
+    .lat-placar span { font-size: 11px; color: var(--suave); }
+    .lat-placar b { font-size: 24px; line-height: 1.15; color: var(--texto); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+    .lat-placar em { font-style: normal; font-size: 11px; color: var(--tenue); }
+    .pilulas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .pilulas > div { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 7px 8px; border-radius: 999px;
+      border: 1px solid var(--borda); background: #fff; }
+    .pilulas span { font-size: 11px; color: var(--suave); }
+    .pilulas b { font-size: 13.5px; font-variant-numeric: tabular-nums; }
+    .pilha { display: flex; height: 12px; border-radius: 999px; overflow: hidden; gap: 2px; background: var(--fundo); }
+    .fatia { padding: 0; border-radius: 0; min-width: 6px; opacity: .9; }
+    .fatia:hover { opacity: 1; filter: brightness(1.1); }
+    .fatia.ativo { box-shadow: inset 0 0 0 2px #fff; opacity: 1; }
+    .legenda { display: grid; gap: 2px; margin-top: 8px; }
+    .leg { display: grid; grid-template-columns: auto 1fr auto 44px; align-items: center; gap: 6px; padding: 5px 8px; background: transparent;
+      color: var(--texto); font-weight: 500; font-size: 12px; border-radius: 7px; }
+    .leg span { text-align: left; }
+    .leg b { font-variant-numeric: tabular-nums; }
+    .leg em { font-style: normal; font-size: 11px; color: var(--tenue); text-align: right; font-variant-numeric: tabular-nums; }
+    .leg:hover { background: var(--fundo); }
+    .leg.ativo { background: var(--azul-suave); color: var(--azul-forte); }
+    .leg:disabled { opacity: .45; cursor: default; background: transparent; }
+    .leg .ponto, .opcao .ponto { margin: 0; }
+    .opcoes { display: grid; gap: 3px; }
+    .opcao { position: relative; display: flex; align-items: center; gap: 7px; width: 100%; padding: 7px 9px 9px; background: #fff;
+      color: var(--texto); border: 1px solid var(--borda); border-radius: 8px; font-weight: 500; font-size: 12px; overflow: hidden; }
+    .opcao span { flex: 1; text-align: left; }
+    .opcao b { font-variant-numeric: tabular-nums; }
+    .opcao s { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--azul-borda); text-decoration: none; transition: width .2s; }
+    .opcao:hover { background: var(--fundo); }
+    .opcao:hover s { background: var(--azul-vivo); }
+    .opcao.ativo { background: var(--azul-suave); border-color: var(--azul-vivo); color: var(--azul-forte); }
+    .opcao.ativo s { background: var(--azul-vivo); }
+    .opcao:disabled { opacity: .45; cursor: default; background: #fff; }
+    .dados { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .dado { display: grid; gap: 1px; padding: 7px 9px; border-radius: 8px; background: var(--fundo); min-width: 0; cursor: help; }
+    .dado span { font-size: 10.5px; color: var(--suave); }
+    .dado b { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .aba-vendedores:hover { background: var(--fundo); }
     .vend-lista { margin-top: 6px; display: grid; gap: 3px; max-height: 320px; overflow-y: auto; }
     .vend { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 8px; background: #fff; color: var(--texto); border: 1px solid var(--borda);
@@ -300,7 +369,144 @@
     .cartao-dados span { display: block; font-size: 10px; color: var(--suave); }
     .cartao-dados b { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
     .cartao-pe { padding: 7px 9px; font-size: 11px; color: var(--suave); }
-  `;
+  
+    /* Acabamento 0.5: cantos mais redondos, sombras leves e cabeçalho azul-marinho (mesmo estilo da landing). */
+    .raiz { --azul: #1F3BFF; --azul-forte: #1428C9; --azul-vivo: #3D55FF; --azul-suave: #EBEEFF; --azul-borda: #C3CCFF;
+      --noite: #0B1330; --borda: #E3E7F0; --fundo: #F4F6FB; --texto: #141B34; --suave: #5A6380; --tenue: #8A93AD; }
+    .painel { border-radius: 18px; border-color: #E3E7F0;
+      box-shadow: 0 1px 2px rgba(11, 19, 48, .06), 0 14px 34px -18px rgba(11, 19, 48, .35); }
+    .topo { background: var(--noite); color: #fff; border-bottom: 0; padding: 11px 14px; }
+    .topo b { color: #fff; }
+    .topo .suave { color: #A9B3D1; }
+    .topo .marca { background-image: url("${chrome.runtime.getURL("icones/icone-branco-48.png")}"); }
+    .topo button.sec, .topo a.botao.sec { background: rgba(255, 255, 255, .08); color: #fff; border-color: rgba(255, 255, 255, .18); }
+    .topo button.sec:hover { background: rgba(255, 255, 255, .16); }
+    .topo button.link { color: #C3CCFF; }
+    .lat-topo { background: var(--noite); padding: 13px 14px; }
+    button, a.botao { border-radius: 11px; box-shadow: 0 6px 14px -8px rgba(31, 59, 255, .75); }
+    button.sec, a.botao.sec, button.link, .segmento button, .aba, .fatia, .leg, .opcao, .linha-filtro, .vend, .caixinha, .curva,
+    .aba-vendedores, .chip-filtro, .atalho, .q, .baixar-menu button, .explica .fechar { box-shadow: none; }
+    select, input { border-radius: 10px; }
+    .chip { padding: 3px 9px; }
+    .metrica, .bloco, .tres > div, .tipo, .estudo, .filtros-ativos, .lat-total, .lat-placar, .cartao { border-radius: 14px; }
+    .destaques, .kpis, .resumo-linha { border-radius: 14px; box-shadow: 0 1px 2px rgba(11, 19, 48, .05); }
+    .tipo, .cartao, .estudo, .tres > div { box-shadow: 0 1px 2px rgba(11, 19, 48, .05), 0 8px 20px -14px rgba(11, 19, 48, .28); }
+    .tipo.este { box-shadow: 0 0 0 1px var(--azul-borda) inset, 0 10px 24px -14px rgba(31, 59, 255, .45); }
+    .custo, .dado, .faixa-custo > div, .tipo-recebe, .curva, .caixinha, .opcao, .linha-filtro, .vend, .aba-vendedores, .leg { border-radius: 11px; }
+    .segmento { border-radius: 12px; padding: 3px; }
+    .segmento button { border-radius: 9px; }
+    .segmento button.ativo { box-shadow: 0 2px 6px -2px rgba(11, 19, 48, .25); }
+    .tipo-recebe { box-shadow: inset 0 0 0 1px rgba(15, 138, 95, .14); }
+    .aviso { border-radius: 12px; }
+    .cartao { margin: 6px 10px 12px; border-color: #E3E7F0; }
+    .cartao-cab { background: #F4F6FB; }
+    .fab { background-color: var(--azul); box-shadow: 0 0 0 4px rgba(31, 59, 255, .14), 0 14px 30px -10px rgba(31, 59, 255, .8); }
+    .fab.entrar { box-shadow: 0 0 0 4px rgba(31, 59, 255, .14), 0 14px 30px -10px rgba(31, 59, 255, .8); }
+    .gaveta { border-radius: 22px 0 0 22px; overflow: hidden; }
+    .gaveta header { background: var(--noite); color: #fff; border-bottom: 0; }
+    .gaveta header .marca { background-image: url("${chrome.runtime.getURL("icones/icone-branco-48.png")}"); }
+    .gaveta header button.sec { background: rgba(255, 255, 255, .08); color: #fff; border-color: rgba(255, 255, 255, .18); }
+    .abas { padding: 10px 12px; gap: 6px; }
+    .aba { border-radius: 999px; padding: 7px 12px; }
+    .entrar-card { border-radius: 20px; box-shadow: 0 1px 2px rgba(11, 19, 48, .08), 0 28px 60px -20px rgba(11, 19, 48, .55); }
+    .explica, .baixar-menu { border-radius: 14px; }
+    .baixar-btn { border-radius: 12px; }
+    /* Gaveta 0.6: calculadora, métricas, tendência e radar organizados em cartões. */
+    .conteudo { background: var(--fundo); gap: 12px; }
+    .cg { background: #fff; border: 1px solid var(--borda); border-radius: 16px; padding: 14px;
+      box-shadow: 0 1px 2px rgba(11, 19, 48, .05), 0 8px 20px -16px rgba(11, 19, 48, .3); display: grid; gap: 10px; }
+    .cg-cab { display: flex; align-items: center; gap: 8px; }
+    .cg-cab h5 { margin: 0; font-size: 13px; font-weight: 700; color: var(--texto); }
+    .cg-cab > button { margin-left: auto; }
+    .cg-cab.solto { padding: 2px 2px 0; }
+    .cg-cab.solto h5 { font-size: 14px; }
+    button.pequeno { padding: 5px 10px; font-size: 12px; }
+    .calc-produto { display: grid; gap: 2px; padding: 2px 2px 0; }
+    .calc-produto b { font-size: 13.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .calc-produto span { font-size: 12px; color: var(--suave); }
+    .calc-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .calc-campos label { display: grid; gap: 4px; min-width: 0; }
+    .calc-campos label > span { font-size: 11.5px; color: var(--suave); font-weight: 600; }
+    .calc-campos input { width: 100%; }
+    .campo-un { display: flex; align-items: center; border: 1px solid var(--borda); border-radius: 10px; background: #fff; }
+    .campo-un:focus-within { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(49, 69, 255, .2); }
+    .campo-un i { font-style: normal; color: var(--tenue); font-size: 12px; padding: 0 0 0 10px; }
+    .campo-un i:last-child { padding: 0 10px 0 0; }
+    .campo-un input { border: 0; box-shadow: none !important; padding-left: 6px; font-variant-numeric: tabular-nums; }
+    .chave { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 12.5px; }
+    .chave input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .chave .trilho { width: 34px; height: 20px; border-radius: 999px; background: #CBD1E1; position: relative; flex: none; transition: background .15s; }
+    .chave .trilho::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff;
+      box-shadow: 0 1px 3px rgba(11, 19, 48, .3); transition: transform .15s; }
+    .chave input:checked + .trilho { background: var(--azul); }
+    .chave input:checked + .trilho::after { transform: translateX(14px); }
+    .chave input:focus-visible + .trilho { box-shadow: 0 0 0 3px rgba(49, 69, 255, .3); }
+    .chave em { font-style: normal; color: var(--tenue); }
+    .resultados { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .resultado { background: #fff; border: 1px solid var(--borda); border-radius: 16px; padding: 12px; display: grid; gap: 2px; min-width: 0;
+      box-shadow: 0 1px 2px rgba(11, 19, 48, .05), 0 8px 20px -16px rgba(11, 19, 48, .3); }
+    .resultado.este { border-color: var(--azul-borda); box-shadow: 0 0 0 1px var(--azul-borda) inset, 0 10px 24px -16px rgba(31, 59, 255, .5); }
+    .resultado-cab { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 4px; min-height: 24px; }
+    .resultado-cab b { font-size: 13px; }
+    .resultado .rotulo { font-size: 11px; color: var(--suave); }
+    .resultado strong { font-size: 22px; letter-spacing: -.01em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+    .resultado-linha { display: flex; justify-content: space-between; gap: 6px; font-size: 11.5px; color: var(--suave); font-variant-numeric: tabular-nums; }
+    .composicao { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--fundo); margin-top: 8px; }
+    .composicao i { display: block; height: 100%; }
+    .legenda-comp { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--suave); padding: 0 2px; }
+    .legenda-comp i { display: inline-block; width: 8px; height: 8px; border-radius: 3px; margin-right: 5px; vertical-align: 0; }
+    .detalhe-conta { background: #fff; border: 1px solid var(--borda); border-radius: 16px; overflow: hidden; }
+    .detalhe-conta summary { cursor: pointer; padding: 11px 14px; font-weight: 600; font-size: 12.5px; color: var(--azul-forte); list-style: none; }
+    .detalhe-conta summary::-webkit-details-marker { display: none; }
+    .detalhe-conta summary::after { content: "▾"; float: right; color: var(--tenue); }
+    .detalhe-conta[open] summary { border-bottom: 1px solid var(--borda); }
+    .detalhe-conta[open] summary::after { content: "▴"; }
+    .selo-var { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .selo-var.sobe { background: var(--verde-claro); color: var(--verde); }
+    .selo-var.cai { background: var(--vermelho-claro); color: var(--vermelho); }
+    .selo-var.igual { background: var(--fundo); color: var(--suave); }
+    .grande { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .grande b { font-size: 24px; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+    svg.linha, svg.barras { display: block; width: 100%; height: 64px; }
+    svg.barras { height: 70px; }
+    .radar svg.linha { height: 34px; margin-top: 4px; }
+    .eixo { display: flex; justify-content: space-between; gap: 6px; font-size: 10.5px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+    .tres-num { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .tres-num > div { background: var(--fundo); border-radius: 12px; padding: 8px 10px; min-width: 0; }
+    .tres-num span { display: block; font-size: 10.5px; color: var(--suave); }
+    .tres-num b { display: block; font-size: 15px; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tres-num b small { font-size: 11px; font-weight: 500; color: var(--suave); }
+    .cartao-claro > div { background: #fff; border: 1px solid var(--borda); }
+    .segmento.cheio.tres { grid-template-columns: repeat(3, 1fr); margin: 0; width: 100%; }
+    .busca-linha { display: flex; gap: 8px; }
+    .busca-linha input { flex: 1; }
+    ol.ranking, ul.radar { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .ranking li, .radar li { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid var(--borda); border-radius: 14px; padding: 10px; }
+    .ranking li.meu { border-color: var(--azul-borda); background: #F7F8FF; }
+    .ranking .pos { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--azul-suave); color: var(--azul-forte); font-weight: 800;
+      display: grid; place-items: center; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+    .ranking img, .radar img, .sem-foto { flex: none; width: 46px; height: 46px; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid var(--borda); }
+    .ranking .info, .radar .info { flex: 1; min-width: 0; display: grid; gap: 4px; }
+    .ranking .info a, .radar .info a, .ranking .info > span, .radar .info > span { color: var(--texto); text-decoration: none; font-size: 12.5px; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ranking .info a:hover, .radar .info a:hover { color: var(--azul); text-decoration: underline; }
+    .metricas-linha { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: var(--suave); }
+    .metricas-linha b { font-size: 13px; color: var(--texto); font-variant-numeric: tabular-nums; }
+    .barra-vis { position: relative; height: 18px; border-radius: 6px; background: var(--fundo); overflow: hidden; }
+    .barra-vis i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #C3CCFF, #7C8CFF); border-radius: 6px; }
+    .barra-vis span { position: relative; font-size: 10.5px; font-weight: 600; color: var(--azul-forte); padding-left: 7px; line-height: 18px; font-variant-numeric: tabular-nums; }
+    .radar li.mudou { border-color: var(--azul-borda); }
+    .radar-dados { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .radar-dados > div { background: var(--fundo); border-radius: 10px; padding: 7px 9px; min-width: 0; display: grid; gap: 2px; justify-items: start; }
+    .radar-dados span { font-size: 10.5px; color: var(--suave); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .radar-dados b { font-size: 14px; font-variant-numeric: tabular-nums; }
+    .radar-dados em { font-style: normal; font-size: 10.5px; color: var(--tenue); display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+    .radar .tirar { flex: none; font-size: 11.5px; color: var(--suave); }
+    .posicao { display: flex; align-items: center; gap: 12px; background: var(--azul-suave); border-radius: 14px; padding: 12px 14px; }
+    .posicao > b { font-size: 30px; color: var(--azul-forte); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+    .posicao span { display: block; font-weight: 600; font-size: 13px; }
+    .posicao em { display: block; font-style: normal; font-size: 11px; color: var(--suave); }
+`;
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const brl = (v) => (v == null || isNaN(v) ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -467,6 +673,106 @@
       <div class="corpo"><div class="aviso ${tipo}">${esc(texto)}</div></div></div>`;
   }
 
+  // Sem login: o aviso já traz o botão para entrar ali mesmo, sem abrir o ícone da extensão.
+  function avisoEntrar(raiz, motivo) {
+    raiz.innerHTML = `<div class="painel"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b></div>
+      <div class="corpo"><div class="aviso ${motivo ? "erro" : "info"}">${esc(motivo || "Entre com o e-mail da sua assinatura para ver os dados.")}</div>
+      <div class="acoes"><button data-entrar>Entrar</button></div></div></div>`;
+    raiz.querySelector("[data-entrar]").onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      abrirEntrar();
+    };
+  }
+
+  // Cartão de login dentro do Mercado Livre: e-mail, depois o código de 6 números.
+  async function abrirEntrar() {
+    const { host, raiz } = hospedeiro("monvatti-entrar");
+    document.body.append(host);
+    const pend = await enviar({ tipo: "codigoPendente" }).catch(() => ({ email: "", pendente: false }));
+    let email = pend.email || "";
+    const msg = (texto, tipo = "erro") => {
+      const m = raiz.querySelector("[data-msg]");
+      m.hidden = !texto;
+      m.className = "aviso " + tipo;
+      m.textContent = texto || "";
+    };
+    const tela = (passo) => {
+      raiz.innerHTML = `<div class="entrar-card" role="dialog" aria-label="Entrar no Monvatti Marketplace">
+        <div class="topo"><span class="marca"></span><b>Entrar</b><button class="link" data-fechar style="margin-left:auto">Fechar</button></div>
+        <div class="corpo">
+          <div data-msg hidden></div>
+          ${passo === "email" ? `
+            <p class="suave" style="margin:0">Use o e-mail da sua assinatura. Mandamos um código de 6 números para ele.</p>
+            <div><label for="m-email">E-mail</label><input id="m-email" type="email" autocomplete="email" placeholder="voce@email.com" value="${esc(email)}"></div>
+            <button class="cheio" data-pedir>Receber código</button>
+            <button class="link" data-ja>Já tenho um código</button>` : `
+            <p class="suave" style="margin:0">Enviamos para <b>${esc(email)}</b>. Confira também o spam.</p>
+            <input id="m-codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Código de 6 dígitos">
+            <button class="cheio" data-ok>Entrar</button>
+            <div class="links"><button class="link" data-reenviar>Reenviar código</button><button class="link" data-trocar>Usar outro e-mail</button></div>`}
+        </div></div>`;
+      raiz.querySelector("[data-fechar]").onclick = () => host.remove();
+      if (passo === "email") {
+        const campo = raiz.querySelector("#m-email");
+        const pedir = async () => {
+          email = campo.value.trim().toLowerCase();
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return msg("Digite um e-mail válido.");
+          const b = raiz.querySelector("[data-pedir]");
+          b.disabled = true;
+          try {
+            await enviar({ tipo: "pedirCodigo", email });
+            tela("codigo");
+            msg("Código enviado. Ele vale por 15 minutos.", "ok");
+          } catch (err) {
+            msg(err.message);
+            b.disabled = false;
+          }
+        };
+        raiz.querySelector("[data-pedir]").onclick = pedir;
+        campo.onkeydown = (e) => { if (e.key === "Enter") pedir(); };
+        raiz.querySelector("[data-ja]").onclick = () => {
+          email = campo.value.trim().toLowerCase();
+          if (!email) return msg("Digite primeiro o e-mail para o qual o código foi enviado.");
+          tela("codigo");
+        };
+        campo.focus();
+      } else {
+        const campo = raiz.querySelector("#m-codigo");
+        const entrar = async () => {
+          const codigo = campo.value.replace(/\D/g, "");
+          if (codigo.length !== 6) return msg("O código tem 6 números.");
+          const b = raiz.querySelector("[data-ok]");
+          b.disabled = true;
+          try {
+            await enviar({ tipo: "entrar", email, codigo });
+            host.remove();
+            iniciar();
+          } catch (err) {
+            msg(err.message);
+            b.disabled = false;
+          }
+        };
+        raiz.querySelector("[data-ok]").onclick = entrar;
+        campo.oninput = () => {
+          campo.value = campo.value.replace(/\D/g, "").slice(0, 6);
+          if (campo.value.length === 6) entrar();
+        };
+        raiz.querySelector("[data-reenviar]").onclick = async () => {
+          try {
+            await enviar({ tipo: "pedirCodigo", email });
+            msg("Enviamos um novo código.", "ok");
+          } catch (err) {
+            msg(err.message);
+          }
+        };
+        raiz.querySelector("[data-trocar]").onclick = () => tela("email");
+        campo.focus();
+      }
+    };
+    tela(pend.pendente ? "codigo" : "email");
+  }
+
   function contaVenda(preco, tarifa, frete, imposto) {
     const valorImposto = preco * imposto / 100;
     const recebe = preco - tarifa.comissao - tarifa.taxa_fixa - (frete || 0) - valorImposto;
@@ -477,27 +783,26 @@
     const tipos = [["gold_special", "Clássico"], ["gold_pro", "Premium"]].filter(([t]) => d.tarifas[t]);
     if (!tipos.length || !d.preco) return `<div class="parte-cab"><h5>Venda</h5></div><p class="nota">Tarifas indisponíveis para este anúncio.</p>`;
     const contas = tipos.map(([t, nome]) => ({ t, nome, tarifa: d.tarifas[t], conta: contaVenda(d.preco, d.tarifas[t], d.frete, estado.imposto) }));
-    const linha = (rotulo, valor, titulo = "", extra = "") => `<div class="vl" title="${esc(titulo)}"><span>${rotulo}</span><b>${extra ? `<i>${extra}</i>` : ""}${valor}</b></div>`;
+    const custo = (rotulo, valor, titulo = "", extra = "") =>
+      `<div class="custo" title="${esc(titulo)}"><span>${rotulo}${extra ? ` <i>${extra}</i>` : ""}</span><b>${valor}</b></div>`;
     contas.sort((a, b) => (b.nome === d.tipo_anuncio) - (a.nome === d.tipo_anuncio));
     return `<div class="parte-cab"><h5>Venda a ${brl(d.preco)}</h5>${q("venda")}<span class="suave dir">imposto ${pct(estado.imposto)}</span></div>
       <div class="vendas-tipos">
         ${contas.map((c) => {
           const este = c.nome === d.tipo_anuncio;
           return `<div class="tipo ${este ? "este" : ""}">
-            <div class="tipo-cab"><b>${c.nome}</b>${este ? '<span class="chip">este anúncio</span>' : ""}
-              <span class="tipo-recebe" title="Preço − comissão − taxa fixa − frete − imposto">recebe <b>${brl(c.conta.recebe)}</b>
-              <em>${pct(d.preco ? c.conta.recebe / d.preco * 100 : null)}</em></span></div>
-            <div class="tipo-corpo">
-              <div class="tipo-custos">
-                ${linha("Comissão", brl(c.tarifa.comissao), "Comissão cobrada pelo Mercado Livre", pct(c.tarifa.pct))}
-                ${linha("Taxa fixa", brl(c.tarifa.taxa_fixa), "Taxa fixa por unidade (vale para preços abaixo de R$ 79)")}
-                ${linha("Frete", d.frete == null ? "—" : brl(d.frete), freteTitulo(d))}
-                ${linha("Imposto", brl(c.conta.imposto), "Preço × alíquota de imposto")}
-              </div>
-              <div class="tipo-faixa">
-                <div title="50% do que o vendedor recebe: sobra margem confortável"><span>Custo ideal</span><b>${c.conta.ideal ? brl(c.conta.ideal[0]) : "—"}</b></div>
-                <div title="90% do que o vendedor recebe: acima disso a margem some"><span>Custo máximo</span><b>${c.conta.ideal ? brl(c.conta.ideal[1]) : "—"}</b></div>
-              </div>
+            <div class="tipo-cab"><b>${c.nome}</b>${este ? '<span class="chip">este anúncio</span>' : ""}</div>
+            <div class="tipo-recebe" title="Preço − comissão − taxa fixa − frete − imposto">
+              <span>Vendedor recebe</span><b>${brl(c.conta.recebe)}</b><em>${pct(d.preco ? c.conta.recebe / d.preco * 100 : null)} do preço</em></div>
+            <div class="custos">
+              ${custo("Comissão", brl(c.tarifa.comissao), "Comissão cobrada pelo Mercado Livre", pct(c.tarifa.pct))}
+              ${custo("Taxa fixa", brl(c.tarifa.taxa_fixa), "Taxa fixa por unidade (vale para preços abaixo de R$ 79)")}
+              ${custo("Frete", d.frete == null ? "—" : brl(d.frete), freteTitulo(d))}
+              ${custo("Imposto", brl(c.conta.imposto), "Preço × alíquota de imposto")}
+            </div>
+            <div class="faixa-custo">
+              <div title="50% do que o vendedor recebe: sobra margem confortável"><span>Custo ideal até</span><b>${c.conta.ideal ? brl(c.conta.ideal[0]) : "—"}</b></div>
+              <div title="90% do que o vendedor recebe: acima disso a margem some"><span>Custo máximo</span><b>${c.conta.ideal ? brl(c.conta.ideal[1]) : "—"}</b></div>
             </div>
           </div>`;
         }).join("")}
@@ -518,7 +823,7 @@
       anuncio: "a data de criação informada pelo Mercado Livre",
       avaliacao: `a avaliação de comprador mais antiga (${dataBR(d.primeira_avaliacao || d.no_ar_desde)}): se alguém já avaliou, o anúncio já vendia`,
       pergunta: `a primeira pergunta feita no anúncio (${dataBR(d.primeira_pergunta || d.no_ar_desde)})`,
-      catalogo: "a data de criação do catálogo, porque o anúncio não tem avaliações nem perguntas",
+      catalogo: "a data de criação do catálogo: num anúncio de catálogo as avaliações são do produto inteiro (de todos os vendedores), então não servem para datar este anúncio",
     }[d.fonte_data] || "nenhuma data encontrada";
     const usouCatalogo = d.dias_catalogo && d.dias === d.dias_catalogo && d.dias_catalogo !== d.dias_anuncio;
     const ehUp = /\/up\/MLBU/i.test(location.pathname);
@@ -533,7 +838,7 @@
            <p>40% de ${n(d.vendas_estimadas)} = ${n(d.vendas_estimadas * 0.4)}; dividido por ${dec(d.dias_anuncio / 30.44 / 3)} = <b>${n(d.ritmo_mes)} por mês</b>.</p>`,
       dia: d.vendas_dia == null ? "<p>Sem data não dá para calcular a média.</p>"
         : `<p><b>${n(d.vendidos)} vendidos ÷ ${n(d.dias)} dias = ${n(d.vendas_dia)} por dia</b> (${dec(d.vendidos / d.dias, 2)} antes de arredondar).</p>
-           <p>Os ${n(d.dias)} dias contam desde ${usouCatalogo ? `a criação do catálogo (${dataBR(d.catalogo_criado_em)}), que é mais antiga que o anúncio` : fonte}. Usamos sempre a data mais antiga que encontramos.</p>${notaUp}`,
+           <p>Os ${n(d.dias)} dias contam desde ${usouCatalogo ? `a criação do catálogo (${dataBR(d.catalogo_criado_em)}), que é mais antiga que o anúncio` : fonte}. Usamos a evidência mais antiga que é do próprio anúncio.</p>${notaUp}`,
       mes: d.vendas_mes == null ? "<p>Sem data não dá para calcular a média.</p>"
         : `<p><b>${n(d.vendidos)} vendidos ÷ ${n(d.dias)} dias × 30 = ${n(d.vendas_mes)} por mês</b>.</p><p>É a média desde o início, não o mês atual. Para o momento atual, veja o ritmo.</p>${notaUp}`,
       avaliacoes: "<p>Quantidade e nota que o Mercado Livre mostra na página do anúncio.</p>",
@@ -598,7 +903,7 @@
     const fonteData = { catalogo: "aprox. pelo catálogo", pergunta: "aprox. pela 1ª pergunta", avaliacao: "aprox. pela 1ª avaliação" }[d.fonte_data] || "";
     const tituloData = d.fonte_data === "anuncio" ? "Data de criação do anúncio"
       : d.fonte_data === "avaliacao" ? "O Mercado Livre não libera a criação de anúncio de terceiros. Usamos a avaliação de comprador mais antiga: o anúncio já vendia nessa data, então foi criado antes dela."
-      : d.fonte_data === "catalogo" ? "O Mercado Livre não libera a criação de anúncio de terceiros e o anúncio não tem avaliações nem perguntas. Usamos a data do catálogo."
+      : d.fonte_data === "catalogo" ? "O Mercado Livre não libera a criação de anúncio de terceiros. Num anúncio de catálogo as avaliações são do produto inteiro, então usamos a data de criação do catálogo."
       : d.fonte_data === "pergunta" ? "O Mercado Livre não libera a criação de anúncio de terceiros. Usamos a 1ª pergunta: o anúncio existe pelo menos desde então."
       : "O Mercado Livre não libera a data e o anúncio não tem perguntas";
     const corReputacao = { "1_red": "#d4343b", "2_orange": "#e8730c", "3_yellow": "#e0b100", "4_light_green": "#7cc242", "5_green": "#0f8a5f" }[v.termometro];
@@ -629,17 +934,16 @@
               <span>Ritmo atual ${q("ritmo")}</span><b>${inteiro(d.ritmo_mes)}<small>/mês</small></b><em>${d.ritmo_mes != null ? `≈ ${inteiro(d.ritmo_mes / 30)} por dia hoje` : "sem data do anúncio"}</em></div>
           </div>
           <div class="kpis">
-            ${kpi(`Vendas por dia ${q("dia")}`, inteiro(d.vendas_dia), "Vendidos ÷ dias de vida (a data mais antiga entre anúncio e catálogo)", "média desde o início")}
+            ${kpi(`Vendas por dia ${q("dia")}`, inteiro(d.vendas_dia), "Vendidos ÷ dias desde a criação do anúncio (aprox.)", "média desde o início")}
             ${kpi(`Vendas por mês ${q("mes")}`, d.vendas_mes == null ? "—" : `${inteiro(d.vendas_mes)}<small>/mês</small>`, "Vendidos ÷ dias de vida × 30", "média desde o início")}
             ${kpi(`Avaliações ${q("avaliacoes")}`, inteiro(estado.pagina.avaliacoes), "Avaliações de compradores mostradas na página", estado.pagina.nota ? `nota ${String(estado.pagina.nota).replace(".", ",")} de 5` : "")}
             ${kpi(`Perguntas ${q("perguntas")}`, inteiro(d.perguntas), "Perguntas públicas feitas no anúncio", d.primeira_pergunta ? `1ª em ${dataBR(d.primeira_pergunta)}` : "")}
           </div>
         </div>
         <div class="parte">
-          <div class="parte-cab"><h5>Faturamento</h5>${q("faturamento")}
-            <div class="segmento dir" role="tablist">
-              ${[["total", "Total"], ["d30", "30 dias"], ["d7", "7 dias"], ["mes", "Este mês"]].map(([k, r]) => `<button data-periodo="${k}" role="tab">${r}</button>`).join("")}
-            </div>
+          <div class="parte-cab"><h5>Faturamento</h5>${q("faturamento")}</div>
+          <div class="segmento cheio" role="tablist">
+            ${[["total", "Total"], ["d30", "30 dias"], ["d7", "7 dias"], ["mes", "Este mês"]].map(([k, r]) => `<button data-periodo="${k}" role="tab">${r}</button>`).join("")}
           </div>
           <div id="m-fat"></div>
         </div>
@@ -666,18 +970,24 @@
           ${hist.slice(-8).map((x) => `<tr><td>${dataBR(x.dia + "T12:00:00")}</td><td>${x.vendidos == null ? "—" : (/\+/.test(x.vendidos_texto || "") ? "+" : "") + num(x.vendidos)}</td><td>${brl(x.preco)}</td></tr>`).join("")}
         </table></div></div>` : ""}
         <div class="rodape">
-          <div class="acoes">
+          <div class="atalhos-painel">
+            <button id="m-calc">Calcular margem</button>
+            <button class="sec" data-gaveta="metricas">Métricas</button>
+            <button class="sec" data-gaveta="tendencia">Tendência</button>
+            <button class="sec" data-gaveta="ranqueamento">Radar</button>
+          </div>
+          <div class="atalhos-painel">
             <button id="m-estudo-add"></button>
             <button class="sec" id="m-estudo-ver"></button>
-            <button class="sec" id="m-calc">Calculadora</button>
           </div>
           <div id="m-retorno"></div>
-          <p class="nota">Dados públicos da página e da API oficial, lidos pela conta de estudo. Vendas estimadas, ritmo, períodos e datas marcadas “aprox.” são estimativas. Visitas e conversão o Mercado Livre só mostra ao dono do anúncio.</p>
+          <p class="nota">Dados públicos da página e da API oficial, lidos pela conta de estudo. Vendas estimadas, ritmo, períodos e datas “aprox.” são estimativas. Visitas e conversão o Mercado Livre só mostra ao dono do anúncio.</p>
         </div>
       </div></div>`;
     desenharFaturamento(raiz, d);
     ligarExplicacoes(raiz, d);
     raiz.querySelector("#m-calc").onclick = () => abrirGaveta("calculadora");
+    raiz.querySelectorAll("[data-gaveta]").forEach((b) => (b.onclick = () => abrirGaveta(b.dataset.gaveta)));
     raiz.querySelector("#m-estudo-ver").onclick = () => abrirGaveta("estudos");
     raiz.querySelector("#m-estudo-add").onclick = async () => {
       const retorno = raiz.querySelector("#m-retorno");
@@ -767,7 +1077,7 @@
     alvo.after(host);
     const info = estado.info;
     if (!info || info.erro) return aviso(raiz, info?.erro || "Não consegui falar com a extensão.", "erro");
-    if (!info.ligado) return aviso(raiz, "Extensão desligada. Clique no ícone do Monvatti Marketplace na barra do Chrome e cole o código do administrador.");
+    if (!info.ligado) return avisoEntrar(raiz, info.motivo);
     if (!info.conta.liberado) return aviso(raiz, info.conta.motivo, "erro");
     raiz.innerHTML = '<div class="painel"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b></div><div class="corpo"><div class="suave"><span class="girando"></span>Carregando dados do anúncio…</div></div></div>';
     estado.pagina = lerAnuncio();
@@ -1008,70 +1318,79 @@
     const listaVend = Object.entries(vendedores).sort((a, b) => b[1].vendidos - a[1].vendidos);
     const ativo = (k) => ((estado.filtros || []).includes(k) ? "ativo" : "");
     const visiveis = itens.filter((i) => passaNoFiltro(i)).length;
-    const caixa = (k, ic, rotulo, valor = null, extra = "") => {
-      const n = valor ?? conta(k);
-      return `<button class="caixinha ${ativo(k)} ${extra}" data-filtro="${k}" ${n || ativo(k) ? "" : "disabled"}>${icone(ic)}<span>${rotulo}</span><b>${num(n)}</b></button>`;
+    const total = itens.length || 1;
+    // Linha de filtro: rótulo, quantidade e uma barra com a fatia da página.
+    const opcao = (k, rotulo, cor = "") => {
+      const n = conta(k);
+      return `<button class="opcao ${ativo(k)}" data-filtro="${esc(k)}" ${n || ativo(k) ? "" : "disabled"}>
+        ${cor ? `<i class="ponto" style="background:${cor}"></i>` : ""}<span>${rotulo}</span><b>${num(n)}</b>
+        <s style="width:${Math.round(n / total * 100)}%"></s></button>`;
     };
-    const info = (ic, rotulo, valor, titulo = "") => `<div class="caixinha fixa" title="${esc(titulo)}">${icone(ic)}<span>${rotulo}</span><b>${valor}</b></div>`;
-    const linhaData = (k, cor, rotulo) => `<button class="linha-filtro ${ativo(k)}" data-filtro="${k}" ${conta(k) || ativo(k) ? "" : "disabled"}>
-      <i class="ponto" style="background:${cor}"></i><span>${rotulo}</span><b>${num(conta(k))}</b></button>`;
-    const cab = (ic, titulo, extra = "") => `<div class="lat-cab">${icone(ic)}<h5>${titulo}</h5>${extra}</div>`;
-    const aguardando = '<p class="nota">Clique em “Carregar dados Monvatti Marketplace” para ver.</p>';
-    raiz.innerHTML = `<div class="painel lateral"><div class="topo"><span class="marca"></span><b>Monvatti Marketplace</b>
-        <span class="suave">${itens.length} anúncios</span></div>
+    // Barra empilhada clicável (Curva ABC, idade dos anúncios).
+    const pilha = (partes) => {
+      const soma = partes.reduce((a, x) => a + conta(x.k), 0) || 1;
+      return `<div class="pilha">${partes.map((x) => {
+        const n = conta(x.k);
+        return n ? `<button class="fatia ${ativo(x.k)}" data-filtro="${x.k}" title="${esc(x.rotulo)}: ${n}" style="flex:${n};background:${x.cor}"></button>` : "";
+      }).join("")}</div>
+      <div class="legenda">${partes.map((x) => `<button class="leg ${ativo(x.k)}" data-filtro="${x.k}" ${conta(x.k) || ativo(x.k) ? "" : "disabled"}>
+        <i class="ponto" style="background:${x.cor}"></i><span>${x.rotulo}</span><b>${num(conta(x.k))}</b><em>${pct(conta(x.k) / soma * 100)}</em></button>`).join("")}</div>`;
+    };
+    const dado = (rotulo, valor, titulo = "") => `<div class="dado" title="${esc(titulo)}"><span>${rotulo}</span><b>${valor}</b></div>`;
+    const cab = (titulo, extra = "") => `<div class="lat-cab"><i class="tri"></i><h5>${titulo}</h5>${extra}</div>`;
+    const aguardando = '<p class="nota"><span class="girando"></span>Carregando os dados…</p>';
+    const fatTotal = fats.reduce((a, f) => a + f, 0);
+    raiz.innerHTML = `<div class="painel lateral">
+      <div class="lat-topo"><span class="marca"></span><div><b>Raio-X da página</b><small>${itens.length} anúncios · Monvatti Marketplace</small></div></div>
       <div class="corpo">
         ${temFiltro() ? `<div class="filtros-ativos"><div><b>${num(visiveis)}</b> de ${num(itens.length)} anúncios com os filtros:</div>
           <div class="chips">${(estado.filtros || []).map((k) => `<button class="chip-filtro" data-filtro="${esc(k)}">${esc(nomeDoFiltro(k))} ×</button>`).join("")}
           ${estado.vendasMin != null || estado.vendasMax != null ? `<button class="chip-filtro" id="lat-limpar-vendas">${esc(nomeFaixaVendas())} ×</button>` : ""}</div>
           <button class="sec" id="lat-limpar">Limpar todos os filtros</button></div>` : ""}
-        <div class="lat-bloco">${cab("grafico", "Total de vendas da página")}
-          <div class="lat-total" title="Soma dos números públicos de vendidos desta página"><b>${num(soma)}</b></div></div>
-        <div class="lat-bloco">${cab("etiqueta", "Taxa da categoria")}
-          ${carregado && maisComum("gold_special") != null ? `<div class="duas">
-            <div class="taxa classico">${icone("ok")}<span>Clássico</span><b>${pct(maisComum("gold_special"))}</b></div>
-            <div class="taxa premium">${icone("coroa")}<span>Premium</span><b>${pct(maisComum("gold_pro"))}</b></div></div>` : aguardando}</div>
-        <div class="lat-bloco">${cab("camadas", "Curva ABC", `<button class="q" title="${esc(EXPLICA_CURVA)}" aria-label="${esc(EXPLICA_CURVA)}">?</button>`)}
-          <div class="tres-curvas">
-            ${["A", "B", "C"].map((k) => `<button class="curva curva-${k.toLowerCase()} ${ativo(k)}" data-filtro="${k}" ${conta(k) || ativo(k) ? "" : "disabled"}>
-              <b>${k}</b><span>${{ A: "cliente grande", B: "cliente médio", C: "cliente pequeno" }[k]}</span><em>${num(conta(k))}</em></button>`).join("")}
-          </div>
-          <p class="nota">${carregado ? "Pelo faturamento mensal (venda/mês × preço) de cada anúncio." : "Pelo faturamento público; fica mais preciso depois de carregar os dados."}</p></div>
-        <div class="lat-bloco">${cab("sacola", "Vendas por mês")}
+        <div class="lat-placar" title="Soma dos números públicos de vendidos desta página">
+          <span>Vendidos na página</span><b>${num(soma)}</b><em>${brl(fatTotal)} em faturamento público</em></div>
+        <div class="lat-bloco">${cab("Comissão da categoria")}
+          ${carregado && maisComum("gold_special") != null ? `<div class="pilulas">
+            <div><span>Clássico</span><b>${pct(maisComum("gold_special"))}</b></div>
+            <div><span>Premium</span><b>${pct(maisComum("gold_pro"))}</b></div></div>` : aguardando}</div>
+        <div class="lat-bloco">${cab("Curva ABC", `<button class="q" title="${esc(EXPLICA_CURVA)}" aria-label="${esc(EXPLICA_CURVA)}">?</button>`)}
+          ${pilha([{ k: "A", rotulo: "A · cliente grande", cor: "#0f8a5f" }, { k: "B", rotulo: "B · cliente médio", cor: "#e0a100" }, { k: "C", rotulo: "C · cliente pequeno", cor: "#8a93a3" }])}
+          <p class="nota">${carregado ? "Pelo faturamento mensal (venda/mês × preço) de cada anúncio." : "Pelo faturamento público; fica mais preciso quando os dados carregam."}</p></div>
+        <div class="lat-bloco">${cab("Vendas por mês")}
           ${carregado ? `<div class="faixa-vendas"><label>de<input id="lat-vmin" type="number" min="0" step="1" placeholder="0" value="${estado.vendasMin ?? ""}"></label>
             <label>até<input id="lat-vmax" type="number" min="0" step="1" placeholder="sem limite" value="${estado.vendasMax ?? ""}"></label></div>
             <div class="atalhos">${[[1, 30], [30, 100], [100, 500], [500, null]].map(([a, b]) => `<button class="atalho" data-vmin="${a}" data-vmax="${b ?? ""}">${b ? `${a} a ${b}` : `+${a}`}</button>`).join("")}</div>` : aguardando}</div>
-        <div class="lat-bloco">${cab("medalha", "Medalhas")}
-          ${carregado ? `<div class="duas">${caixa("sem_medalha", "medalha", "Sem medalha")}${caixa("lider", "medalha", "MercadoLíder", null, "prata")}
-            ${caixa("gold", "medalha", "Gold", null, "ouro")}${caixa("platinum", "medalha", "Platinum", null, "platina")}</div>` : aguardando}</div>
-        <div class="lat-bloco">${cab("calendario", "Data de criação")}
-          ${carregado ? `<div class="lista-filtros">${linhaData("novos", "#0f8a5f", "Menos de 180 dias")}${linhaData("medios", "#e0b100", "180 a 365 dias")}
-            ${linhaData("antigos", "#d4343b", "Mais de 365 dias")}</div>` : aguardando}</div>
-        <div class="lat-bloco">${cab("caminhao", "Logísticas de entrega")}
-          <div class="duas">${caixa("full", "raio", "Full")}${caixa("flex", "moto", "Flex")}${caixa("correios", "carta", "Correios")}
-            ${caixa("coleta", "casa", "Coleta")}${caixa("places", "loja", "Places")}${caixa("outros", "caminhao", "Outros")}</div>
-          ${carregado ? "" : '<p class="nota">Antes de carregar, só o Full é identificado.</p>'}</div>
-        <div class="lat-bloco">${cab("lista", "Catálogos por faixa de vendedores")}
-          ${carregado ? `<div class="duas">${caixa("1-5", "pessoas", "1 a 5")}${caixa("6-10", "pessoas", "6 a 10")}
-            ${caixa("11-30", "pessoas", "11 a 30")}${caixa("30+", "pessoas", "Mais de 30")}</div>` : aguardando}</div>
-        <div class="lat-bloco">${cab("grade", "Outras informações")}
-          <div class="duas">
-            ${caixa("classico", "ok", "Clássico")}${caixa("premium", "coroa", "Premium")}
-            ${caixa("oficiais", "selo", "Oficiais")}${caixa("internacional", "globo", "Internacional")}
-            ${caixa("patrocinados", "anuncio", "Patrocinados")}${caixa("oferta", "oferta", "Oferta")}
-            ${caixa("gratis", "presente", "Frete grátis")}${caixa("catalogo", "camadas", "Em catálogo")}
-            ${caixa("fora", "caixa", "Fora catálogo")}${info("sacola", "Vendedores", carregado ? num(listaVend.length) : "—", "Vendedores diferentes identificados")}
-            ${info("desce", "Menor preço", brl(precos.length ? Math.min(...precos) : null))}${info("sobe", "Maior preço", brl(precos.length ? Math.max(...precos) : null))}
-            ${info("desce", "Menor faturamento", brl(fats.length ? Math.min(...fats) : null), "Preço × vendidos públicos")}
-            ${info("sobe", "Maior faturamento", brl(fats.length ? Math.max(...fats) : null), "Preço × vendidos públicos")}
-          </div>
-          ${carregado ? "" : '<p class="nota">Clássico e Premium ficam exatos depois de carregar os dados.</p>'}</div>
+        <div class="lat-bloco">${cab("Idade dos anúncios")}
+          ${carregado ? pilha([{ k: "novos", rotulo: "Menos de 180 dias", cor: "#3145FF" }, { k: "medios", rotulo: "180 a 365 dias", cor: "#8b97ff" },
+            { k: "antigos", rotulo: "Mais de 365 dias", cor: "#2B333B" }]) : aguardando}</div>
+        <div class="lat-bloco">${cab("Reputação dos vendedores")}
+          ${carregado ? `<div class="opcoes">${opcao("platinum", "MercadoLíder Platinum", "#3b82f6")}${opcao("gold", "MercadoLíder Gold", "#d4a017")}
+            ${opcao("lider", "MercadoLíder", "#8a94ab")}${opcao("sem_medalha", "Sem medalha", "#dfdcdb")}</div>` : aguardando}</div>
+        <div class="lat-bloco">${cab("Envio")}
+          <div class="opcoes">${opcao("full", "Full")}${opcao("flex", "Flex")}${opcao("correios", "Correios")}
+            ${opcao("coleta", "Coleta")}${opcao("places", "Places")}${opcao("outros", "Outros")}</div>
+          ${carregado ? "" : '<p class="nota">Até os dados carregarem, só o Full é identificado.</p>'}</div>
+        <div class="lat-bloco">${cab("Concorrência no catálogo")}
+          ${carregado ? `<div class="opcoes">${opcao("1-5", "1 a 5 vendedores")}${opcao("6-10", "6 a 10 vendedores")}
+            ${opcao("11-30", "11 a 30 vendedores")}${opcao("30+", "Mais de 30 vendedores")}</div>` : aguardando}</div>
+        <div class="lat-bloco">${cab("Tipo de anúncio")}
+          <div class="opcoes">${opcao("classico", "Clássico")}${opcao("premium", "Premium")}${opcao("catalogo", "Em catálogo")}${opcao("fora", "Fora do catálogo")}</div></div>
+        <div class="lat-bloco">${cab("Destaques")}
+          <div class="opcoes">${opcao("patrocinados", "Patrocinados")}${opcao("oferta", "Em oferta")}${opcao("gratis", "Frete grátis")}
+            ${opcao("oficiais", "Lojas oficiais")}${opcao("internacional", "Internacionais")}</div></div>
+        <div class="lat-bloco">${cab("Preço e faturamento")}
+          <div class="dados">
+            ${dado("Menor preço", brl(precos.length ? Math.min(...precos) : null))}${dado("Maior preço", brl(precos.length ? Math.max(...precos) : null))}
+            ${dado("Menor faturamento", brl(fats.length ? Math.min(...fats) : null), "Preço × vendidos públicos")}
+            ${dado("Maior faturamento", brl(fats.length ? Math.max(...fats) : null), "Preço × vendidos públicos")}
+          </div></div>
         <div class="lat-bloco">
-          <button class="aba-vendedores" id="lat-vend" ${listaVend.length ? "" : "disabled"}>${icone("pessoa")}<span>Vendedores</span><b>${num(listaVend.length)}</b>
-            <i class="${estado.vendAberto ? "aberto" : ""}">${icone("seta")}</i></button>
+          <button class="aba-vendedores" id="lat-vend" ${listaVend.length ? "" : "disabled"}><i class="tri"></i><span>Vendedores da página</span><b>${num(listaVend.length)}</b>
+            <i class="seta ${estado.vendAberto ? "aberto" : ""}">${icone("seta")}</i></button>
           ${estado.vendAberto ? `<div class="vend-lista">${listaVend.map(([nome, v]) => `<button class="vend ${ativo("vendedor:" + nome)}" data-filtro="vendedor:${esc(nome)}">
               <span>${esc(nome)}${v.medalha ? ` <em>${esc(MEDALHA[v.medalha] || "")}</em>` : ""}</span><b>${num(v.anuncios)}</b><small>${num(v.vendidos)} vendidos</small></button>`).join("")}</div>` : ""}
         </div>
-        ${temFiltro() ? "" : '<p class="nota">Clique nas caixas para filtrar. Filtros de grupos diferentes se somam (ex.: catálogo com 1 a 5 vendedores + Correios); no mesmo grupo, vale qualquer um deles.</p>'}
+        ${temFiltro() ? "" : '<p class="nota">Clique numa linha ou numa faixa colorida para filtrar. Filtros de grupos diferentes se somam; no mesmo grupo, vale qualquer um deles.</p>'}
       </div></div>`;
     raiz.querySelectorAll("[data-filtro]").forEach((b) => (b.onclick = () => alternarFiltro(b.dataset.filtro)));
     const lerNumero = (el) => (el.value === "" ? null : Math.max(0, Math.round(+el.value)));
@@ -1127,7 +1446,7 @@
           ${l("Reputação", esc(REPUTACAO[v.termometro] || "—"))}
           ${l("Perguntas", inteiro(d.perguntas))}` : ""}
       </div>
-      ${!d ? `<div class="cartao-pe">${carregando ? '<span class="girando"></span>Carregando…' : "Carregue os dados no topo da lista para ver o resto."}</div>` : ""}
+      ${!d ? `<div class="cartao-pe">${carregando ? '<span class="girando"></span>Carregando…' : "Sem dados deste anúncio."}</div>` : ""}
     </div>`;
     const add = raiz.querySelector(".add-estudo");
     if (add) add.onclick = async (e) => {
@@ -1210,7 +1529,8 @@
     const itens = estado.itensBusca || [];
     if (!raiz) return;
     const info = estado.info;
-    if (!info || info.erro || !info.ligado) return aviso(raiz, info?.erro || "Extensão desligada. Clique no ícone do Monvatti Marketplace e cole o código do administrador.");
+    if (!info || info.erro) return aviso(raiz, info?.erro || "Não consegui falar com a extensão.", "erro");
+    if (!info.ligado) return avisoEntrar(raiz, info.motivo);
     if (!info.conta.liberado) return aviso(raiz, info.conta.motivo, "erro");
     const soma = itens.reduce((a, i) => a + (i.vendidos || 0), 0);
     const estimadas = itens.reduce((a, i) => a + (estado.busca?.dados?.[i.item_id]?.vendas_estimadas ?? estimar(i.vendidos, i.patamar) ?? 0), 0);
@@ -1238,12 +1558,14 @@
         </div>
         ${estado.estudoMsg ? `<div class="aviso ${estado.estudoMsg.tipo}">${esc(estado.estudoMsg.texto)}</div>` : ""}
         <div class="acoes">
-          <button class="sec" id="m-carregar" ${b.carregando ? "disabled" : ""}>${b.carregando ? `<span class="girando"></span>${esc(b.etapa || "Carregando dados…")}` : b.dados ? "Recarregar dados Monvatti Marketplace" : "Carregar dados Monvatti Marketplace"}</button>
-          <span class="suave">${b.erro ? "" : b.dados ? "Data de criação, ritmo, comissão, frete e vendedor de cada anúncio." : "Lê data de criação, ritmo, comissão, frete e vendedor de cada anúncio (leva alguns segundos)."}</span>
+          ${b.carregando ? `<span class="carregando-busca"><span class="girando"></span>${esc(b.etapa || "Carregando dados…")}</span>`
+            : `<button class="sec" id="m-carregar">${b.dados ? "Atualizar dados" : "Tentar de novo"}</button>
+               <span class="suave">${b.erro ? "" : b.dados ? "Criação, ritmo, comissão, frete e vendedor de cada anúncio." : ""}</span>`}
         </div>
         ${b.erro ? `<div class="aviso erro">${esc(b.erro)}</div>` : ""}
       </div></div>`;
-    raiz.querySelector("#m-carregar").onclick = () => carregarBusca(location.href);
+    const recarregar = raiz.querySelector("#m-carregar");
+    if (recarregar) recarregar.onclick = () => carregarBusca(location.href);
     raiz.querySelector("#m-estudo").onclick = gerarEstudo;
     raiz.querySelector("#m-estudo-add-todos").onclick = adicionarVisiveisAoEstudo;
     raiz.querySelector("#m-imposto-estudo").oninput = (e) => (estado.impostoEstudo = e.target.value === "" ? null : +e.target.value);
@@ -1377,13 +1699,77 @@
       return;
     }
     desenharTudoBusca();
+    // Carrega sozinho uma vez por página de busca; o botão fica só para atualizar.
+    if (!estado.busca) carregarBusca(location.href);
   }
+
+  // ------------------------------------------------------------ peças visuais da gaveta
+
+  const variacao = (atual, antes) => (atual == null || antes == null || !antes ? null : ((atual - antes) / antes) * 100);
+  const diasEntre = (a, b) => Math.max(0, Math.round((Date.parse(b) - Date.parse(a)) / 86400000));
+  const inteiroBR = (x) => (x == null || isNaN(x) ? "—" : Math.round(x).toLocaleString("pt-BR"));
+
+  // Seta com a variação: sobe (verde), cai (vermelho), estável (cinza).
+  function selo(v, { sufixo = "", casas = 1 } = {}) {
+    if (v == null || !isFinite(v)) return "";
+    if (Math.abs(v) < 0.05) return '<span class="selo-var igual">estável</span>';
+    const sobe = v > 0;
+    const n = Math.abs(v).toLocaleString("pt-BR", { maximumFractionDigits: casas });
+    return `<span class="selo-var ${sobe ? "sobe" : "cai"}">${sobe ? "▲" : "▼"} ${n}%${sufixo}</span>`;
+  }
+
+  // Posição na busca: número menor é melhor, então "subiu" quando o número cai.
+  function seloPosicao(atual, antes) {
+    if (atual == null || antes == null || atual === antes) return "";
+    const d = antes - atual;
+    return `<span class="selo-var ${d > 0 ? "sobe" : "cai"}">${d > 0 ? "▲ subiu" : "▼ caiu"} ${Math.abs(d)} ${Math.abs(d) === 1 ? "posição" : "posições"}</span>`;
+  }
+
+  function linhaSvg(valores, { w = 320, h = 64, cor = "#1F3BFF" } = {}) {
+    const v = valores.filter((x) => x != null && isFinite(x));
+    if (v.length < 2) return "";
+    const min = Math.min(...v), max = Math.max(...v), amp = max - min || 1;
+    const pts = v.map((y, i) => [4 + (i / (v.length - 1)) * (w - 8), h - 6 - ((y - min) / amp) * (h - 14)]);
+    const d = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+    const ult = pts[pts.length - 1];
+    return `<svg class="linha" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+      <path d="${d} L${ult[0].toFixed(1)} ${h} L${pts[0][0].toFixed(1)} ${h} Z" fill="${cor}" opacity=".09"/>
+      <path d="${d}" fill="none" stroke="${cor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    </svg>`;
+  }
+
+  function barrasSvg(valores, { w = 320, h = 70, cor = "#1F3BFF" } = {}) {
+    if (!valores.length) return "";
+    const max = Math.max(...valores, 1);
+    const bw = w / valores.length;
+    return `<svg class="barras" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${valores.map((v, i) => {
+      const alt = Math.max(2, (v / max) * (h - 2));
+      return `<rect x="${(i * bw + bw * 0.15).toFixed(1)}" y="${(h - alt).toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${alt.toFixed(1)}" rx="2" fill="${cor}" opacity="${i >= valores.length - 7 ? 1 : 0.45}"/>`;
+    }).join("")}</svg>`;
+  }
+
+  const cartaoGaveta = (titulo, corpo, extra = "") => `<section class="cg"><div class="cg-cab"><h5>${titulo}</h5>${extra}</div>${corpo}</section>`;
+  const carregando = (texto) => `<div class="aviso info"><span class="girando"></span>${texto}</div>`;
+  const erroHtml = (err) => `<div class="aviso erro">${esc(err.message || err)}</div>`;
+
+  function dadosDoAnuncioAberto() {
+    if (!ehAnuncio()) return null;
+    const an = estado.pagina || lerAnuncio();
+    const d = estado.dados || {};
+    return {
+      item_id: d.item_id || an.item_id, produto_id: d.produto_id || an.produto_id, titulo: d.titulo || an.titulo,
+      preco: d.preco ?? an.preco, permalink: an.link || location.origin + location.pathname,
+      thumbnail: document.querySelector('meta[property="og:image"]')?.content || (an.fotos || [])[0] || "",
+    };
+  }
+
+  // ------------------------------------------------------------ calculadora
 
   function calculadora(conteudo) {
     const d = estado.dados;
     if (!d) {
       conteudo.innerHTML = ehAnuncio()
-        ? '<div class="aviso info"><span class="girando"></span>Carregando os dados do anúncio. A calculadora abre sozinha quando chegarem.</div>'
+        ? carregando("Carregando os dados do anúncio. A calculadora abre sozinha quando chegarem.")
         : '<div class="aviso info">Abra a página de um anúncio. A calculadora usa o preço, a comissão e o frete dele.</div>';
       estado.aoCarregar = () => conteudo.isConnected && calculadora(conteudo);
       return;
@@ -1392,39 +1778,60 @@
     const custos = { tarifas: d.tarifas || {}, frete: d.frete };
     const valores = estado.calc || { custo: "", extras: "", pagaFrete: true };
     conteudo.innerHTML = `
-      <div class="aviso info"><b>${esc(d.titulo)}</b></div>
-      <div class="campos">
-        <label>Preço de venda (R$)<input id="c-preco" type="number" step="0.01" min="0" value="${d.preco ?? ""}"></label>
-        <label>Imposto (%)<input id="c-imposto" type="number" step="0.01" min="0" max="100" value="${estado.imposto}"></label>
-        <label>Custo do produto (R$)<input id="c-custo" type="number" step="0.01" min="0" placeholder="0,00" value="${valores.custo}"></label>
-        <label title="Embalagem, etiqueta e outros gastos por unidade">Custos extras (R$)<input id="c-extras" type="number" step="0.01" min="0" placeholder="0,00" value="${valores.extras}"></label>
-        <label class="marcar"><input id="c-paga" type="checkbox" ${valores.pagaFrete ? "checked" : ""}> Eu pago o frete (desmarque se o Mercado Livre cobre)</label>
+      <div class="calc-produto">
+        <b>${esc(d.titulo)}</b>
+        <span>${brl(d.preco)} hoje${d.tipo_anuncio ? ` · ${esc(d.tipo_anuncio)}` : ""}</span>
       </div>
+      ${cartaoGaveta("Seus números", `
+        <div class="calc-campos">
+          <label><span>Preço de venda</span><div class="campo-un"><i>R$</i><input id="c-preco" type="number" step="0.01" min="0" value="${d.preco ?? ""}"></div></label>
+          <label><span>Custo do produto</span><div class="campo-un"><i>R$</i><input id="c-custo" type="number" step="0.01" min="0" placeholder="0,00" value="${valores.custo}"></div></label>
+          <label title="Embalagem, etiqueta e outros gastos por unidade"><span>Custos extras</span><div class="campo-un"><i>R$</i><input id="c-extras" type="number" step="0.01" min="0" placeholder="0,00" value="${valores.extras}"></div></label>
+          <label><span>Imposto</span><div class="campo-un"><input id="c-imposto" type="number" step="0.01" min="0" max="100" value="${estado.imposto}"><i>%</i></div></label>
+        </div>
+        <label class="chave"><input id="c-paga" type="checkbox" ${valores.pagaFrete ? "checked" : ""}><span class="trilho"></span>
+          <span>Eu pago o frete <em id="c-frete-valor"></em></span></label>`)}
       <div id="c-status"></div>
-      <div class="bloco"><h4>Margem de contribuição</h4><table id="c-tabela" class="tabela-calc"></table></div>
-      <p class="nota">Comissão, taxa fixa e frete vêm do Mercado Livre para o preço informado e são recalculados quando você muda o preço.</p>`;
+      <div id="c-resultados" class="resultados"></div>
+      <details class="detalhe-conta"><summary>Ver a conta completa</summary><table id="c-tabela" class="tabela-calc"></table></details>
+      <p class="nota">Comissão, taxa fixa e frete vêm do Mercado Livre para o preço digitado e são recalculados quando você muda o preço.</p>`;
     const v = (id) => parseFloat(conteudo.querySelector(id).value) || 0;
     const recalcular = () => {
       const preco = v("#c-preco"), custo = v("#c-custo"), extras = v("#c-extras"), imp = v("#c-imposto");
       const pagaFrete = conteudo.querySelector("#c-paga").checked;
       estado.calc = { custo: conteudo.querySelector("#c-custo").value, extras: conteudo.querySelector("#c-extras").value, pagaFrete };
       const frete = pagaFrete ? custos.frete || 0 : 0;
+      conteudo.querySelector("#c-frete-valor").textContent = custos.frete == null ? "(não calculado)" : `(${brl(custos.frete)})`;
       const colunas = [["gold_special", "Clássico"], ["gold_pro", "Premium"]].filter(([t]) => custos.tarifas[t]).map(([t, nome]) => {
         const tarifa = custos.tarifas[t];
-        const imposto = preco * imp / 100;
-        const total = tarifa.comissao + tarifa.taxa_fixa + frete + custo + extras + imposto;
-        return { nome, tarifa, imposto, total, margem: preco - total, este: nome === d.tipo_anuncio };
+        const imposto = (preco * imp) / 100;
+        const ml = tarifa.comissao + tarifa.taxa_fixa;
+        const total = ml + frete + custo + extras + imposto;
+        return { nome, tarifa, ml, imposto, total, margem: preco - total, este: nome === d.tipo_anuncio };
       });
+      const resultados = conteudo.querySelector("#c-resultados");
       const tabela = conteudo.querySelector("#c-tabela");
       if (!colunas.length) {
-        tabela.innerHTML = '<tr><td>O Mercado Livre não devolveu a comissão deste anúncio. Tente recarregar a página.</td></tr>';
+        resultados.innerHTML = '<div class="aviso erro">O Mercado Livre não devolveu a comissão deste anúncio. Tente recarregar a página.</div>';
+        tabela.innerHTML = "";
         return;
       }
-      const rel = (x) => (preco ? `<span class="suave">${pct(x / preco * 100)}</span>` : "");
+      const parte = (valor, cor, nome) => (preco > 0 && valor > 0 ? `<i style="width:${Math.min(100, (valor / preco) * 100).toFixed(2)}%;background:${cor}" title="${nome}: ${brl(valor)}"></i>` : "");
+      resultados.innerHTML = colunas.map((c) => {
+        const cor = c.margem >= 0 ? "positivo" : "negativo";
+        return `<div class="resultado ${c.este ? "este" : ""}">
+          <div class="resultado-cab"><b>${c.nome}</b>${c.este ? '<span class="chip">este anúncio</span>' : ""}</div>
+          <span class="rotulo">Sobra por venda</span>
+          <strong class="${cor}">${brl(c.margem)}</strong>
+          <div class="resultado-linha"><span>${pct(preco ? (c.margem / preco) * 100 : null)} do preço</span><span>ROI ${custo ? pct((c.margem / custo) * 100) : "—"}</span></div>
+          <div class="composicao">${parte(c.ml, "#1F3BFF", "Mercado Livre")}${parte(frete, "#7C8CFF", "Frete")}${parte(custo + extras, "#8A93AD", "Produto e extras")}${parte(c.imposto, "#E0A100", "Imposto")}${parte(Math.max(c.margem, 0), "#0F8A5F", "Sobra")}</div>
+        </div>`;
+      }).join("") + `<div class="legenda-comp"><span><i style="background:#1F3BFF"></i>Mercado Livre</span><span><i style="background:#7C8CFF"></i>Frete</span><span><i style="background:#8A93AD"></i>Produto e extras</span><span><i style="background:#E0A100"></i>Imposto</span><span><i style="background:#0F8A5F"></i>Sobra</span></div>`;
+      const rel = (x) => (preco ? `<span class="suave">${pct((x / preco) * 100)}</span>` : "");
       const l = (rotulo, f, classe = "") => `<tr class="${classe}"><td>${rotulo}</td>${colunas.map((c) => `<td class="${c.este ? "destaque" : ""}">${f(c)}</td>`).join("")}</tr>`;
       const secao = (rotulo) => `<tr class="secao"><td colspan="${colunas.length + 1}">${rotulo}</td></tr>`;
       const cor = (c) => (c.margem >= 0 ? "positivo" : "negativo");
-      tabela.innerHTML = `<colgroup><col class="rotulo">${colunas.map(() => "<col>").join("")}</colgroup><tr><th></th>${colunas.map((c) => `<th class="${c.este ? "destaque" : ""}">${c.nome}${c.este ? '<span class="suave">este anúncio</span>' : ""}</th>`).join("")}</tr>
+      tabela.innerHTML = `<colgroup><col class="rotulo">${colunas.map(() => "<col>").join("")}</colgroup><tr><th></th>${colunas.map((c) => `<th class="${c.este ? "destaque" : ""}">${c.nome}</th>`).join("")}</tr>
         ${secao("Mercado Livre")}
         ${l("Comissão", (c) => `${brl(c.tarifa.comissao)}${rel(c.tarifa.comissao)}`)}
         ${l("Taxa fixa", (c) => brl(c.tarifa.taxa_fixa))}
@@ -1436,8 +1843,8 @@
         ${l("Custos totais", (c) => `${brl(c.total)}${rel(c.total)}`, "total")}
         ${secao("Resultado")}
         ${l("Preço de venda", () => brl(preco))}
-        ${l("Margem", (c) => `<span class="${cor(c)}">${brl(c.margem)}</span><span class="suave ${cor(c)}">${pct(preco ? c.margem / preco * 100 : null)} do preço</span>`, "total")}
-        ${l("ROI sobre o custo", (c) => (custo ? `<span class="${cor(c)}">${pct(c.margem / custo * 100)}</span>` : "—"))}`;
+        ${l("Sobra", (c) => `<span class="${cor(c)}">${brl(c.margem)}</span>`, "total")}
+        ${l("ROI sobre o custo", (c) => (custo ? `<span class="${cor(c)}">${pct((c.margem / custo) * 100)}</span>` : "—"))}`;
     };
     let espera = null;
     const status = conteudo.querySelector("#c-status");
@@ -1446,7 +1853,7 @@
       clearTimeout(espera);
       const preco = v("#c-preco");
       if (!(preco > 0) || !d.categoria_id) return;
-      status.innerHTML = '<div class="aviso info"><span class="girando"></span>Recalculando comissão e frete para o novo preço…</div>';
+      status.innerHTML = carregando("Recalculando comissão e frete para o novo preço…");
       espera = setTimeout(async () => {
         try {
           const r = await enviar({ tipo: "tarifas", preco, categoria_id: d.categoria_id, tipo_anuncio: d.tipo_id, vendedor_id: (d.vendedor || {}).id || estado.pagina?.vendedor_id || "", item_id: d.item_id });
@@ -1456,7 +1863,7 @@
           status.innerHTML = "";
           recalcular();
         } catch (err) {
-          status.innerHTML = `<div class="aviso erro">${esc(err.message)}</div>`;
+          status.innerHTML = erroHtml(err);
         }
       }, 700);
     };
@@ -1467,45 +1874,135 @@
     recalcular();
   }
 
-  function metricasNaGaveta(conteudo) {
-    const painel = document.getElementById("monvatti-painel");
-    if (!painel) {
-      conteudo.innerHTML = '<div class="aviso info">Abra a página de um anúncio para ver as métricas.</div>';
+  // ------------------------------------------------------------ métricas
+
+  async function metricasNaGaveta(conteudo) {
+    const an = dadosDoAnuncioAberto();
+    if (!an?.item_id) {
+      conteudo.innerHTML = '<div class="aviso info">Abra a página de um anúncio para ver como o preço e as visitas dele estão mudando.</div>';
       return;
     }
-    conteudo.innerHTML = '<div class="aviso info">As métricas ficam no painel ao lado do título do anúncio. Levei você até ele.</div>';
-    painel.scrollIntoView({ behavior: "smooth", block: "center" });
+    conteudo.innerHTML = carregando("Buscando preço e visitas no Mercado Livre…");
+    let m;
+    try {
+      m = await enviar({ tipo: "metricas", item_id: an.item_id });
+    } catch (err) {
+      conteudo.innerHTML = erroHtml(err);
+      return;
+    }
+    if (!conteudo.isConnected) return;
+    const d = estado.dados || {};
+    const atual = m.preco?.atual ?? an.preco;
+    const precos = (m.historico || []).filter((h) => h.preco != null);
+    const primeiro = precos[0];
+    const varHist = primeiro && precos.length > 1 ? variacao(atual, primeiro.preco) : null;
+    const promo = m.preco?.cheio && atual && m.preco.cheio > atual ? m.preco.cheio : null;
+    const minimo = precos.length ? Math.min(...precos.map((h) => h.preco)) : null;
+    const maximo = precos.length ? Math.max(...precos.map((h) => h.preco)) : null;
+
+    const blocoPreco = cartaoGaveta("Preço", `
+      <div class="grande"><b>${brl(atual)}</b>${varHist != null ? selo(varHist, { sufixo: ` em ${diasEntre(primeiro.dia, new Date().toISOString())} dias` }) : ""}</div>
+      ${promo ? `<div class="aviso ok">Em promoção: de <s>${brl(promo)}</s> por ${brl(atual)} (${pct(((promo - atual) / promo) * 100)} de desconto).</div>` : ""}
+      ${precos.length > 1
+        ? `${linhaSvg(precos.map((h) => h.preco))}
+           <div class="eixo"><span>${dataBR(primeiro.dia + "T12:00:00")}</span><span>menor ${brl(minimo)} · maior ${brl(maximo)}</span><span>hoje</span></div>`
+        : `<p class="nota">A Monvatti começou a guardar o preço deste anúncio ${primeiro ? `em ${dataBR(primeiro.dia + "T12:00:00")}` : "agora"}. A variação aparece a partir do próximo dia em que ele for visto. Coloque no radar para conferir sozinho a cada 6 horas.</p>
+           <div class="acoes"><button class="sec" id="m-radar">Colocar no radar</button></div>`}`);
+
+    const vis = m.visitas || [];
+    const totalVis = vis.reduce((s, x) => s + x.visitas, 0);
+    const ult7 = vis.slice(-7).reduce((s, x) => s + x.visitas, 0);
+    const ant7 = vis.slice(-14, -7).reduce((s, x) => s + x.visitas, 0);
+    const vendas30 = d.periodos?.d30?.vendas;
+    const conversao = totalVis && vendas30 ? (vendas30 / totalVis) * 100 : null;
+    const blocoVisitas = vis.length
+      ? cartaoGaveta("Visitas nos últimos 30 dias", `
+          <div class="tres-num">
+            <div><span>Total</span><b>${inteiroBR(totalVis)}</b></div>
+            <div><span>Por dia</span><b>${inteiroBR(totalVis / vis.length)}</b></div>
+            <div><span>7 dias x 7 anteriores</span><b>${ant7 ? selo(variacao(ult7, ant7)) : "—"}</b></div>
+          </div>
+          ${barrasSvg(vis.map((x) => x.visitas))}
+          <div class="eixo"><span>${dataBR(vis[0].dia + "T12:00:00")}</span><span>últimos 7 dias em destaque</span><span>hoje</span></div>
+          ${conversao != null ? `<p class="nota">Conversão estimada: <b>${pct(conversao)}</b> das visitas viram venda (${inteiroBR(vendas30)} vendas estimadas em 30 dias).</p>` : ""}`)
+      : cartaoGaveta("Visitas", '<p class="nota">O Mercado Livre não liberou as visitas deste anúncio agora.</p>');
+
+    const vendidos = (m.historico || []).filter((h) => h.vendidos != null);
+    const blocoVendas = vendidos.length > 1
+      ? cartaoGaveta("Vendidos vistos pela Monvatti", `
+          ${linhaSvg(vendidos.map((h) => h.vendidos), { cor: "#0F8A5F" })}
+          <div class="eixo"><span>${dataBR(vendidos[0].dia + "T12:00:00")}: ${inteiroBR(vendidos[0].vendidos)}</span><span>hoje: ${inteiroBR(vendidos[vendidos.length - 1].vendidos)}</span></div>`)
+      : "";
+
+    conteudo.innerHTML = `<div class="calc-produto"><b>${esc(an.titulo)}</b><span>${esc(an.item_id)}</span></div>${blocoPreco}${blocoVisitas}${blocoVendas}`;
+    conteudo.querySelector("#m-radar")?.addEventListener("click", () => abrirGaveta("ranqueamento"));
   }
 
-  function desenharTendencia(r) {
-    if (!r.itens || !r.itens.length) return '<div class="aviso info">Sem ranking de mais vendidos para essa categoria.</div>';
-    const linhas = r.itens.map((x) => `
-      <div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--borda)">
-        <b style="width:24px;text-align:center;color:var(--azul-forte);font-variant-numeric:tabular-nums">${x.posicao ?? "–"}</b>
-        ${x.thumbnail ? `<img src="${esc(x.thumbnail)}" width="38" height="38" style="border-radius:6px;object-fit:cover;flex:none" alt="">` : '<span style="width:38px;flex:none"></span>'}
-        <span style="flex:1;min-width:0">${x.permalink
-          ? `<a href="${esc(x.permalink)}" target="_blank" rel="noopener">${esc(x.titulo || "Anúncio de vendedor (detalhes restritos pelo ML)")}</a>`
-          : esc(x.titulo || "—")}</span>
-        <b style="white-space:nowrap;font-variant-numeric:tabular-nums">${x.preco != null ? brl(x.preco) : ""}</b>
-      </div>`).join("");
-    return `<div class="parte-cab"><h5>Mais vendidos — ${esc(r.categoria || "")}</h5></div><div>${linhas}</div>`;
+  // ------------------------------------------------------------ tendência
+
+  function desenharTendencia(r, ordem) {
+    const itens = (r.itens || []).slice();
+    if (!itens.length) return '<div class="aviso info">Sem ranking de mais vendidos para essa categoria.</div>';
+    const ordenar = {
+      vendidos: (a, b) => (a.posicao ?? 999) - (b.posicao ?? 999),
+      visitas: (a, b) => (b.visitas ?? -1) - (a.visitas ?? -1),
+      preco: (a, b) => (a.preco ?? Infinity) - (b.preco ?? Infinity),
+    }[ordem];
+    itens.sort(ordenar);
+    const maxVis = Math.max(...itens.map((x) => x.visitas || 0), 1);
+    const temVisitas = itens.some((x) => x.visitas != null);
+    const meu = dadosDoAnuncioAberto();
+    const ehMeu = (x) => meu && ((x.item_ref && x.item_ref === meu.item_id) || (x.id && x.id === meu.produto_id) || (x.id && x.id === meu.item_id));
+    const s = r.resumo || {};
+    return `
+      <div class="tres-num cartao-claro">
+        <div><span>Faixa de preço</span><b>${s.preco_min != null ? `R$ ${inteiroBR(s.preco_min)}<small> a </small>${inteiroBR(s.preco_max)}` : "—"}</b></div>
+        <div><span>Preço médio</span><b>${brl(s.preco_medio)}</b></div>
+        <div><span>Visitas (30 dias)</span><b>${inteiroBR(s.visitas_total)}</b></div>
+      </div>
+      <div class="segmento cheio tres" role="tablist">
+        ${[["vendidos", "Mais vendidos"], ["visitas", "Mais visitados"], ["preco", "Menor preço"]].map(([k, n]) => `<button data-ordem="${k}" class="${k === ordem ? "ativo" : ""}" ${k === "visitas" && !temVisitas ? "disabled" : ""}>${n}</button>`).join("")}
+      </div>
+      <ol class="ranking">${itens.map((x) => `
+        <li class="${ehMeu(x) ? "meu" : ""}">
+          <span class="pos" title="Posição no ranking de mais vendidos">${x.posicao ?? "–"}º</span>
+          ${x.thumbnail ? `<img src="${esc(x.thumbnail)}" alt="">` : '<span class="sem-foto"></span>'}
+          <div class="info">
+            ${x.permalink ? `<a href="${esc(x.permalink)}" target="_blank" rel="noopener">${esc(x.titulo || "Anúncio com detalhes restritos pelo ML")}</a>` : `<span>${esc(x.titulo || "—")}</span>`}
+            <div class="metricas-linha">
+              <b>${x.preco != null ? brl(x.preco) : "—"}</b>
+              ${x.vendidos ? `<span>${inteiroBR(x.vendidos)} vendidos</span>` : ""}
+              ${ehMeu(x) ? '<span class="chip">este anúncio</span>' : ""}
+            </div>
+            ${x.visitas != null ? `<div class="barra-vis"><i style="width:${((x.visitas / maxVis) * 100).toFixed(1)}%"></i><span>${inteiroBR(x.visitas)} visitas</span></div>` : ""}
+          </div>
+        </li>`).join("")}</ol>
+      <p class="nota">Ranking oficial de mais vendidos do Mercado Livre na categoria “${esc(r.categoria || "")}”. Visitas dos últimos 30 dias do anúncio que vende cada produto.</p>`;
   }
 
   async function tendenciaNaGaveta(conteudo) {
     const inicial = (ehBusca() && termoDaBusca()) || (ehAnuncio() && (lerAnuncio().titulo || "").split(/\s+/).slice(0, 4).join(" ")) || "";
     conteudo.innerHTML = `
-      <div class="aviso info">Veja os produtos campeões de venda de uma categoria. Digite um termo que eu descubro a categoria.</div>
-      <div class="acoes"><input id="t-termo" placeholder="ex.: furadeira, fone bluetooth" value="${esc(inicial)}" style="flex:1"><button id="t-ir">Ver tendência</button></div>
+      ${cartaoGaveta("Nicho", `
+        <p class="nota">Digite o produto que eu descubro a categoria e mostro quem mais vende e quem mais recebe visitas nela.</p>
+        <div class="busca-linha"><input id="t-termo" placeholder="ex.: furadeira, fone bluetooth" value="${esc(inicial)}"><button id="t-ir">Ver nicho</button></div>`)}
       <div id="t-saida"></div>`;
     const saida = conteudo.querySelector("#t-saida");
+    let dados = null;
+    let ordem = "vendidos";
+    const desenhar = () => {
+      saida.innerHTML = `<div class="cg-cab solto"><h5>${esc(dados.categoria || "")}</h5></div>${desenharTendencia(dados, ordem)}`;
+      saida.querySelectorAll("[data-ordem]").forEach((b) => (b.onclick = () => { ordem = b.dataset.ordem; desenhar(); }));
+    };
     const ir = async () => {
       const termo = conteudo.querySelector("#t-termo").value.trim();
       if (!termo) return;
-      saida.innerHTML = '<div class="aviso info"><span class="girando"></span>Consultando o Mercado Livre…</div>';
+      saida.innerHTML = carregando("Consultando o Mercado Livre…");
       try {
-        saida.innerHTML = desenharTendencia(await enviar({ tipo: "tendencia", termo }));
+        dados = await enviar({ tipo: "tendencia", termo });
+        desenhar();
       } catch (err) {
-        saida.innerHTML = `<div class="aviso erro">${esc(err.message)}</div>`;
+        saida.innerHTML = erroHtml(err);
       }
     };
     conteudo.querySelector("#t-ir").onclick = ir;
@@ -1513,35 +2010,121 @@
     if (inicial) ir();
   }
 
+  // ------------------------------------------------------------ ranking e radar
+
+  function itemDoRadar(x) {
+    const vPreco = variacao(x.preco_atual, x.preco_inicial);
+    const vRecente = x.preco_anterior != null && x.preco_anterior !== x.preco_atual ? variacao(x.preco_atual, x.preco_anterior) : null;
+    const precos = (x.historico || []).map((h) => h.preco);
+    return `<li class="${x.mudou_em ? "mudou" : ""}">
+      ${x.thumbnail ? `<img src="${esc(x.thumbnail)}" alt="">` : '<span class="sem-foto"></span>'}
+      <div class="info">
+        ${x.permalink ? `<a href="${esc(x.permalink)}" target="_blank" rel="noopener">${esc(x.titulo || x.item_id)}</a>` : `<span>${esc(x.titulo || x.item_id)}</span>`}
+        <div class="radar-dados">
+          <div><span>Preço</span><b>${brl(x.preco_atual)}</b>${vRecente != null ? selo(vRecente, { sufixo: " agora" }) : ""}
+            <em>${x.preco_inicial != null ? `começou em ${brl(x.preco_inicial)}` : `desde ${dataBR(x.criado_em)}`}${vPreco != null && Math.abs(vPreco) >= 0.05 ? ` ${selo(vPreco)}` : ""}</em></div>
+          <div><span>Busca${x.termo ? ` “${esc(x.termo)}”` : ""}</span><b>${x.termo ? (x.posicao_atual ? `${x.posicao_atual}º` : "fora das 1ªs") : "—"}</b>${seloPosicao(x.posicao_atual, x.posicao_anterior)}
+            <em>${x.termo && x.posicao_inicial ? `começou em ${x.posicao_inicial}º` : x.termo ? "" : "sem palavra-chave"}</em></div>
+        </div>
+        ${precos.length > 1 ? linhaSvg(precos, { h: 34 }) : ""}
+      </div>
+      <button class="link tirar" data-tirar="${esc(x.item_id)}" title="Tirar do radar">Tirar</button>
+    </li>`;
+  }
+
   async function ranqueamentoNaGaveta(conteudo) {
-    const an = ehAnuncio() ? lerAnuncio() : {};
+    const an = dadosDoAnuncioAberto() || {};
     const inicial = (an.titulo || "").split(/\s+/).slice(0, 4).join(" ") || (ehBusca() && termoDaBusca()) || "";
     conteudo.innerHTML = `
-      <div class="aviso info">Veja em que posição um anúncio aparece na busca do Mercado Livre para uma palavra-chave.</div>
-      <div class="campos">
-        <label>Anúncio (MLB)<input id="r-item" value="${esc(an.item_id || "")}" placeholder="MLB..."></label>
-        <label>Palavra-chave<input id="r-termo" value="${esc(inicial)}" placeholder="ex.: furadeira 500w"></label>
-      </div>
-      <div class="acoes"><button id="r-ir">Ver posição</button></div>
-      <div id="r-saida"></div>`;
+      ${cartaoGaveta("Posição na busca", `
+        <div class="calc-campos">
+          <label><span>Anúncio (MLB)</span><input id="r-item" value="${esc(an.item_id || "")}" placeholder="MLB..."></label>
+          <label><span>Palavra-chave</span><input id="r-termo" value="${esc(inicial)}" placeholder="ex.: furadeira 500w"></label>
+        </div>
+        <div class="acoes"><button id="r-ir">Ver posição</button>${an.item_id ? '<button class="sec" id="r-radar">Colocar no radar</button>' : ""}</div>
+        <div id="r-saida"></div>`)}
+      ${cartaoGaveta("Radar", '<div id="r-lista">' + carregando("Carregando o radar…") + "</div>", '<button class="sec pequeno" id="r-conferir">Conferir agora</button>')}`;
     const saida = conteudo.querySelector("#r-saida");
+    const lista = conteudo.querySelector("#r-lista");
+    let ultima = null;
+
+    const desenharRadar = (r) => {
+      const itens = r.itens || [];
+      const quando = r.conferido ? `Conferido em ${new Date(r.conferido).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}. ` : "";
+      lista.innerHTML = itens.length
+        ? `<ul class="radar">${itens.map(itemDoRadar).join("")}</ul><p class="nota">${quando}A extensão confere sozinha a cada 6 horas e mostra um número no ícone da Monvatti quando um preço ou posição muda.</p>`
+        : '<p class="nota">Nenhum anúncio no radar ainda. Coloque um anúncio no radar para acompanhar o preço e a posição dele na busca. A extensão confere sozinha a cada 6 horas e avisa no ícone quando algo muda.</p>';
+      lista.querySelectorAll("[data-tirar]").forEach((b) => (b.onclick = async () => {
+        b.disabled = true;
+        try {
+          await enviar({ tipo: "radarRemover", item_id: b.dataset.tirar });
+          desenharRadar(await enviar({ tipo: "radarListar" }));
+        } catch (err) {
+          lista.insertAdjacentHTML("afterbegin", erroHtml(err));
+        }
+      }));
+    };
+
+    const carregarRadar = async () => {
+      try {
+        desenharRadar(await enviar({ tipo: "radarListar" }));
+        enviar({ tipo: "radarVisto" }).catch(() => {});
+      } catch (err) {
+        lista.innerHTML = erroHtml(err);
+      }
+    };
+
     conteudo.querySelector("#r-ir").onclick = async () => {
-      const item_id = conteudo.querySelector("#r-item").value.trim();
+      const item_id = conteudo.querySelector("#r-item").value.trim().toUpperCase();
       const termo = conteudo.querySelector("#r-termo").value.trim();
       if (!item_id || !termo) {
         saida.innerHTML = '<div class="aviso erro">Informe o anúncio (MLB) e a palavra-chave.</div>';
         return;
       }
-      saida.innerHTML = '<div class="aviso info"><span class="girando"></span>Procurando na busca do Mercado Livre…</div>';
+      saida.innerHTML = carregando("Procurando nas 3 primeiras páginas da busca do Mercado Livre…");
       try {
-        const r = await enviar({ tipo: "ranqueamento", termo, item_id });
+        const r = await enviar({ tipo: "ranqueamento", termo, item_id, produto_id: item_id === an.item_id ? an.produto_id : "" });
+        ultima = r;
         saida.innerHTML = r.posicao
-          ? `<div class="aviso ok"><b>${esc(r.item_id)}</b> está em <b>${r.posicao}º</b> na busca por “${esc(r.termo)}”${r.total ? ` (de ${r.total.toLocaleString("pt-BR")} anúncios)` : ""}.</div>`
-          : `<div class="aviso info">Não achei “${esc(r.item_id)}” nos primeiros ${r.limite} resultados de “${esc(r.termo)}”. Pode estar além dessa posição.</div>`;
+          ? `<div class="posicao"><b>${r.posicao}º</b><div><span>na busca por “${esc(r.termo)}”</span><em>página ${r.pagina}${r.total ? ` · ${r.total.toLocaleString("pt-BR")} resultados` : ""} · contando os patrocinados</em></div></div>`
+          : `<div class="aviso info">Não achei esse anúncio nas ${r.limite || "primeiras"} primeiras posições de “${esc(r.termo)}”. Ele pode estar mais para trás ou a palavra-chave não traz ele.</div>`;
       } catch (err) {
-        saida.innerHTML = `<div class="aviso erro">${esc(err.message)}</div>`;
+        saida.innerHTML = erroHtml(err);
       }
     };
+
+    conteudo.querySelector("#r-radar")?.addEventListener("click", async (e) => {
+      const b = e.currentTarget;
+      const termo = conteudo.querySelector("#r-termo").value.trim();
+      b.disabled = true;
+      b.textContent = "Colocando…";
+      try {
+        const posicao = ultima && ultima.termo === termo && ultima.item_id === an.item_id ? ultima.posicao : null;
+        await enviar({ tipo: "radarAdicionar", item: { ...an, termo, posicao: posicao || null } });
+        b.textContent = "No radar";
+        await carregarRadar();
+      } catch (err) {
+        b.disabled = false;
+        b.textContent = "Colocar no radar";
+        saida.innerHTML = erroHtml(err);
+      }
+    });
+
+    conteudo.querySelector("#r-conferir").onclick = async (e) => {
+      const b = e.currentTarget;
+      b.disabled = true;
+      b.textContent = "Conferindo…";
+      try {
+        desenharRadar(await enviar({ tipo: "radarVerificar" }));
+        enviar({ tipo: "radarVisto" }).catch(() => {});
+      } catch (err) {
+        lista.insertAdjacentHTML("afterbegin", erroHtml(err));
+      }
+      b.disabled = false;
+      b.textContent = "Conferir agora";
+    };
+
+    carregarRadar();
   }
 
   function estudosNaGaveta(conteudo) {
@@ -1665,11 +2248,11 @@
     raiz.innerHTML = `<div class="fundo-gaveta"></div><aside class="gaveta" role="dialog" aria-label="Monvatti Marketplace">
       <header><span class="marca"></span><b>Monvatti Marketplace</b><button class="sec" id="g-fechar">Fechar</button></header>
       <nav class="abas">
-        <button class="aba" data-aba="calculadora">Calculadora de margem</button>
+        <button class="aba" data-aba="calculadora">Calculadora</button>
         <button class="aba" data-aba="estudos">Estudos<span class="conta">${estado.estudo.itens.length || ""}</span></button>
-        <button class="aba" data-aba="metricas">Métricas do anúncio</button>
+        <button class="aba" data-aba="metricas">Métricas</button>
         <button class="aba" data-aba="tendencia">Tendência</button>
-        <button class="aba" data-aba="ranqueamento">Ranqueamento</button>
+        <button class="aba" data-aba="ranqueamento">Ranking e radar</button>
       </nav>
       <div class="conteudo" id="g-conteudo"></div></aside>`;
     raiz.querySelector(".fundo-gaveta").onclick = fechar;
@@ -1799,6 +2382,11 @@
   function botaoFlutuante() {
     const { host, raiz } = hospedeiro("monvatti-fab");
     document.body.append(host);
+    if (estado.info && !estado.info.erro && !estado.info.ligado) {
+      raiz.innerHTML = '<button class="fab entrar" title="Entrar no Monvatti Marketplace">Entrar</button>';
+      raiz.querySelector(".fab").onclick = () => abrirEntrar();
+      return;
+    }
     raiz.innerHTML = '<button class="fab" title="Monvatti Marketplace" aria-label="Abrir o Monvatti Marketplace"></button>';
     raiz.querySelector(".fab").onclick = () => abrirGaveta("calculadora");
   }

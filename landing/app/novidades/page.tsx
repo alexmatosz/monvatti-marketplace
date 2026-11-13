@@ -28,7 +28,7 @@ export default function NovidadesPagina() {
         {/* Destaque */}
         <Link
           href={`/novidades/${destaque.slug}`}
-          className="foco group mt-10 grid overflow-hidden rounded-3xl border border-platina bg-white transition-all hover:border-azul hover:shadow-[0_30px_70px_-34px_rgba(7,10,26,0.45)] lg:grid-cols-2"
+          className="foco group mt-10 grid overflow-hidden rounded-3xl border border-platina bg-card transition-all hover:border-azul hover:shadow-[0_30px_70px_-34px_rgba(7,10,26,0.45)] lg:grid-cols-2"
         >
           <BlogCover post={destaque} alto />
           <div className="flex flex-col justify-center p-7 sm:p-9">
@@ -50,7 +50,7 @@ export default function NovidadesPagina() {
             <Link
               key={p.slug}
               href={`/novidades/${p.slug}`}
-              className="foco group flex flex-col overflow-hidden rounded-3xl border border-platina bg-white transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-32px_rgba(7,10,26,0.4)]"
+              className="foco group flex flex-col overflow-hidden rounded-3xl border border-platina bg-card transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-32px_rgba(7,10,26,0.4)]"
             >
               <BlogCover post={p} />
               <div className="flex flex-1 flex-col p-6">

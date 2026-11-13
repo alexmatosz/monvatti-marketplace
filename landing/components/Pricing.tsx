@@ -31,7 +31,7 @@ const PLANOS: Plano[] = [
     },
     inclui: [
       "Vendas estimadas e ritmo do concorrente",
-      "Métricas: visitas, conversão e faturamento",
+      "Datas, logística, taxas e faturamento",
       "Concorrência da 1ª e demais páginas",
       "Calculadora de margem",
       "Tendência por categoria e ranqueamento",
@@ -98,11 +98,11 @@ export function Pricing() {
                 key={p.chave}
                 onClick={() => setPeriodo(p.chave)}
                 className={`foco rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-                  ativo ? "bg-white text-night" : "text-white/70 hover:text-white"
+                  ativo ? "bg-marca text-white" : "text-white/70 hover:text-white"
                 }`}
               >
                 {p.rotulo}
-                {p.selo ? <span className={`ml-1.5 text-[11px] ${ativo ? "text-azul" : "text-white/45"}`}>{p.selo}</span> : null}
+                {p.selo ? <span className={`ml-1.5 text-[11px] ${ativo ? "text-white/80" : "text-white/45"}`}>{p.selo}</span> : null}
               </button>
             );
           })}
@@ -118,7 +118,7 @@ export function Pricing() {
               className={`relative flex flex-col rounded-2xl border p-7 ${
                 plano.destaque
                   ? "border-vivo/60 bg-white/[0.06] shadow-[0_0_0_1px_rgba(49,69,255,0.4)]"
-                  : "border-white/12 bg-white/[0.03]"
+                  : "border-white/10 bg-white/[0.03]"
               } ${plano.breve ? "opacity-85" : ""}`}
             >
               {plano.destaque ? (
@@ -142,10 +142,10 @@ export function Pricing() {
               <p className="mt-1.5 text-[12.5px] text-white/50">{preco.cobranca}</p>
 
               <a
-                href="#cadastro"
-                className={`foco mt-6 block rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
+                href={plano.breve ? "/suporte" : `/assinar?plano=${periodo}`}
+                className={`foco mt-6 block rounded-full py-3 text-center text-sm font-semibold transition-colors ${
                   plano.destaque
-                    ? "bg-azul text-white hover:bg-vivo"
+                    ? "bg-marca text-white hover:bg-marca-forte"
                     : "border border-white/15 text-white hover:bg-white/10"
                 }`}
               >
@@ -166,7 +166,7 @@ export function Pricing() {
       </div>
 
       <p className="mt-6 text-center text-[12px] text-white/40">
-        Valores de lançamento, fictícios por enquanto — a confirmar. Pagamento por Pix, em breve. Sem fidelidade.
+        Pix com 10% de desconto ou cartão de crédito em até 12x. Acesso liberado assim que o pagamento é aprovado. Sem fidelidade.
       </p>
     </div>
   );

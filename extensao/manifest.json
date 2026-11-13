@@ -1,31 +1,63 @@
 {
   "manifest_version": 3,
   "name": "Monvatti Marketplace",
-  "version": "0.3.0",
-  "description": "Monvatti Marketplace: estude anúncios do Mercado Livre — vendas estimadas, logística, taxas, margem, tendência e ranqueamento.",
-  "permissions": ["storage", "cookies"],
-  "host_permissions": ["https://*.mercadolivre.com.br/*", "http://localhost/*"],
-  "optional_host_permissions": ["https://*/*", "http://127.0.0.1/*"],
-  "background": { "service_worker": "background.js" },
+  "version": "0.6.0",
+  "description": "Monvatti Marketplace: estude anúncios do Mercado Livre — vendas estimadas, logística, taxas e margem, direto na página do anúncio e da busca, e monte estudos em planilha.",
+  "permissions": [
+    "storage",
+    "cookies",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://*.mercadolivre.com.br/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_title": "Monvatti Marketplace",
     "default_popup": "popup.html",
-    "default_icon": { "16": "icones/icone-16.png", "32": "icones/icone-32.png", "48": "icones/icone-48.png", "128": "icones/icone-128.png" }
+    "default_icon": {
+      "16": "icones/icone-16.png",
+      "32": "icones/icone-32.png",
+      "48": "icones/icone-48.png",
+      "128": "icones/icone-128.png"
+    }
   },
-  "icons": { "16": "icones/icone-16.png", "32": "icones/icone-32.png", "48": "icones/icone-48.png", "128": "icones/icone-128.png" },
+  "icons": {
+    "16": "icones/icone-16.png",
+    "32": "icones/icone-32.png",
+    "48": "icones/icone-48.png",
+    "128": "icones/icone-128.png"
+  },
   "content_scripts": [
     {
-      "matches": ["https://*.mercadolivre.com.br/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://*.mercadolivre.com.br/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://oauth.pstmn.io/v1/*"],
-      "js": ["retorno-ml.js"],
+      "matches": [
+        "https://oauth.pstmn.io/v1/*"
+      ],
+      "js": [
+        "retorno-ml.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
-    { "resources": ["icones/*.png"], "matches": ["https://*.mercadolivre.com.br/*"] }
+    {
+      "resources": [
+        "icones/*.png"
+      ],
+      "matches": [
+        "https://*.mercadolivre.com.br/*"
+      ]
+    }
   ]
 }

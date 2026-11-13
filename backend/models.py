@@ -20,10 +20,10 @@ def agora() -> datetime:
 
 
 class ContaML(Base):
-    """Conta do Mercado Livre vinculada por OAuth. A conta de estudo CENTRAL é a
-    linha com usuario_id NULL: o admin vincula uma vez e todos os clientes usam
-    (como no Avant, o cliente não vincula nada). As credenciais (access_token,
-    refresh_token, obtido_em, expires_in, user_id) ficam em `credenciais`."""
+    """A conta do Mercado Livre que um usuário vinculou (OAuth). Uma por usuário:
+    cada um conecta a sua e libera o estudo só para si (como no Avant). As
+    credenciais (access_token, refresh_token, obtido_em, expires_in, user_id)
+    ficam em `credenciais`; o estudo lê a API do ML por essa conta."""
 
     __tablename__ = "conta_ml"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -73,14 +73,59 @@ class Usuario(Base):
 
 
 class CodigoLogin(Base):
-    """Código de 6 dígitos mandado por e-mail para entrar na extensão. Guarda só
-    o hash; vale 10 minutos, 5 tentativas e um uso."""
+    """Código de 6 dígitos mandado por e-mail para entrar na extensão. Só o hash
+    fica guardado; um código novo substitui o anterior do mesmo e-mail."""
 
     __tablename__ = "codigos_login"
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(200), index=True)
-    codigo_hash: Mapped[str] = mapped_column(String(64))
-    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)
-    expira_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    codigo_hash: Mapped[str] = mapped_column(String(100))
+    vence_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     tentativas: Mapped[int] = mapped_column(Integer, default=0)
     usado: Mapped[bool] = mapped_column(Boolean, default=False)
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)
+
+
+class Pagamento(Base):
+    """Uma cobrança Pix criada no AbacatePay. Quando o webhook confirma, libera
+    os dias do plano ao usuário (uma vez só por cobrança)."""
+
+    __tablename__ = "pagamentos"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(Integer, index=True)
+    checkout_id: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    url: Mapped[str] = mapped_column(String(500), default="")
+    valor_centavos: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    plano: Mapped[str] = mapped_column(String(20), default="mensal")
+    dias: Mapped[int] = mapped_column(Integer, default=30)
+    status: Mapped[str] = mapped_column(String(20), default="PENDING")
+    liberado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)
+    pago_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class RadarItem(Base):
+    """Anúncio que a pessoa pôs no radar: a extensão confere de tempos em tempos o
+    preço (pela API do ML) e a posição na busca (lida no navegador da pessoa) e
+    mostra quando subiu ou caiu."""
+
+    __tablename__ = "radar_itens"
+    __table_args__ = (UniqueConstraint("usuario_id", "item_id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(Integer, index=True)
+    item_id: Mapped[str] = mapped_column(String(40))
+    produto_id: Mapped[str] = mapped_column(String(40), default="")
+    titulo: Mapped[str] = mapped_column(String(300), default="")
+    thumbnail: Mapped[str] = mapped_column(String(400), default="")
+    permalink: Mapped[str] = mapped_column(String(400), default="")
+    termo: Mapped[str] = mapped_column(String(120), default="")
+    preco_inicial: Mapped[float | None] = mapped_column(Float, nullable=True)
+    preco_anterior: Mapped[float | None] = mapped_column(Float, nullable=True)
+    preco_atual: Mapped[float | None] = mapped_column(Float, nullable=True)
+    posicao_inicial: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    posicao_anterior: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    posicao_atual: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True)
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=agora)
+    verificado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    mudou_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

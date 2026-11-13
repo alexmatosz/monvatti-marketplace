@@ -23,7 +23,7 @@ export const POSTS: Post[] = [
       "O painel do Monvatti Marketplaces aparece dentro do anúncio e da busca, com métricas, concorrência e margem em tempo real.",
     corpo: [
       "A primeira versão pública já está de pé: você instala a extensão no Chrome, entra com o seu e-mail e vincula a sua conta do Mercado Livre uma vez.",
-      "A partir daí, o painel aparece sozinho dentro de cada anúncio e da busca — com vendas estimadas do concorrente, visitas, conversão, faturamento e a calculadora de margem com comissão, frete e imposto já descontados.",
+      "A partir daí, o painel aparece sozinho dentro de cada anúncio e da busca — com vendas estimadas do concorrente, ritmo de vendas, faturamento e a calculadora de margem com comissão, frete e imposto já descontados.",
       "O cadastro pelo e-mail é o que, em seguida, libera o acesso. Nada de planilha e nada de sair da página do marketplace.",
     ],
   },
@@ -75,11 +75,11 @@ export const POSTS: Post[] = [
     tag: "Planejado",
     motivo: "pix",
     cor: "#5B6472",
-    titulo: "Pagamento por Pix e planos flexíveis",
+    titulo: "Pagamento por Pix ou cartão e planos flexíveis",
     resumo:
       "Assinatura mensal, semestral ou anual, sem fidelidade. O acesso fica vinculado à conta que você conectar.",
     corpo: [
-      "O pagamento vai ser por Pix, com planos mensal, semestral e anual — sem fidelidade.",
+      "O pagamento é por Pix (com desconto) ou cartão de crédito em até 12x, com planos mensal, semestral e anual — sem fidelidade.",
       "O acesso fica vinculado à conta de marketplace que você conectar, garantindo que cada assinatura corresponde a uma conta.",
     ],
   },

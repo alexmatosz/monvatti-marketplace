@@ -52,7 +52,7 @@ export default function PostPagina({ params }: { params: { slug: string } }) {
           <p className="mt-2 text-[15px] leading-relaxed text-aco">
             Cadastre-se com o seu e-mail e comece a estudar seus anúncios com o Monvatti Marketplaces.
           </p>
-          <Link href="/#cadastro" className="foco mt-5 inline-block rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">
+          <Link href="/#planos" className="foco mt-5 inline-block rounded-xl bg-marca px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-forte">
             Começar agora
           </Link>
         </div>
@@ -64,7 +64,7 @@ export default function PostPagina({ params }: { params: { slug: string } }) {
               <Link
                 key={p.slug}
                 href={`/novidades/${p.slug}`}
-                className="foco group flex items-center gap-4 rounded-2xl border border-platina bg-white p-3 transition-colors hover:border-azul"
+                className="foco group flex items-center gap-4 rounded-2xl border border-platina bg-card p-3 transition-colors hover:border-azul"
               >
                 <div className="h-16 w-24 flex-none overflow-hidden rounded-xl">
                   <BlogCover post={p} />

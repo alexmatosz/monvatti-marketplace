@@ -1,14 +1,10 @@
-"""Login e sessão por token. O acesso à extensão passa por aqui.
+"""Login e sessão por token. O acesso à extensão passa por aqui."""
 
-Entrar é em dois passos: /codigo manda um código de 6 dígitos para o e-mail e
-/login troca e-mail + código pelo token. Ninguém entra só sabendo o e-mail de
-um cliente. O código só é pedido de novo se a sessão cair: cada login sobe
-sessao_versao, então só UM navegador fica logado por assinatura (entrar em
-outro derruba o anterior).
-"""
-
-import logging
-from datetime import timedelta
+import hashlib
+import hmac
+import re
+import secrets
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
@@ -19,22 +15,11 @@ from backend.db import get_db
 from backend.models import CodigoLogin, Usuario, agora
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-log = logging.getLogger("monvatti.auth")
-
-VALIDADE_CODIGO = timedelta(minutes=10)
-SAIU_POR_OUTRO_LOGIN = ("Sua conta foi aberta em outro navegador e esta sessão foi encerrada. "
-                        "Para usar aqui, entre de novo com o código do e-mail.")
-ESPERA_REENVIO = timedelta(seconds=45)
-TENTATIVAS = 5
-
-
-class PedirCodigo(BaseModel):
-    email: str = Field(min_length=3, max_length=200)
 
 
 class Entrada(BaseModel):
     email: str = Field(min_length=3, max_length=200)
-    codigo: str = Field(min_length=4, max_length=12)
+    codigo: str = Field(default="", max_length=20)
 
 
 class NovoUsuario(BaseModel):
@@ -57,10 +42,10 @@ def usuario_atual(authorization: str = Header(default=""), db: Session = Depends
     u = db.get(Usuario, dados["u"])
     if not u or not u.ativo:
         raise HTTPException(401, "Acesso encerrado. Entre de novo.")
-    if u.sessao_versao != dados.get("v"):
-        raise HTTPException(401, SAIU_POR_OUTRO_LOGIN)
+    if (u.sessao_versao or 0) != dados.get("v"):
+        raise HTTPException(401, "Sua conta entrou em outro computador e esta sessão foi encerrada. Entre de novo para usar aqui.")
     if not pagamento.assinatura_valida(u):
-        raise HTTPException(402, "Assinatura inativa. Fale com o administrador.")
+        raise HTTPException(402, f"Seu acesso venceu. Renove em {config.LANDING_URL} com o mesmo e-mail.")
     return u
 
 
@@ -70,69 +55,74 @@ def exigir_admin(u: Usuario = Depends(usuario_atual)) -> Usuario:
     return u
 
 
-def _usuario_que_pode_entrar(db: Session, email: str) -> Usuario:
+def _usuario_liberado(db: Session, email: str) -> Usuario:
+    """Quem pode pedir código/entrar: cadastrado, ativo e com acesso pago em dia."""
     u = db.query(Usuario).filter(Usuario.email == email).first()
     if not u:
-        raise HTTPException(401, "E-mail não cadastrado. Faça o cadastro na página da Monvatti.")
+        raise HTTPException(404, "Não achamos uma compra com este e-mail. Confira se é o mesmo e-mail usado "
+                                 f"no pagamento ou garanta seu acesso em {config.LANDING_URL}.")
     if not u.ativo:
-        raise HTTPException(403, "Acesso desativado. Fale com o suporte da Monvatti.")
+        raise HTTPException(403, f"Acesso desativado. Fale com o suporte: {config.EMAIL_SUPORTE}.")
     if not pagamento.assinatura_valida(u):
-        raise HTTPException(402, "Assinatura inativa. Conclua o pagamento na página da Monvatti.")
+        venceu = f" em {u.assinatura_ate.astimezone().strftime('%d/%m/%Y')}" if u.assinatura_ate else ""
+        raise HTTPException(402, f"Seu acesso venceu{venceu}. Renove em {config.LANDING_URL} com este mesmo e-mail.")
     return u
 
 
-def _aware(d):
-    return d if d is None or d.tzinfo else d.replace(tzinfo=agora().tzinfo)
+def _hash_codigo(email: str, codigo: str) -> str:
+    return hmac.new(config.SECRET.encode(), f"{email}:{codigo}".encode(), hashlib.sha256).hexdigest()
 
 
 @router.post("/codigo")
-def pedir_codigo(dados: PedirCodigo, db: Session = Depends(get_db)):
-    """1º passo: manda o código para o e-mail do cliente."""
+def pedir_codigo(dados: Entrada, db: Session = Depends(get_db)):
+    """1º passo do login: manda um código de 6 dígitos para o e-mail do cliente."""
     email = dados.email.strip().lower()
-    u = _usuario_que_pode_entrar(db, email)
-    ultimo = (db.query(CodigoLogin).filter(CodigoLogin.email == email)
-              .order_by(CodigoLogin.id.desc()).first())
-    if ultimo and agora() - _aware(ultimo.criado_em) < ESPERA_REENVIO:
-        raise HTTPException(429, "Acabamos de mandar um código. Espere alguns segundos para pedir outro.")
+    _usuario_liberado(db, email)
+    recente = (db.query(CodigoLogin).filter(CodigoLogin.email == email)
+               .order_by(CodigoLogin.criado_em.desc()).first())
+    if recente and _aware(recente.criado_em) > agora() - timedelta(seconds=30):
+        raise HTTPException(429, "Acabamos de enviar um código. Espere alguns segundos para pedir outro.")
     db.query(CodigoLogin).filter(CodigoLogin.email == email, CodigoLogin.usado.is_(False)).update({"usado": True})
-    codigo = security.novo_codigo_login()
-    db.add(CodigoLogin(email=email, codigo_hash=security.hash_codigo_login(email, codigo),
-                       expira_em=agora() + VALIDADE_CODIGO))
+    codigo = f"{secrets.randbelow(1_000_000):06d}"
+    db.add(CodigoLogin(email=email, codigo_hash=_hash_codigo(email, codigo),
+                       vence_em=agora() + timedelta(minutes=config.CODIGO_MINUTOS)))
     db.commit()
     try:
-        enviado = email_envio.enviar_codigo(email, u.nome, codigo)
-    except Exception:  # noqa: BLE001 — falha de SMTP não pode derrubar o servidor
-        log.exception("Falha ao mandar o código para %s", email)
-        raise HTTPException(503, "Não consegui mandar o e-mail agora. Tente de novo em instantes.")
-    resposta = {"enviado": enviado, "validade_min": int(VALIDADE_CODIGO.total_seconds() // 60)}
-    if not enviado:
-        if not config.MODO_DEMONSTACAO:
-            raise HTTPException(503, "O envio de e-mail não está configurado no servidor. Fale com o suporte.")
-        resposta["codigo_teste"] = codigo  # só sem SMTP e no modo demonstração (teste local)
-    return resposta
+        email_envio.enviar_codigo(email, codigo)
+    except email_envio.ErroEmail as e:
+        raise HTTPException(503, str(e))
+    return {"ok": True, "minutos": config.CODIGO_MINUTOS}
 
 
 @router.post("/login")
 def login(dados: Entrada, db: Session = Depends(get_db)):
-    """2º passo: e-mail + código de 6 dígitos (vale 10 min, 5 tentativas, um uso)."""
+    """2º passo: e-mail + código. Devolve o token de sessão (vale TOKEN_VALIDADE_DIAS)."""
     email = dados.email.strip().lower()
-    u = _usuario_que_pode_entrar(db, email)
-    c = (db.query(CodigoLogin).filter(CodigoLogin.email == email, CodigoLogin.usado.is_(False))
-         .order_by(CodigoLogin.id.desc()).first())
-    if not c or _aware(c.expira_em) < agora() or c.tentativas >= TENTATIVAS:
-        raise HTTPException(401, "Código vencido. Peça um novo código.")
-    c.tentativas += 1
-    if not security.hmac.compare_digest(c.codigo_hash, security.hash_codigo_login(email, dados.codigo.strip())):
+    u = _usuario_liberado(db, email)
+    codigo = re.sub(r"\D", "", dados.codigo or "")
+    pendente = (db.query(CodigoLogin).filter(CodigoLogin.email == email, CodigoLogin.usado.is_(False))
+                .order_by(CodigoLogin.criado_em.desc()).first())
+    if not codigo:
+        raise HTTPException(422, "Digite o código que chegou no seu e-mail.")
+    if not pendente or _aware(pendente.vence_em) < agora():
+        raise HTTPException(401, "Código vencido. Clique em “Reenviar código” para receber outro.")
+    if pendente.tentativas >= config.CODIGO_TENTATIVAS:
+        raise HTTPException(429, "Muitas tentativas. Clique em “Reenviar código” para receber outro.")
+    if not hmac.compare_digest(pendente.codigo_hash, _hash_codigo(email, codigo)):
+        pendente.tentativas += 1
         db.commit()
-        restam = TENTATIVAS - c.tentativas
-        raise HTTPException(401, f"Código errado. Restam {restam} tentativa{'s' if restam != 1 else ''}." if restam
-                            else "Código errado. Peça um novo código.")
-    c.usado = True
-    # Uma sessão por assinatura: entrar aqui derruba o navegador que estava logado.
-    u.sessao_versao = (u.sessao_versao or 0) + 1
+        raise HTTPException(401, "Código incorreto. Confira o último e-mail que enviamos.")
+    pendente.usado = True
     u.ultimo_acesso_em = agora()
+    # Uma sessão por conta: entrar aqui derruba a sessão aberta em outro computador.
+    u.sessao_versao = (u.sessao_versao or 0) + 1
     db.commit()
     return {"token": security.criar_token(u.id, u.sessao_versao), "usuario": _como_json(u)}
+
+
+def _aware(d: datetime) -> datetime:
+    """SQLite devolve datas sem fuso; trata como UTC."""
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
 @router.get("/eu")

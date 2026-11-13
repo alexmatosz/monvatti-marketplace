@@ -267,22 +267,39 @@ class MercadoLivre:
                 "vendedor_id": str(perguntas[0].get("seller_id") or "") if perguntas else ""}
 
 
-def conta_central(db: Session) -> ContaML | None:
-    """A conta de estudo do servidor (a linha sem usuario_id)."""
-    return db.query(ContaML).filter(ContaML.usuario_id.is_(None)).order_by(ContaML.id).first()
-
-
-def _conectada(conta: ContaML | None) -> bool:
+def _conectada(conta) -> bool:
     return bool(conta and (conta.credenciais or {}).get("access_token"))
 
 
+def conta_central(db: Session) -> ContaML | None:
+    """A conta de estudo da Monvatti, reserva de quem não conectou a própria:
+    a linha sem usuario_id ou, na falta dela, a conta que um administrador
+    conectou (era assim que a central funcionava antes)."""
+    from backend.models import Usuario
+    sem_dono = db.query(ContaML).filter(ContaML.usuario_id.is_(None)).order_by(ContaML.id).first()
+    if _conectada(sem_dono):
+        return sem_dono
+    admins = [u.id for u in db.query(Usuario).filter(Usuario.papel == "admin", Usuario.ativo.is_(True)).order_by(Usuario.id)]
+    for conta in db.query(ContaML).filter(ContaML.usuario_id.in_(admins or [-1])).order_by(ContaML.atualizado_em.desc()):
+        if _conectada(conta):
+            return conta
+    return sem_dono
+
+
+def conta_ml_do_usuario(db: Session, usuario) -> ContaML | None:
+    """A conta que o estudo deste usuário usa: a dele, se conectou; senão a central."""
+    propria = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first() if usuario else None
+    if _conectada(propria):
+        return propria
+    central = conta_central(db)
+    return central if _conectada(central) else None
+
+
 def cliente_ml(db: Session, usuario=None) -> MercadoLivre:
-    """A conta do ML que este cliente autorizou; se ele ainda não conectou, a
-    conta de estudo central (reserva). Levanta ErroML se não houver nenhuma."""
-    conta = db.query(ContaML).filter(ContaML.usuario_id == usuario.id).first() if usuario else None
-    if not _conectada(conta):
-        conta = conta_central(db)
-    if not _conectada(conta):
+    """Cliente da API do ML pela conta que vale para este usuário (própria ou central).
+    Levanta ErroML se não houver nenhuma."""
+    conta = conta_ml_do_usuario(db, usuario)
+    if not conta:
         raise ErroML(CONECTE if usuario else INDISPONIVEL)
     conta_id = conta.id
 

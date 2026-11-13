@@ -4,84 +4,88 @@
 <meta charset="utf-8">
 <title>Monvatti Marketplace</title>
 <style>
-  :root { --azul: #001AD8; --azul-forte: #0014a6; --azul-vivo: #3145FF; --azul-suave: #e9ebff; --texto: #2B333B; --suave: #5b6472; --borda: #e4e6ea;
-    --verde: #0f8a5f; --verde-claro: #e3f6ee; --vermelho: #d4343b; --vermelho-claro: #fdecec; }
+  :root { --azul: #1F3BFF; --azul-forte: #1428C9; --azul-vivo: #3D55FF; --azul-suave: #EBEEFF; --texto: #141B34; --suave: #5A6380; --tenue: #8A93AD;
+    --borda: #E3E7F0; --fundo: #F4F6FB; --verde: #0f8a5f; --verde-claro: #e3f6ee; --vermelho: #d4343b; --vermelho-claro: #fdecec; }
   * { box-sizing: border-box; }
-  body { margin: 0; width: 340px; font: 13px/1.45 Inter, "Segoe UI", system-ui, sans-serif; color: var(--texto); background: #fff; }
-  header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--borda); }
-  .logo { width: 30px; height: 30px; object-fit: contain; flex: none; }
+  body { margin: 0; width: 340px; background: #F4F6FB !important; font: 13px/1.45 Inter, "Segoe UI", system-ui, sans-serif; color: var(--texto); background: #fff; }
+  header { display: flex; align-items: center; gap: 10px; padding: 15px 16px; background: #0B1330; color: #fff; border-radius: 0 0 16px 16px; }
+  .logo { width: 28px; height: 28px; object-fit: contain; flex: none; }
   header b { display: block; font-size: 14px; letter-spacing: -.01em; }
-  header span { color: var(--suave); font-size: 12px; }
-  main { padding: 14px 16px 16px; display: grid; gap: 12px; }
+  header span { color: #A9B3D1; font-size: 12px; }
+  main { margin: 12px; padding: 16px; display: grid; gap: 12px; background: #fff; border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(11, 19, 48, .06), 0 12px 28px -16px rgba(11, 19, 48, .3); }
+  h2 { margin: 0; font-size: 15px; }
+  p { margin: 0; }
+  .suave { color: var(--suave); font-size: 12px; }
   label { display: block; font-size: 12px; color: var(--suave); margin-bottom: 4px; }
-  input { width: 100%; padding: 8px 10px; border: 1px solid var(--borda); border-radius: 8px; font: inherit; color: var(--texto); }
+  input { width: 100%; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 12px; background: #fff; font: inherit; color: var(--texto); }
   input:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(49, 69, 255, .22); }
-  button { padding: 9px 12px; border: 0; border-radius: 8px; background: var(--azul); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  #codigo { font-size: 22px; letter-spacing: 8px; text-align: center; font-weight: 700; padding: 10px; }
+  button { width: 100%; padding: 11px 12px; border: 0; border-radius: 12px; box-shadow: 0 8px 18px -10px rgba(31, 59, 255, .8); background: var(--azul); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
   button:hover { background: var(--azul-forte); }
-  button.sec { background: #fff; color: var(--texto); border: 1px solid var(--borda); }
-  .caixa { padding: 10px 12px; border-radius: 8px; background: var(--azul-suave); }
+  button:disabled { opacity: .6; cursor: wait; }
+  button.sec { background: #fff; color: var(--texto); border: 1px solid var(--borda); box-shadow: none; }
+  button.sec:hover { background: var(--fundo); }
+  button.link { width: auto; padding: 0; box-shadow: none; background: none; color: var(--azul); font-weight: 600; font-size: 12px; }
+  button.link:hover { background: none; text-decoration: underline; }
+  .caixa { padding: 11px 13px; border-radius: 12px; background: var(--azul-suave); color: var(--azul-forte); font-size: 12.5px; }
   .ok { background: var(--verde-claro); color: var(--verde); }
   .erro { background: var(--vermelho-claro); color: var(--vermelho); }
+  .neutra { background: var(--fundo); color: var(--texto); }
   .linha { display: flex; gap: 8px; align-items: end; }
   .linha > div { flex: 1; }
+  .linha button { width: auto; }
+  .acoes-codigo { display: flex; justify-content: space-between; align-items: center; }
+  .pilha { display: grid; gap: 10px; }
+  .admin { border-top: 1px dashed var(--borda); padding-top: 12px; }
+  a { color: var(--azul); font-weight: 600; }
   [hidden] { display: none !important; }
-  .codigo { letter-spacing: .4em; font-size: 18px; font-weight: 600; text-align: center; }
-  .dica { margin: 0; color: var(--suave); font-size: 12px; }
-  .link { background: none; border: 0; padding: 0; color: var(--azul); font-weight: 600; cursor: pointer; font-size: 12px; }
-  .link:hover { background: none; text-decoration: underline; }
-  details { font-size: 12px; color: var(--suave); }
-  details summary { cursor: pointer; }
-  details > div { display: grid; gap: 8px; margin-top: 8px; }
 </style>
 </head>
 <body>
-<header><img class="logo" src="icones/logo-96.png" alt="Monvatti"><div><b>Monvatti Marketplace</b><span>Estudo de anúncios do Mercado Livre</span></div></header>
+<header><img class="logo" src="icones/icone-branco-48.png" alt=""><div><b>Monvatti Marketplace</b><span>Estudo de anúncios do Mercado Livre</span></div></header>
 <main>
   <div id="msg" class="caixa" hidden></div>
-  <section id="desligada" hidden>
-    <div id="passo-email" style="display:grid;gap:10px">
-      <div><label for="email">E-mail do cadastro</label><input id="email" type="email" autocomplete="email" placeholder="voce@empresa.com.br"></div>
-      <button id="pedir-codigo">Receber código por e-mail</button>
-      <p class="dica">Mandamos um código de 6 dígitos para o e-mail que você usou no cadastro da Monvatti.</p>
-    </div>
-    <div id="passo-codigo" hidden style="display:grid;gap:10px">
-      <p class="dica" id="codigo-para"></p>
-      <div><label for="codigo">Código</label><input id="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
-      <button id="entrar">Entrar</button>
-      <div style="display:flex;justify-content:space-between"><button class="link" id="reenviar">Mandar outro código</button><button class="link" id="trocar-email">Trocar e-mail</button></div>
-    </div>
-    <details style="margin-top:14px">
-      <summary>Avançado</summary>
-      <div>
-        <div><label for="servidor">Servidor (só para testes)</label><input id="servidor" type="url"></div>
-        <button class="sec" id="salvar-servidor">Usar este servidor</button>
-      </div>
-    </details>
+
+  <!-- Passo 1: e-mail -->
+  <section id="passo-email" class="pilha" hidden>
+    <h2>Entrar</h2>
+    <p class="suave">Use o mesmo e-mail da compra. Vamos mandar um código de 6 dígitos para ele.</p>
+    <div><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" placeholder="voce@email.com"></div>
+    <button id="enviar-codigo">Receber código</button>
+    <button class="link" id="ja-tenho">Já tenho um código</button>
+    <p class="suave">Ainda não tem acesso? <a id="link-compra" href="#" target="_blank" rel="noopener">Garanta o seu</a></p>
   </section>
-  <section id="ligada" hidden>
-    <div style="display:grid;gap:10px">
-      <div id="quem" class="caixa"></div>
-      <div id="ml" class="caixa"></div>
+
+  <!-- Passo 2: código -->
+  <section id="passo-codigo" class="pilha" hidden>
+    <h2>Digite o código</h2>
+    <p class="suave">Enviamos para <b id="email-enviado"></b>. Confira também o spam e as promoções.</p>
+    <input id="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Código de 6 dígitos">
+    <button id="entrar">Entrar</button>
+    <div class="acoes-codigo">
+      <button class="link" id="reenviar">Reenviar código</button>
+      <button class="link" id="trocar-email">Usar outro e-mail</button>
+    </div>
+  </section>
+
+  <!-- Logado -->
+  <section id="ligada" class="pilha" hidden>
+    <div id="quem" class="caixa ok"></div>
+    <p class="suave">Abra uma busca ou um anúncio no Mercado Livre: os dados aparecem sozinhos.</p>
+    <div class="linha"><div><label for="imposto">Imposto padrão na calculadora (%)</label><input id="imposto" type="number" min="0" max="100" step="0.01"></div>
+      <button class="sec" id="salvar-imposto">Salvar</button></div>
+    <div id="bloco-admin" class="admin pilha" hidden>
+      <b id="titulo-ml">Sua conta do Mercado Livre</b>
+      <div id="ml" class="caixa neutra"></div>
       <button id="conectar-ml" hidden>Conectar minha conta do Mercado Livre</button>
-      <div id="ml-manual" hidden style="display:grid;gap:8px">
+      <div id="ml-manual" class="pilha" hidden>
         <div><label for="ml-code">Cole o código que o Mercado Livre mostrou</label><input id="ml-code" type="text" placeholder="TG-..."></div>
-        <button id="confirmar-ml">Confirmar conexão</button>
+        <button id="confirmar-ml">Confirmar vínculo</button>
       </div>
       <button class="sec" id="desconectar-ml" hidden>Desconectar minha conta do Mercado Livre</button>
-      <div id="central-bloco" hidden style="display:grid;gap:8px;border-top:1px solid var(--borda);padding-top:10px">
-        <div id="central" class="caixa"></div>
-        <button class="sec" id="conectar-central" hidden>Vincular a conta de estudo central</button>
-        <div id="central-manual" hidden style="display:grid;gap:8px">
-          <div><label for="central-code">Código da conta de estudo</label><input id="central-code" type="text" placeholder="TG-..."></div>
-          <button id="confirmar-central">Confirmar conta central</button>
-        </div>
-        <button class="sec" id="desconectar-central" hidden>Desvincular a conta de estudo central</button>
-      </div>
-      <div id="conta" class="caixa"></div>
-      <div class="linha"><div><label for="imposto">Imposto padrão na calculadora (%)</label><input id="imposto" type="number" min="0" max="100" step="0.01"></div>
-        <button class="sec" id="salvar-imposto">Salvar</button></div>
-      <button class="sec" id="desligar">Sair</button>
     </div>
+    <button class="sec" id="desligar">Sair</button>
   </section>
 </main>
 <script src="popup.js"></script>

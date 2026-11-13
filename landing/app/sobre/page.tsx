@@ -21,9 +21,9 @@ export default function SobrePagina() {
     <>
       <SiteHeader voltar />
 
-      <section className="border-b border-platina/70 bg-[#FAFBFF]">
+      <section className="border-b border-platina/70 bg-card2">
         <div className="mx-auto max-w-conteudo px-6 py-16 sm:py-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-white px-3 py-1 text-[12.5px] text-aco">
+          <span className="inline-flex items-center gap-2 rounded-full border border-platina bg-card px-3 py-1 text-[12.5px] text-aco">
             <Marca size={15} /> Consultoria de marketplaces
           </span>
           <h1 className="mt-5 max-w-[20ch] font-display text-[38px] font-extrabold leading-[1.04] tracking-tight text-ink sm:text-[50px]">
@@ -56,7 +56,7 @@ export default function SobrePagina() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-wrap gap-y-6 border-y-2 border-ink py-7">
+        <div className="mt-16 flex flex-wrap gap-y-6 border-y border-platina py-7">
           {[
             { n: "+150", l: "clientes operados" },
             { n: "3", l: "marketplaces no radar" },
@@ -79,10 +79,10 @@ export default function SobrePagina() {
             no momento de decidir — a mesma inteligência que a equipe usa todos os dias.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/#cadastro" className="foco rounded-xl bg-azul px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-vivo">
+            <Link href="/#planos" className="foco rounded-xl bg-marca px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-forte">
               Começar agora
             </Link>
-            <Link href="/marketplaces" className="foco rounded-xl border border-platina bg-white px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-azul">
+            <Link href="/marketplaces" className="foco rounded-xl border border-platina bg-card px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-azul">
               Ver os marketplaces
             </Link>
           </div>
