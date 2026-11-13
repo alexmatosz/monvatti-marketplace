@@ -5,7 +5,7 @@
   "description": "Monvatti Marketplace: estude anúncios do Mercado Livre — vendas estimadas, logística, taxas, margem, tendência e ranqueamento.",
   "permissions": ["storage", "cookies"],
   "host_permissions": ["https://*.mercadolivre.com.br/*", "http://localhost/*"],
-  "optional_host_permissions": ["https://*/*", "http://127.0.0.1/*", "http://localhost/*"],
+  "optional_host_permissions": ["https://*/*", "http://127.0.0.1/*"],
   "background": { "service_worker": "background.js" },
   "action": {
     "default_title": "Monvatti Marketplace",
