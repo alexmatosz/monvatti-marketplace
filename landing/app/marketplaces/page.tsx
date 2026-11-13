@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CANAIS } from "@/lib/canais";
+import { MarcaMarketplace } from "@/components/Marcas";
 
 export const metadata: Metadata = {
   title: "Marketplaces — o que a Monvatti Marketplaces faz em cada canal",
@@ -31,7 +32,7 @@ export default function MarketplacesPagina() {
               href={`/marketplaces/${c.id}`}
               className="foco group flex flex-col rounded-3xl border border-platina bg-card p-7 transition-all hover:-translate-y-0.5 hover:border-azul hover:shadow-[0_28px_60px_-30px_rgba(7,10,26,0.4)]"
             >
-              <span className="h-12 w-12 rounded-2xl ring-1 ring-black/5" style={{ background: c.estado === "breve" ? "#EEF0F6" : c.cor }} />
+              <MarcaMarketplace nome={c.id} tamanho={52} />
               <div className="mt-5 flex items-center gap-2">
                 <h2 className="font-display text-[20px] font-bold text-ink">{c.nome}</h2>
                 {c.estado === "breve" ? (

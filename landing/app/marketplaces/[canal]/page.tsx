@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { CANAIS, canalPorId } from "@/lib/canais";
 import { ConcorrenciaMock, CalculadoraMock, BuyBoxMock } from "@/components/Mockups";
 import { Print } from "@/components/Print";
+import { MarcaMarketplace } from "@/components/Marcas";
 
 export function generateStaticParams() {
   return CANAIS.map((c) => ({ canal: c.id }));
@@ -42,8 +43,8 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
       <section className="border-b border-platina/70 bg-nevoa/40">
         <div className="mx-auto max-w-conteudo px-6 py-14 sm:py-20">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex h-9 items-center gap-2 rounded-full border border-platina bg-card px-3 text-[13px] font-semibold text-ink">
-              <span className="h-3 w-3 rounded-full ring-1 ring-black/10" style={{ background: canal.estado === "breve" ? "#DFDCDB" : canal.cor }} />
+            <span className="inline-flex h-9 items-center gap-2 rounded-full border border-platina bg-card pl-1.5 pr-3 text-[13px] font-semibold text-ink">
+              <MarcaMarketplace nome={canal.id} tamanho={22} />
               {canal.nome}
             </span>
             <span className={`rounded-full px-3 py-1 text-[12px] font-semibold ${canal.estado === "ativo" ? "bg-azul/10 text-azul" : "bg-platina/60 text-aco"}`}>
@@ -103,9 +104,9 @@ export default function CanalPagina({ params }: { params: { canal: string } }) {
               <Link
                 key={c.id}
                 href={`/marketplaces/${c.id}`}
-                className="foco inline-flex items-center gap-2 rounded-full border border-platina bg-card px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-azul"
+                className="foco inline-flex items-center gap-2 rounded-full border border-platina bg-card py-1.5 pl-1.5 pr-4 text-sm font-medium text-ink transition-colors hover:border-azul"
               >
-                <span className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10" style={{ background: c.estado === "breve" ? "#DFDCDB" : c.cor }} />
+                <MarcaMarketplace nome={c.id} tamanho={20} />
                 {c.nome}
                 {c.estado === "breve" ? <span className="text-[11px] text-aco/60">em breve</span> : null}
               </Link>

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { linkInstitucional } from "@/lib/monvatti";
 
 export function SiteFooter() {
+  const sobre = linkInstitucional();
   return (
     <footer className="bg-card">
       <div className="mx-auto max-w-conteudo px-6 py-12">
@@ -10,7 +12,11 @@ export function SiteFooter() {
           <nav aria-label="Rodapé" className="flex flex-wrap gap-x-6 gap-y-2 text-[14px] text-aco">
             <Link className="foco hover:text-ink" href="/marketplaces">Marketplaces</Link>
             <Link className="foco hover:text-ink" href="/novidades">Novidades</Link>
-            <Link className="foco hover:text-ink" href="/sobre">Sobre a Monvatti</Link>
+            {sobre.externo ? (
+              <a className="foco hover:text-ink" href={sobre.href} target="_blank" rel="noopener noreferrer">Sobre a Monvatti</a>
+            ) : (
+              <Link className="foco hover:text-ink" href={sobre.href}>Sobre a Monvatti</Link>
+            )}
             <Link className="foco hover:text-ink" href="/suporte">Suporte</Link>
             <Link className="foco hover:text-ink" href="/privacidade">Privacidade</Link>
           </nav>

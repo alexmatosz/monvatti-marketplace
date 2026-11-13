@@ -5,6 +5,7 @@ import { Print } from "@/components/Print";
 import { Pricing } from "@/components/Pricing";
 import { Faq } from "@/components/Faq";
 import { Demonstracao } from "@/components/Demonstracao";
+import { Institucional } from "@/components/Institucional";
 import { MarcaMarketplace } from "@/components/Marcas";
 import { PassoInstalar, PassoCodigo, PassoPainel } from "@/components/Mockups";
 
@@ -116,7 +117,7 @@ export default function Pagina() {
           <ul className="flex flex-wrap justify-center gap-3">
             {(["Mercado Livre", "Shopee", "Amazon"] as const).map((m) => (
               <li key={m} className="flex items-center gap-3 rounded-2xl bg-fundo px-5 py-3.5 ring-1 ring-black/[0.04]">
-                <MarcaMarketplace nome={m} tamanho={30} />
+                <MarcaMarketplace nome={m} tamanho={36} />
                 <span>
                   <span className="block text-[15px] font-bold text-ink">{m}</span>
                   <span className={`block text-[12.5px] font-medium ${m === "Mercado Livre" ? "text-[#0F8A5F]" : "text-aco"}`}>
@@ -192,25 +193,7 @@ export default function Pagina() {
       {/* Quem faz, dúvidas e chamada final */}
       <section className="folha relative z-0 bg-fundo">
         <div className="mx-auto max-w-conteudo px-6 pb-24 pt-28">
-          <div className="grid items-center gap-10 rounded-[32px] bg-card p-8 ring-1 ring-black/[0.04] sm:p-12 lg:grid-cols-[1.2fr_1fr]">
-            <div>
-              <h2 className="font-display text-[32px] font-bold leading-[1.1] tracking-[-0.02em] text-ink sm:text-[38px]">
-                Feita por quem opera marketplace todo dia
-              </h2>
-              <p className="mt-4 max-w-[54ch] text-[16.5px] leading-relaxed text-aco">
-                A Monvatti é a consultoria que opera mais de 150 clientes em marketplaces. Pesquisa de mercado, precificação e
-                estudo de concorrência fazem parte da rotina da equipe, e foi dessa rotina que a extensão nasceu.
-              </p>
-              <a href="/sobre" className="foco mt-6 inline-flex rounded-full px-6 py-3 text-[15px] font-bold text-ink ring-1 ring-black/15 transition-colors hover:bg-fundo">
-                Conheça a Monvatti
-              </a>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-4 rounded-[24px] bg-[#161B22] p-10 text-center">
-              <Marca tom="branca" size={56} />
-              <p className="font-display text-[44px] font-black leading-none text-white">+150</p>
-              <p className="text-[14px] text-white/70">clientes operados em marketplaces</p>
-            </div>
-          </div>
+          <Institucional />
 
           <div id="faq" className="mt-24 grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <h2 className="font-display text-[36px] font-bold leading-[1.08] tracking-[-0.02em] text-ink sm:text-[42px]">Dúvidas frequentes</h2>

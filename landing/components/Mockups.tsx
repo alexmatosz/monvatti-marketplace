@@ -1,20 +1,10 @@
 import { Marca } from "./Logo";
-
-const MARCAS: Record<string, string> = {
-  "Mercado Livre": "#FFE600",
-  Shopee: "#EE4D2D",
-  Amazon: "#FF9900",
-};
+import { MarcaMarketplace } from "./Marcas";
 
 export function SeloMarketplace({ nome, breve = false }: { nome: string; breve?: boolean }) {
-  const cor = MARCAS[nome] ?? "currentColor";
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-platina bg-card px-2.5 py-1 text-[11.5px] font-medium text-aco">
-      <span
-        className="h-2.5 w-2.5 rounded-full ring-1 ring-black/5"
-        style={{ background: breve ? "#DFDCDB" : cor }}
-        aria-hidden="true"
-      />
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-platina bg-card py-1 pl-1 pr-2.5 text-[11.5px] font-medium text-aco">
+      <MarcaMarketplace nome={nome} tamanho={16} />
       {nome}
       {breve ? <span className="text-aco/60">· em breve</span> : null}
     </span>

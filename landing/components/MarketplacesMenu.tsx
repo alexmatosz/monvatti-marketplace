@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CANAIS } from "@/lib/canais";
+import { MarcaMarketplace } from "@/components/Marcas";
 
 export function MarketplacesMenu() {
   const [aberto, setAberto] = useState(false);
@@ -52,10 +53,7 @@ export function MarketplacesMenu() {
                 onClick={() => setAberto(false)}
                 className="foco flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-nevoa"
               >
-                <span
-                  className="h-7 w-7 flex-none rounded-lg ring-1 ring-black/5"
-                  style={{ background: c.estado === "breve" ? "#EEF0F6" : c.cor }}
-                />
+                <MarcaMarketplace nome={c.id} tamanho={32} />
                 <span className="min-w-0">
                   <span className="flex items-center gap-2">
                     <span className="text-[14px] font-semibold text-ink">{c.nome}</span>
