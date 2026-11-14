@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 
 import httpx
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend import config
@@ -577,7 +578,28 @@ def metricas_do_anuncio(db: Session, usuario: Usuario, item_id: str) -> dict:
 LIMITE_RADAR = 50
 
 
-def _radar_json(db: Session, x: RadarItem) -> dict:
+def _precos_do_radar(db: Session, item_ids: list[str], limite: int = 30) -> dict[str, list[dict]]:
+    """Últimas `limite` leituras de preço de vários anúncios numa consulta só (antes era
+    uma consulta por anúncio do radar). Mesmo resultado de historico(db, id, limite)."""
+    if not item_ids:
+        return {}
+    ordem = func.row_number().over(partition_by=LeituraEstudo.item_id,
+                                   order_by=LeituraEstudo.dia.desc()).label("ordem")
+    recentes = (select(LeituraEstudo.item_id, LeituraEstudo.dia, LeituraEstudo.preco, ordem)
+                .where(LeituraEstudo.item_id.in_(item_ids)).subquery())
+    linhas = db.execute(select(recentes.c.item_id, recentes.c.dia, recentes.c.preco)
+                        .where(recentes.c.ordem <= limite)
+                        .order_by(recentes.c.item_id, recentes.c.dia))
+    saida: dict[str, list[dict]] = {i: [] for i in item_ids}
+    for item_id, dia, preco in linhas:
+        if preco:
+            saida[item_id].append({"dia": dia.isoformat(), "preco": preco})
+    return saida
+
+
+def _radar_json(db: Session, x: RadarItem, precos: list[dict] | None = None) -> dict:
+    if precos is None:
+        precos = _precos_do_radar(db, [x.item_id])[x.item_id]
     return {"item_id": x.item_id, "produto_id": x.produto_id, "titulo": x.titulo, "thumbnail": x.thumbnail,
             "permalink": x.permalink, "termo": x.termo, "preco_inicial": x.preco_inicial,
             "preco_anterior": x.preco_anterior, "preco_atual": x.preco_atual, "posicao_inicial": x.posicao_inicial,
@@ -585,13 +607,14 @@ def _radar_json(db: Session, x: RadarItem) -> dict:
             "criado_em": x.criado_em.isoformat() if x.criado_em else None,
             "verificado_em": x.verificado_em.isoformat() if x.verificado_em else None,
             "mudou_em": x.mudou_em.isoformat() if x.mudou_em else None,
-            "historico": [{"dia": h["dia"], "preco": h["preco"]} for h in historico(db, x.item_id, 30) if h["preco"]]}
+            "historico": precos}
 
 
 def radar_listar(db: Session, usuario: Usuario) -> list[dict]:
     itens = (db.query(RadarItem).filter_by(usuario_id=usuario.id, ativo=True)
              .order_by(RadarItem.criado_em.desc()).all())
-    return [_radar_json(db, x) for x in itens]
+    precos = _precos_do_radar(db, [x.item_id for x in itens])
+    return [_radar_json(db, x, precos[x.item_id]) for x in itens]
 
 
 def radar_adicionar(db: Session, usuario: Usuario, dados: dict) -> dict:
@@ -651,6 +674,9 @@ def radar_atualizar(db: Session, usuario: Usuario, posicoes: dict) -> list[dict]
             if linha.get("code") == 200 and corpo.get("id") and _num(corpo.get("price")) is not None:
                 precos[corpo["id"]] = _num(corpo["price"])
     hoje = date.today()
+    # leituras de hoje de todos os anúncios numa consulta só (antes, uma por anúncio)
+    lidas_hoje = {l.item_id: l for l in db.query(LeituraEstudo).filter(
+        LeituraEstudo.dia == hoje, LeituraEstudo.item_id.in_(list(precos)))} if precos else {}
     for x in itens:
         mudou = False
         novo = precos.get(x.item_id)
@@ -661,10 +687,12 @@ def radar_atualizar(db: Session, usuario: Usuario, posicoes: dict) -> list[dict]
             x.preco_atual = novo
             if x.preco_inicial is None:
                 x.preco_inicial = novo
-            leitura = db.query(LeituraEstudo).filter_by(item_id=x.item_id, dia=hoje).first()
+            leitura = lidas_hoje.get(x.item_id)
             if not leitura:
-                db.add(LeituraEstudo(item_id=x.item_id, dia=hoje, usuario_id=usuario.id, titulo=x.titulo or "",
-                                     produto_id=x.produto_id or "", preco=novo, dados={"origem": "radar"}))
+                lidas_hoje[x.item_id] = LeituraEstudo(item_id=x.item_id, dia=hoje, usuario_id=usuario.id,
+                                                      titulo=x.titulo or "", produto_id=x.produto_id or "",
+                                                      preco=novo, dados={"origem": "radar"})
+                db.add(lidas_hoje[x.item_id])
             elif leitura.preco is None:
                 leitura.preco = novo
         if x.item_id in posicoes:

@@ -2441,10 +2441,14 @@
   }
 
   let ultimaUrl = location.href;
+  let navegacao = 0;
   setInterval(() => {
     if (location.href !== ultimaUrl) {
       ultimaUrl = location.href;
-      setTimeout(iniciar, 1200);
+      // várias trocas de URL seguidas (filtros, paginação) viram uma inicialização só,
+      // em vez de uma por troca, cada uma com as suas chamadas ao servidor
+      clearTimeout(navegacao);
+      navegacao = setTimeout(iniciar, 1200);
       return;
     }
     garantirPainel();

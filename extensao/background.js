@@ -57,7 +57,9 @@ async function versaoNoServidor() {
 
 async function detalheDaPagina(itemId) {
   try {
-    const r = await fetch(`https://produto.mercadolivre.com.br/MLB-${itemId.slice(3)}`, { credentials: "include" });
+    // limite de tempo: uma página que trava não pode prender uma das vagas do lote
+    const r = await fetch(`https://produto.mercadolivre.com.br/MLB-${itemId.slice(3)}`,
+      { credentials: "include", signal: AbortSignal.timeout(15000) });
     if (!r.ok || /account-verification/.test(r.url)) return null;
     const padroes = {
       vendedor_id: /"seller_id"\s*:\s*(\d+)/, tipo: /"listing_type_id"\s*:\s*"([a-z_]+)"/,
@@ -105,7 +107,7 @@ async function posicaoNaBusca({ termo, item_id, produto_id = "", paginas = 3 }) 
     const url = `https://lista.mercadolivre.com.br/${slug}${p ? `_Desde_${antes + 1}_NoIndex_True` : ""}`;
     let r;
     try {
-      r = await fetch(url, { credentials: "include" });
+      r = await fetch(url, { credentials: "include", signal: AbortSignal.timeout(20000) });
     } catch {
       throw new Error("Não consegui abrir a busca do Mercado Livre. Confira sua internet.");
     }

@@ -9,8 +9,8 @@
 */
 :root {
   color-scheme: light;
-  --font-display: "Satoshi", system-ui, sans-serif;
-  --font-sans: "Satoshi", system-ui, sans-serif;
+  --font-display: var(--font-satoshi), system-ui, sans-serif;
+  --font-sans: var(--font-satoshi), system-ui, sans-serif;
   --fundo: 245 246 248;
   --card: 255 255 255;
   --card2: 240 241 245;
