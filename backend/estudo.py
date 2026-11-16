@@ -47,7 +47,7 @@ class Busca(BaseModel):
 class Estudo(BaseModel):
     pesquisa: str = Field(default="", max_length=300)
     filtro: str = Field(default="", max_length=120)
-    imposto: float = 0.0
+    imposto: float | None = Field(default=None, ge=0, le=100)
     itens: list[dict] = Field(min_length=1, max_length=estudo_planilha.MAX_ANUNCIOS)
 
 
@@ -149,7 +149,8 @@ def ranqueamento(dados: Ranqueamento, u: Usuario = Depends(usuario_atual), db: S
 
 @router.post("/estudo")
 def estudo(dados: Estudo, u: Usuario = Depends(usuario_atual), _db: Session = Depends(get_db)):
-    imposto = dados.imposto if dados.imposto > 0 else u.imposto_padrao
+    # 0% é uma alíquota válida (ex.: cliente isento); só cai no padrão se não vier nada.
+    imposto = dados.imposto if dados.imposto is not None else u.imposto_padrao
     conteudo = estudo_planilha.planilha(dados.pesquisa, dados.filtro, imposto, dados.itens)
     nome = f"estudo-{_slug(dados.pesquisa) or 'monvatti'}.xlsx"
     return Response(conteudo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

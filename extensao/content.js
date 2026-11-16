@@ -1020,7 +1020,7 @@
     return {
       item_id: d.item_id, titulo: d.titulo || p.titulo || "", link: p.link || location.href.split("#")[0], foto: (p.fotos || [])[0] || "",
       preco: d.preco, vendidos: d.vendidos,
-      vendidos_texto: (String(p.vendidos_texto || "").match(/\+?\s*[\d.,]+\s*(mil|mi)?\s*vendid\w*/i) || [""])[0].trim(), vendas_dia: d.vendas_dia_exata ?? d.vendas_dia,
+      vendidos_texto: (String(p.vendidos_texto || "").match(/\+?\s*[\d.,]+\s*(mil|mi)?\s*vendid\w*/i) || [""])[0].trim(), vendas_dia: d.vendas_dia ?? (d.vendas_dia_exata == null ? null : Math.round(d.vendas_dia_exata)),
       vendas_mes: d.vendas_mes, catalogo: d.produto_id ? "Sim" : "Não", comissao_pct: tarifa?.pct ?? null,
       taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete, tipo: tipo === "gold_pro" ? "Premium" : "Clássico",
       logistica: d.logistica || "", criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "", vendedor: d.vendedor?.apelido || "",
@@ -1627,7 +1627,7 @@
       || `https://produto.mercadolivre.com.br/MLB-${i.item_id.slice(3)}`;
     return {
       item_id: i.item_id, titulo: i.titulo, link, foto: fotoDoCartao(i.el), preco: i.preco, vendidos: d.vendidos ?? i.vendidos,
-      vendidos_texto: i.vendidos_texto, vendas_dia: d.vendas_dia_exata ?? d.vendas_dia, vendas_mes: d.vendas_mes,
+      vendidos_texto: i.vendidos_texto, vendas_dia: d.vendas_dia ?? (d.vendas_dia_exata == null ? null : Math.round(d.vendas_dia_exata)), vendas_mes: d.vendas_mes,
       catalogo: i.catalogo ? "Sim" : "Não", comissao_pct: tarifa?.pct ?? null, taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete,
       tipo: tipo === "gold_pro" ? "Premium" : "Clássico", logistica: nomeLogistica(i),
       criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "", vendedor: nomeVendedor(i, d),
@@ -2195,14 +2195,26 @@
           • na página de um anúncio, clique em <b>+ Adicionar ao estudo</b>;<br>
           • numa busca, use <b>+ Estudo</b> em cada cartão ou <b>+ Juntar ao estudo</b> no topo para levar todos os filtrados.<br>
           Dá para juntar anúncios de várias buscas. Depois é só voltar aqui e gerar a planilha.</div>`}`;
+    // Lê os campos na hora e já atualiza o estado em memória: se a tela for
+    // redesenhada (ex.: clicar em "Gerar planilha" logo depois de digitar), o
+    // nome e o imposto digitados não se perdem. O chrome.storage é gravado com
+    // os valores capturados, nunca relendo o campo depois de redesenhado.
+    const lerCampos = () => {
+      const v = conteudo.querySelector("#e-imposto")?.value ?? "";
+      return { nome: (conteudo.querySelector("#e-nome")?.value ?? e.nome).trim(),
+        imposto: v === "" ? null : Math.min(Math.max(+v, 0), 100) };
+    };
     let espera;
+    const gravarCampos = (campos) => salvarEstudo((x) => ({ ...x, ...campos }));
     const guardarCampos = () => {
+      const campos = lerCampos();
+      estado.estudo = { ...estado.estudo, ...campos };
       clearTimeout(espera);
-      espera = setTimeout(() => {
-        const nome = conteudo.querySelector("#e-nome").value.trim();
-        const v = conteudo.querySelector("#e-imposto").value;
-        salvarEstudo((x) => ({ ...x, nome, imposto: v === "" ? null : Math.min(Math.max(+v, 0), 100) })).catch(() => {});
-      }, 300);
+      espera = setTimeout(() => gravarCampos(campos).catch(() => {}), 300);
+    };
+    const gravarAgora = async () => {
+      clearTimeout(espera);
+      await gravarCampos(lerCampos()).catch(() => {});
     };
     conteudo.querySelector("#e-nome").oninput = guardarCampos;
     conteudo.querySelector("#e-imposto").oninput = guardarCampos;
@@ -2210,6 +2222,7 @@
     const limpar = conteudo.querySelector("#e-limpar");
     if (limpar) limpar.onclick = async () => {
       if (!estado.confirmarLimpar) {
+        await gravarAgora();
         estado.confirmarLimpar = true;
         setTimeout(() => {
           estado.confirmarLimpar = false;
@@ -2219,6 +2232,7 @@
       }
       estado.confirmarLimpar = false;
       estado.estudoAbaMsg = null;
+      await gravarAgora();
       await salvarEstudo((x) => ({ ...estudoVazio(), nome: x.nome, imposto: x.imposto })).catch(() => {});
     };
     const gerar = conteudo.querySelector("#e-gerar");
@@ -2226,6 +2240,7 @@
       if (estado.gerandoEstudoAba) return;
       estado.gerandoEstudoAba = true;
       estado.estudoAbaMsg = null;
+      await gravarAgora();
       estudosNaGaveta(conteudo);
       const atual = estado.estudo;
       const linhas = [...atual.itens].sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0));
