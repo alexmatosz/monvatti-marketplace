@@ -47,7 +47,7 @@ class Busca(BaseModel):
 class Estudo(BaseModel):
     pesquisa: str = Field(default="", max_length=300)
     filtro: str = Field(default="", max_length=120)
-    imposto: float = 0.0
+    imposto: float | None = Field(default=None, ge=0, le=100)
     itens: list[dict] = Field(min_length=1, max_length=estudo_planilha.MAX_ANUNCIOS)
 
 
@@ -99,7 +99,7 @@ def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual), db: Session = De
     tem_propria, tem_central = ml._conectada(propria), ml._conectada(central)
     liberado = tem_propria or tem_central
     return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao, "admin": admin, "papel": u.papel,
-            "assinatura_ate": u.assinatura_ate.isoformat() if u.assinatura_ate else None,
+            "assinatura_ate": u.assinatura_ate.isoformat() if u.assinatura_ate and not config.ACESSO_LIVRE else None,
             "conta": {"conta": conta_ml or "deslogado", "liberado": liberado, "motivo": "" if liberado else ml.CONECTE},
             "ml_conectado": liberado,
             "ml_propria": tem_propria, "ml_apelido": propria.apelido if tem_propria else "",
@@ -149,7 +149,8 @@ def ranqueamento(dados: Ranqueamento, u: Usuario = Depends(usuario_atual), db: S
 
 @router.post("/estudo")
 def estudo(dados: Estudo, u: Usuario = Depends(usuario_atual), _db: Session = Depends(get_db)):
-    imposto = dados.imposto if dados.imposto > 0 else u.imposto_padrao
+    # 0% é uma alíquota válida (ex.: cliente isento); só cai no padrão se não vier nada.
+    imposto = dados.imposto if dados.imposto is not None else u.imposto_padrao
     conteudo = estudo_planilha.planilha(dados.pesquisa, dados.filtro, imposto, dados.itens)
     nome = f"estudo-{_slug(dados.pesquisa) or 'monvatti'}.xlsx"
     return Response(conteudo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

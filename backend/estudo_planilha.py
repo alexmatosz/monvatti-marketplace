@@ -35,7 +35,7 @@ COMO_LER = [
     ("Vendidos", "Número público de vendidos que o Mercado Livre mostra no anúncio. Com “+” na frente (ex.: +1000) é um piso: "
                  "o anúncio vendeu pelo menos isso."),
     ("Venda/dia e Venda/mês", "Vendidos públicos ÷ dias desde a data mais antiga encontrada (criação do anúncio, do catálogo, "
-                              "1ª avaliação ou 1ª pergunta). Venda/dia com uma casa decimal (0,5 = uma venda a cada dois dias); venda/mês = vendidos ÷ dias × 30. É a média desde o início. "
+                              "1ª avaliação ou 1ª pergunta). Venda/dia arredondada para número inteiro; venda/mês = vendidos ÷ dias × 30. É a média desde o início. "
                               "Fica 0 quando a página não mostra vendidos e “sem data” quando o anúncio vende mas não tem "
                               "avaliação, pergunta nem catálogo para saber desde quando."),
     ("Preço de venda", "Preço atual do anúncio no momento do estudo."),
@@ -66,6 +66,12 @@ def _num(v) -> float | None:
 def _venda(v):
     n = _num(v)
     return "sem data" if n is None else n
+
+
+def _venda_inteira(v):
+    """Venda/dia sem casas decimais: não existe 1,3 venda. Abaixo de meia venda por dia vira 0."""
+    n = _num(v)
+    return "sem data" if n is None else int(round(n))
 
 
 def _vendidos(it: dict):
@@ -124,7 +130,7 @@ def planilha(pesquisa: str, filtro: str, imposto_pct: float, itens: list[dict]) 
         margem_rs = f"{L['Margem R$']}{r}"
         comissao = it.get("comissao_pct")
         valores = {
-            "Produto": _txt(it.get("titulo")), "Vendidos": _vendidos(it), "Venda/dia": _venda(it.get("vendas_dia")),
+            "Produto": _txt(it.get("titulo")), "Vendidos": _vendidos(it), "Venda/dia": _venda_inteira(it.get("vendas_dia")),
             "Venda/mês": _venda(it.get("vendas_mes")), "Rec. COMPRA": None, "Preço de venda": _num(it.get("preco")),
             "Custo do Produto": None, "Comissão %": (_num(comissao) or 0) / 100 if comissao is not None else None,
             "Taxa fixa": _num(it.get("taxa_fixa")), "Frete": _num(it.get("frete")), "Imposto %": "=$B$3",
@@ -148,7 +154,7 @@ def planilha(pesquisa: str, filtro: str, imposto_pct: float, itens: list[dict]) 
             for nome in ("Produto", "Link do anúncio"):
                 ws.cell(row=r, column=N[nome]).hyperlink = link
                 ws.cell(row=r, column=N[nome]).font = Font(color="0B50F5", underline="single")
-        for nome, fmt in (("Vendidos", "#,##0"), ("Venda/dia", "#,##0.0"), ("Venda/mês", "#,##0"), ("Rec. COMPRA", "#,##0"),
+        for nome, fmt in (("Vendidos", "#,##0"), ("Venda/dia", "#,##0"), ("Venda/mês", "#,##0"), ("Rec. COMPRA", "#,##0"),
                           ("Preço de venda", _REAL), ("Custo do Produto", _REAL), ("Comissão %", "0.0%"), ("Taxa fixa", _REAL),
                           ("Frete", _REAL), ("Imposto %", "0.0%"), ("Margem %", "0.00%"), ("Margem R$", _REAL),
                           ("Total da compra", _REAL)):

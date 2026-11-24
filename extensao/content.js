@@ -152,6 +152,17 @@
     .fat .selo { font-size: 10.5px; font-weight: 600; color: var(--amarelo); background: var(--amarelo-claro); padding: 2px 7px; border-radius: 999px; }
     .fat-linha { margin-top: 4px; font-size: 12px; color: var(--suave); }
     .fat-linha strong { color: var(--texto); font-weight: 600; }
+    .tabela-vend { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .tabela-vend th { text-align: left; color: var(--suave); font-weight: 500; padding: 0 4px 6px; }
+    .tabela-vend td { padding: 6px 4px; border-top: 1px dashed var(--borda); vertical-align: top; }
+    .tabela-vend td small { display: block; color: var(--suave); font-size: 11px; }
+    .tabela-vend tr.este td { font-weight: 600; }
+    .frete-calc { margin-top: 10px; display: grid; gap: 6px; }
+    .frete-calc .rotulo-frete { font-size: 12.5px; }
+    .frete-calc .rotulo-frete em { color: var(--suave); font-style: normal; }
+    .frete-calc .segmento { display: grid; grid-template-columns: 1fr 1fr; }
+    .frete-calc .segmento button:disabled { opacity: .45; cursor: not-allowed; }
+    .frete-calc .nota { margin: 0; }
     .lista { display: grid; }
     .lista > div { display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--borda); cursor: help; }
     .lista > div:last-child { border-bottom: 0; padding-bottom: 0; }
@@ -836,21 +847,30 @@
     const textos = {
       estimadas: `<p>${piso}</p>${d.patamar ? `<p>O número real fica entre esse piso e o próximo degrau. Estimamos <b>1,55 × ${n(d.vendidos)} = ${n(d.vendas_estimadas)}</b>.</p>` : "<p>Como o número é exato, a estimativa é igual a ele.</p>"}`,
       ritmo: d.ritmo_mes == null ? "<p>Sem a data do anúncio não dá para calcular o ritmo.</p>"
-        : `<p>Supõe que 40% das vendas aconteceram no último terço da vida do anúncio.</p>
-           <p>Idade do anúncio: <b>${n(d.dias_anuncio)} dias</b> (${dec(d.dias_anuncio / 30.44)} meses), contada por ${fonte}. Último terço = ${dec(d.dias_anuncio / 30.44 / 3)} meses.</p>
-           <p>40% de ${n(d.vendas_estimadas)} = ${n(d.vendas_estimadas * 0.4)}; dividido por ${dec(d.dias_anuncio / 30.44 / 3)} = <b>${n(d.ritmo_mes)} por mês</b>.</p>`,
+        : d.dias_anuncio <= 30.44
+          ? `<p>O anúncio tem só <b>${n(d.dias_anuncio)} dias</b> (contados por ${fonte}). Todas as vendas caíram dentro de um mês, então o ritmo do mês é o próprio total estimado: <b>${n(d.ritmo_mes)}</b>.</p><p>Nunca projetamos um mês maior do que o que já foi vendido.</p>`
+          : `<p>Supõe que 40% das vendas aconteceram no último terço da vida do anúncio (olhando no mínimo um mês).</p>
+           <p>Idade do anúncio: <b>${n(d.dias_anuncio)} dias</b> (${dec(d.dias_anuncio / 30.44)} meses), contada por ${fonte}.</p>
+           <p>Resultado: <b>${n(d.ritmo_mes)} por mês</b>, nunca acima das ${n(d.vendas_estimadas)} vendas estimadas no total.</p>`,
       dia: d.vendas_dia == null ? "<p>Sem data não dá para calcular a média.</p>"
         : `<p><b>${n(d.vendidos)} vendidos ÷ ${n(d.dias)} dias = ${n(d.vendas_dia)} por dia</b> (${dec(d.vendidos / d.dias, 2)} antes de arredondar).</p>
            <p>Os ${n(d.dias)} dias contam desde ${usouCatalogo ? `a criação do catálogo (${dataBR(d.catalogo_criado_em)}), que é mais antiga que o anúncio` : fonte}. Usamos a evidência mais antiga que é do próprio anúncio.</p>${notaUp}`,
       mes: d.vendas_mes == null ? "<p>Sem data não dá para calcular a média.</p>"
-        : `<p><b>${n(d.vendidos)} vendidos ÷ ${n(d.dias)} dias × 30 = ${n(d.vendas_mes)} por mês</b>.</p><p>É a média desde o início, não o mês atual. Para o momento atual, veja o ritmo.</p>${notaUp}`,
+        : d.dias < 30
+          ? `<p>O anúncio tem menos de 30 dias (${n(d.dias)}), então a média do mês é o que ele vendeu até agora: <b>${n(d.vendas_mes)}</b>. Não projetamos além do que foi vendido.</p>${notaUp}`
+          : `<p><b>${n(d.vendidos)} vendidos ÷ ${n(d.dias)} dias × 30 = ${n(d.vendas_mes)} por mês</b>.</p><p>É a média desde o início, não o mês atual. Para o momento atual, veja o ritmo.</p>${notaUp}`,
       avaliacoes: "<p>Quantidade e nota que o Mercado Livre mostra na página do anúncio.</p>",
       perguntas: `<p>Perguntas públicas do anúncio, contadas pela API do Mercado Livre.${d.primeira_pergunta ? ` A primeira é de ${dataBR(d.primeira_pergunta)}.` : ""}</p>`,
       faturamento: `<p><b>Total:</b> ${n(d.vendidos)} vendidos × preço atual ${brl(d.preco)}. Usa o piso público, então o real tende a ser maior.</p>
         <p><b>30 dias, 7 dias e este mês:</b> ritmo atual (${n(d.ritmo_mes)}/mês) ÷ 30 × número de dias × preço atual. São estimativas: o Mercado Livre não informa vendas por período de anúncio de outro vendedor.</p>`,
       criado: d.fonte_data === "anuncio" ? "<p>Data de criação informada pelo Mercado Livre.</p>"
         : `<p>O Mercado Livre não libera a data de criação de anúncio de outro vendedor. Usamos ${fonte}.</p><p>O anúncio foi criado <b>antes</b> dessa data; por isso aparece “aprox.”.</p>`,
-      catalogo: "<p>Data de criação do produto de catálogo, informada pela API do Mercado Livre.</p>",
+      catalogo: "<p>Data de criação do produto de catálogo, informada pela API do Mercado Livre. É a data do catálogo como um todo, de todos os vendedores juntos.</p>",
+      entrada: d.vendedor_entrada_fonte === "anuncio" ? "<p>Data de criação do anúncio deste vendedor, informada pelo Mercado Livre.</p>"
+        : d.vendedor_entrou_em
+          ? `<p>Cada vendedor do catálogo tem o próprio anúncio, com perguntas próprias. A 1ª pergunta feita no anúncio <b>deste vendedor</b> é de ${dataBR(d.vendedor_entrou_em)}: ele já estava no catálogo nessa data (pode ter entrado um pouco antes).</p><p>O Mercado Livre não libera a data exata de entrada de outro vendedor.</p>`
+          : "<p>O anúncio deste vendedor ainda não tem perguntas e o Mercado Livre não libera a data exata de entrada de outro vendedor no catálogo.</p>",
+      vendedores: "<p>Os vendedores que estão dentro deste catálogo, cada um com o próprio anúncio. <b>Entrou</b> = data da 1ª pergunta feita no anúncio daquele vendedor (ele já estava no catálogo nessa data). Nunca antes da criação do catálogo.</p>",
       comissao: "<p>Calculada pela tabela oficial de tarifas do Mercado Livre para esta categoria e este preço, nos dois tipos de anúncio.</p>",
       frete: d.frete_fonte === "anuncio"
         ? `<p>Frete grátis que o vendedor deste anúncio paga, calculado pelo próprio Mercado Livre com o peso cadastrado no anúncio${d.frete_peso_g ? ` (${n(d.frete_peso_g)} g cobrados)` : ""}.</p>`
@@ -953,11 +973,24 @@
         <div class="parte">
           <div class="parte-cab"><h5>Datas</h5></div>
           <div class="lista">
-            ${item(`Anúncio criado em ${q("criado")}`, dataBR(d.no_ar_desde), tituloData, [d.dias_anuncio ? `há ${inteiro(d.dias_anuncio)} dias` : "", fonteData].filter(Boolean).join(" · "))}
-            ${d.produto_id ? item(`Catálogo criado em ${q("catalogo")}`, dataBR(d.catalogo_criado_em), "Data de criação do produto de catálogo", d.dias_catalogo ? `há ${inteiro(d.dias_catalogo)} dias` : "") : ""}
+            ${d.produto_id
+              ? item(`Catálogo criado em ${q("catalogo")}`, dataBR(d.catalogo_criado_em), "Data de criação do produto de catálogo (todos os vendedores)", d.dias_catalogo ? `há ${inteiro(d.dias_catalogo)} dias` : "")
+                + item(`Este vendedor entrou em ${q("entrada")}`, dataBR(d.vendedor_entrou_em), "Quando este vendedor entrou no catálogo",
+                  d.vendedor_entrou_em ? [d.vendedor_dias_catalogo ? `há ${inteiro(d.vendedor_dias_catalogo)} dias` : "", d.vendedor_entrada_fonte === "pergunta" ? "aprox. pela 1ª pergunta" : ""].filter(Boolean).join(" · ") : "sem perguntas no anúncio")
+              : item(`Anúncio criado em ${q("criado")}`, dataBR(d.no_ar_desde), tituloData, [d.dias_anuncio ? `há ${inteiro(d.dias_anuncio)} dias` : "", fonteData].filter(Boolean).join(" · "))}
             ${d.primeira_avaliacao && d.fonte_data !== "avaliacao" ? item("1ª avaliação", dataBR(d.primeira_avaliacao), "Avaliação de comprador mais antiga encontrada") : ""}
           </div>
         </div>
+        ${(d.catalogo_vendedores || []).length ? `<div class="parte">
+          <div class="parte-cab"><h5>Vendedores no catálogo${d.catalogo_vendedores_total ? ` (${inteiro(d.catalogo_vendedores_total)})` : ""}</h5>${q("vendedores")}</div>
+          <table class="tabela-vend"><tr><th>Vendedor</th><th>Preço</th><th>Entrou</th></tr>
+          ${d.catalogo_vendedores.map((x) => `<tr class="${x.item_id === d.item_id ? "este" : ""}" title="${esc([x.item_id, x.tipo_anuncio, x.logistica, x.perguntas != null ? `${x.perguntas} perguntas` : ""].filter(Boolean).join(" · "))}">
+            <td>${esc(x.apelido || x.vendedor_id || "—")}${x.item_id === d.item_id ? ' <span class="chip">este</span>' : ""}<small>${esc([x.tipo_anuncio, x.logistica].filter(Boolean).join(" · "))}</small></td>
+            <td>${brl(x.preco)}</td>
+            <td>${x.entrou_em ? `${dataBR(x.entrou_em)}<small>há ${inteiro(x.dias_no_catalogo)} dias</small>` : '<span class="suave">sem perguntas</span>'}</td></tr>`).join("")}
+          </table>
+          ${d.catalogo_vendedores_total > d.catalogo_vendedores.length ? `<p class="nota">Mostrando ${d.catalogo_vendedores.length} de ${inteiro(d.catalogo_vendedores_total)} vendedores.</p>` : ""}
+        </div>` : ""}
         <div class="parte">${tabelaVenda(d)}</div>
         ${v.apelido ? `<div class="parte">
           <div class="parte-cab"><h5>Vendedor</h5></div>
@@ -1020,7 +1053,7 @@
     return {
       item_id: d.item_id, titulo: d.titulo || p.titulo || "", link: p.link || location.href.split("#")[0], foto: (p.fotos || [])[0] || "",
       preco: d.preco, vendidos: d.vendidos,
-      vendidos_texto: (String(p.vendidos_texto || "").match(/\+?\s*[\d.,]+\s*(mil|mi)?\s*vendid\w*/i) || [""])[0].trim(), vendas_dia: d.vendas_dia_exata ?? d.vendas_dia,
+      vendidos_texto: (String(p.vendidos_texto || "").match(/\+?\s*[\d.,]+\s*(mil|mi)?\s*vendid\w*/i) || [""])[0].trim(), vendas_dia: d.vendas_dia ?? (d.vendas_dia_exata == null ? null : Math.round(d.vendas_dia_exata)),
       vendas_mes: d.vendas_mes, catalogo: d.produto_id ? "Sim" : "Não", comissao_pct: tarifa?.pct ?? null,
       taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete, tipo: tipo === "gold_pro" ? "Premium" : "Clássico",
       logistica: d.logistica || "", criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "", vendedor: d.vendedor?.apelido || "",
@@ -1627,7 +1660,7 @@
       || `https://produto.mercadolivre.com.br/MLB-${i.item_id.slice(3)}`;
     return {
       item_id: i.item_id, titulo: i.titulo, link, foto: fotoDoCartao(i.el), preco: i.preco, vendidos: d.vendidos ?? i.vendidos,
-      vendidos_texto: i.vendidos_texto, vendas_dia: d.vendas_dia_exata ?? d.vendas_dia, vendas_mes: d.vendas_mes,
+      vendidos_texto: i.vendidos_texto, vendas_dia: d.vendas_dia ?? (d.vendas_dia_exata == null ? null : Math.round(d.vendas_dia_exata)), vendas_mes: d.vendas_mes,
       catalogo: i.catalogo ? "Sim" : "Não", comissao_pct: tarifa?.pct ?? null, taxa_fixa: tarifa?.taxa_fixa ?? null, frete: d.frete,
       tipo: tipo === "gold_pro" ? "Premium" : "Clássico", logistica: nomeLogistica(i),
       criado_em: d.no_ar_desde ? dataBR(d.no_ar_desde) : "", vendedor: nomeVendedor(i, d),
@@ -1790,6 +1823,8 @@
 
   // ------------------------------------------------------------ calculadora
 
+  const FRETE_GRATIS_MINIMO = 79;
+
   function calculadora(conteudo) {
     const d = estado.dados;
     if (!d) {
@@ -1801,7 +1836,7 @@
     }
     estado.aoCarregar = null;
     const custos = { tarifas: d.tarifas || {}, frete: d.frete };
-    const valores = estado.calc || { custo: "", extras: "", pagaFrete: true };
+    const valores = estado.calc || { custo: "", extras: "", freteModo: "" };
     conteudo.innerHTML = `
       <div class="calc-produto">
         <b>${esc(d.titulo)}</b>
@@ -1814,19 +1849,40 @@
           <label title="Embalagem, etiqueta e outros gastos por unidade"><span>Custos extras</span><div class="campo-un"><i>R$</i><input id="c-extras" type="number" step="0.01" min="0" placeholder="0,00" value="${valores.extras}"></div></label>
           <label><span>Imposto</span><div class="campo-un"><input id="c-imposto" type="number" step="0.01" min="0" max="100" value="${estado.imposto}"><i>%</i></div></label>
         </div>
-        <label class="chave"><input id="c-paga" type="checkbox" ${valores.pagaFrete ? "checked" : ""}><span class="trilho"></span>
-          <span>Eu pago o frete <em id="c-frete-valor"></em></span></label>`)}
+        <div class="frete-calc">
+          <span class="rotulo-frete">Frete <em id="c-frete-valor"></em></span>
+          <div class="segmento" role="tablist">
+            <button type="button" data-frete="gratis">Frete grátis (você paga)</button>
+            <button type="button" data-frete="comprador">Por conta do comprador</button>
+          </div>
+          <p class="nota" id="c-frete-regra"></p>
+        </div>`)}
       <div id="c-status"></div>
       <div id="c-resultados" class="resultados"></div>
       <details class="detalhe-conta"><summary>Ver a conta completa</summary><table id="c-tabela" class="tabela-calc"></table></details>
       <p class="nota">Comissão, taxa fixa e frete vêm do Mercado Livre para o preço digitado e são recalculados quando você muda o preço.</p>`;
     const v = (id) => parseFloat(conteudo.querySelector(id).value) || 0;
+    let escolhaFrete = valores.freteModo || "";
     const recalcular = () => {
       const preco = v("#c-preco"), custo = v("#c-custo"), extras = v("#c-extras"), imp = v("#c-imposto");
-      const pagaFrete = conteudo.querySelector("#c-paga").checked;
-      estado.calc = { custo: conteudo.querySelector("#c-custo").value, extras: conteudo.querySelector("#c-extras").value, pagaFrete };
+      // Regra do Mercado Livre: a partir de R$ 79 o frete grátis é obrigatório e quem
+      // paga é o vendedor (o ML não cobre). Abaixo disso o vendedor escolhe.
+      const obrigatorio = preco >= FRETE_GRATIS_MINIMO;
+      let modo = obrigatorio ? "gratis" : (escolhaFrete || (preco > 0 && preco < 19 ? "comprador" : "gratis"));
+      const pagaFrete = modo === "gratis";
+      estado.calc = { custo: conteudo.querySelector("#c-custo").value, extras: conteudo.querySelector("#c-extras").value, freteModo: escolhaFrete };
       const frete = pagaFrete ? custos.frete || 0 : 0;
-      conteudo.querySelector("#c-frete-valor").textContent = custos.frete == null ? "(não calculado)" : `(${brl(custos.frete)})`;
+      conteudo.querySelector("#c-frete-valor").textContent = !pagaFrete ? "(R$ 0,00 para você)" : custos.frete == null ? "(não calculado)" : `(${brl(custos.frete)} sai da sua venda)`;
+      conteudo.querySelectorAll("[data-frete]").forEach((b) => {
+        b.classList.toggle("ativo", b.dataset.frete === modo);
+        b.disabled = obrigatorio && b.dataset.frete === "comprador";
+        b.setAttribute("aria-selected", b.dataset.frete === modo);
+      });
+      conteudo.querySelector("#c-frete-regra").innerHTML = obrigatorio
+        ? `<b>A partir de ${brl(FRETE_GRATIS_MINIMO)} o frete grátis é obrigatório.</b> O comprador não paga nada de frete e o Mercado Livre não cobre: o valor sai da sua venda (com o desconto da sua reputação).`
+        : pagaFrete
+          ? `<b>Abaixo de ${brl(FRETE_GRATIS_MINIMO)} o frete grátis é opcional.</b> Oferecendo, o comprador não paga e o custo do envio que o Mercado Livre calcula para este preço sai da sua venda.`
+          : `<b>Frete por conta do comprador:</b> abaixo de ${brl(FRETE_GRATIS_MINIMO)} você pode não oferecer frete grátis. O comprador paga o envio no checkout e nada de frete sai da sua venda (a taxa fixa por unidade do Mercado Livre continua na conta).`;
       const colunas = [["gold_special", "Clássico"], ["gold_pro", "Premium"]].filter(([t]) => custos.tarifas[t]).map(([t, nome]) => {
         const tarifa = custos.tarifas[t];
         const imposto = (preco * imp) / 100;
@@ -1873,6 +1929,7 @@
     };
     let espera = null;
     const status = conteudo.querySelector("#c-status");
+    conteudo.querySelectorAll("[data-frete]").forEach((b) => (b.onclick = () => { escolhaFrete = b.dataset.frete; recalcular(); }));
     conteudo.querySelector("#c-preco").oninput = () => {
       recalcular();
       clearTimeout(espera);
@@ -1892,7 +1949,7 @@
         }
       }, 700);
     };
-    ["#c-imposto", "#c-custo", "#c-extras", "#c-paga"].forEach((id) => {
+    ["#c-imposto", "#c-custo", "#c-extras"].forEach((id) => {
       const el = conteudo.querySelector(id);
       el[el.type === "checkbox" ? "onchange" : "oninput"] = recalcular;
     });
@@ -2195,14 +2252,26 @@
           • na página de um anúncio, clique em <b>+ Adicionar ao estudo</b>;<br>
           • numa busca, use <b>+ Estudo</b> em cada cartão ou <b>+ Juntar ao estudo</b> no topo para levar todos os filtrados.<br>
           Dá para juntar anúncios de várias buscas. Depois é só voltar aqui e gerar a planilha.</div>`}`;
+    // Lê os campos na hora e já atualiza o estado em memória: se a tela for
+    // redesenhada (ex.: clicar em "Gerar planilha" logo depois de digitar), o
+    // nome e o imposto digitados não se perdem. O chrome.storage é gravado com
+    // os valores capturados, nunca relendo o campo depois de redesenhado.
+    const lerCampos = () => {
+      const v = conteudo.querySelector("#e-imposto")?.value ?? "";
+      return { nome: (conteudo.querySelector("#e-nome")?.value ?? e.nome).trim(),
+        imposto: v === "" ? null : Math.min(Math.max(+v, 0), 100) };
+    };
     let espera;
+    const gravarCampos = (campos) => salvarEstudo((x) => ({ ...x, ...campos }));
     const guardarCampos = () => {
+      const campos = lerCampos();
+      estado.estudo = { ...estado.estudo, ...campos };
       clearTimeout(espera);
-      espera = setTimeout(() => {
-        const nome = conteudo.querySelector("#e-nome").value.trim();
-        const v = conteudo.querySelector("#e-imposto").value;
-        salvarEstudo((x) => ({ ...x, nome, imposto: v === "" ? null : Math.min(Math.max(+v, 0), 100) })).catch(() => {});
-      }, 300);
+      espera = setTimeout(() => gravarCampos(campos).catch(() => {}), 300);
+    };
+    const gravarAgora = async () => {
+      clearTimeout(espera);
+      await gravarCampos(lerCampos()).catch(() => {});
     };
     conteudo.querySelector("#e-nome").oninput = guardarCampos;
     conteudo.querySelector("#e-imposto").oninput = guardarCampos;
@@ -2210,6 +2279,7 @@
     const limpar = conteudo.querySelector("#e-limpar");
     if (limpar) limpar.onclick = async () => {
       if (!estado.confirmarLimpar) {
+        await gravarAgora();
         estado.confirmarLimpar = true;
         setTimeout(() => {
           estado.confirmarLimpar = false;
@@ -2219,6 +2289,7 @@
       }
       estado.confirmarLimpar = false;
       estado.estudoAbaMsg = null;
+      await gravarAgora();
       await salvarEstudo((x) => ({ ...estudoVazio(), nome: x.nome, imposto: x.imposto })).catch(() => {});
     };
     const gerar = conteudo.querySelector("#e-gerar");
@@ -2226,6 +2297,7 @@
       if (estado.gerandoEstudoAba) return;
       estado.gerandoEstudoAba = true;
       estado.estudoAbaMsg = null;
+      await gravarAgora();
       estudosNaGaveta(conteudo);
       const atual = estado.estudo;
       const linhas = [...atual.itens].sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0));

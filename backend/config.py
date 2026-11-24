@@ -57,7 +57,7 @@ MODO_DEMONSTACAO = _env("MONVATTI_MODO_DEMO", "false" if EM_PRODUCAO else "true"
 
 IMPOSTO_PADRAO = float(_env("MONVATTI_IMPOSTO_PADRAO", "7"))
 
-VERSAO_EXTENSAO = _env("MONVATTI_VERSAO_EXTENSAO", "0.6.0")
+VERSAO_EXTENSAO = _env("MONVATTI_VERSAO_EXTENSAO", "0.7.0")
 
 # Sessão longa: o código por e-mail só é pedido de novo quando ela vence.
 TOKEN_VALIDADE_DIAS = int(_env("MONVATTI_TOKEN_DIAS", "90"))
@@ -107,6 +107,11 @@ DESCONTO_PIX = float(_env("DESCONTO_PIX", "10"))  # em %
 # Desliga sozinho quando ABACATEPAY_API_KEY é cadastrada.
 PAGAMENTO_TESTE = (_env("MONVATTI_PAGAMENTO_TESTE").lower() in ("1", "true", "sim")) and not ABACATEPAY_API_KEY
 DIAS_TESTE = _centavos("MONVATTI_DIAS_TESTE", 7)
+
+# Acesso livre: enquanto estiver ligado, todo usuário ativo usa a extensão sem
+# checar prazo de teste nem pagamento. Ligado por padrão; para voltar a cobrar,
+# defina MONVATTI_ACESSO_LIVRE=0 no servidor.
+ACESSO_LIVRE = _env("MONVATTI_ACESSO_LIVRE", "1").lower() in ("1", "true", "sim")
 
 
 def preco(plano: str, metodo: str) -> int:

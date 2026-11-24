@@ -200,7 +200,10 @@ const acoes = {
     const bytes = new Uint8Array(await r.arrayBuffer());
     let binario = "";
     for (let i = 0; i < bytes.length; i += 0x8000) binario += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-    const nome = (r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/)?.[1] || "estudo.xlsx";
+    // O nome do arquivo sai daqui, com o nome do cliente (acentos incluídos). O
+    // Content-Disposition do servidor não chega à extensão por causa do CORS.
+    const base = String(pesquisa || "").replace(/[\\/:*?"<>|\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+    const nome = `Estudo - ${base || "Monvatti"}.xlsx`;
     return { nome, base64: btoa(binario) };
   },
   async conferirVersao() {
@@ -220,7 +223,9 @@ const acoes = {
     if (!c.servidor || !c.token) return { ligado: false, servidor: c.servidor, imposto: c.imposto };
     try {
       const eu = await chamar("/api/extensao/eu?conta_ml=" + encodeURIComponent(await contaML()));
-      return { ligado: true, servidor: c.servidor, imposto: c.imposto, ...eu };
+      // O imposto vem do que o usuário salvou no popup. O servidor manda sempre o
+      // padrão (7%) e, se viesse por último, apagaria a escolha do usuário.
+      return { ...eu, ligado: true, servidor: c.servidor, imposto: c.imposto };
     } catch (err) {
       // Sessão encerrada (ex.: a mesma conta entrou em outro computador): volta para a tela de entrar.
       const { token } = await chrome.storage.local.get({ token: "" });

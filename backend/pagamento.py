@@ -38,6 +38,8 @@ def _utc(d: datetime | None) -> datetime | None:
 
 def assinatura_valida(usuario: Usuario) -> bool:
     """Único ponto que decide se o usuário pode usar o estudo."""
+    if config.ACESSO_LIVRE:
+        return bool(usuario.ativo)
     if not usuario.assinatura_ativa:
         return False
     ate = _utc(usuario.assinatura_ate)
