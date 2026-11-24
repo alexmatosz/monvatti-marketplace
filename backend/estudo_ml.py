@@ -132,6 +132,68 @@ def data_de_vida(primeira_avaliacao: str | None, primeira_pergunta: str | None,
     return max(candidatos, key=lambda x: _dias_desde(x[0]) or 0)
 
 
+def ritmo_mensal(estimadas: int, dias: int) -> int:
+    """Vendas no último mês, pelo modelo do último terço de vida.
+
+    Supõe 40% das vendas no último terço da vida do anúncio. A janela olhada
+    nunca é menor que um mês: se o anúncio tem menos de um mês, todas as vendas
+    caíram dentro do mês; entre 1 e 3 meses, a fatia do último mês é pelo menos
+    proporcional ao tempo. Assim o ritmo nunca passa do total estimado.
+    """
+    if dias <= DIAS_MES:
+        return round(estimadas)
+    janela = max(dias / 3, DIAS_MES)
+    fatia = max(0.4, min(1.0, janela / dias))
+    return round(min(estimadas * fatia / (janela / DIAS_MES), estimadas))
+
+
+def _data_minima(iso: str | None, piso: str | None) -> str | None:
+    """A data `iso`, mas nunca antes de `piso` (ninguém entra no catálogo antes de ele existir)."""
+    if not iso or not piso:
+        return iso
+    return iso if (_dias_desde(iso) or 0) <= (_dias_desde(piso) or 0) else _iso(piso)
+
+
+def vendedores_do_catalogo(ad, produto_id: str, catalogo_criado: str | None, limite: int = 15) -> dict:
+    """Cada vendedor (anúncio) dentro do catálogo e quando ele entrou.
+
+    O Mercado Livre não libera a data de criação de anúncio de outro vendedor.
+    Cada vendedor do catálogo tem o PRÓPRIO anúncio (MLB...), com perguntas
+    próprias: a 1ª pergunta mostra que ele já estava no catálogo nessa data.
+    A entrada nunca é anterior à criação do catálogo.
+    """
+    r = ad._get(f"/products/{produto_id}/items", {"limit": limite})
+    if r.status_code >= 400:
+        return {"total": None, "itens": []}
+    j = r.json() or {}
+    resultados = (j.get("results") or [])[:limite]
+
+    def um(x: dict) -> dict:
+        item_id = str(x.get("item_id") or "")
+        vid = str(x.get("seller_id") or "")
+        try:
+            perg = ad.primeira_pergunta(item_id) if item_id else {}
+        except (ErroML, httpx.HTTPError):
+            perg = {}
+        try:
+            vend = _vendedor(ad, vid)
+        except (ErroML, httpx.HTTPError):
+            vend = {"id": vid}
+        entrou = _data_minima(_iso(perg.get("primeira")), catalogo_criado)
+        ship = x.get("shipping") or {}
+        return {"item_id": item_id, "vendedor_id": vid, "apelido": vend.get("apelido", ""),
+                "termometro": vend.get("termometro", ""), "medalha": vend.get("medalha", ""),
+                "preco": _num(x.get("price")), "tipo_anuncio": _TIPOS.get(x.get("listing_type_id"), x.get("listing_type_id") or ""),
+                "logistica": nome_logistica(str(ship.get("logistic_type") or "")),
+                "frete_gratis": bool(ship.get("free_shipping")),
+                "entrou_em": entrou, "dias_no_catalogo": _dias_desde(entrou),
+                "fonte_entrada": "pergunta" if entrou else None, "perguntas": perg.get("total")}
+
+    with ThreadPoolExecutor(8) as ex:
+        itens = list(ex.map(um, resultados))
+    return {"total": (j.get("paging") or {}).get("total") or len(itens), "itens": itens}
+
+
 def nome_logistica(codigo: str, flex: bool = False) -> str:
     nome = _LOGISTICAS.get(codigo, codigo)
     if flex and codigo not in ("self_service", "fulfillment") and nome:
@@ -151,10 +213,11 @@ def metricas(vendidos: int | None, patamar: bool, preco: float | None, visitas: 
     elif vendidos is not None and dias_vida:
         saida["vendas_dia"] = round(vendidos / dias_vida)
         saida["vendas_dia_exata"] = round(vendidos / dias_vida, 2)
-        saida["vendas_mes"] = int(vendidos / dias_vida * 30)
+        # Anúncio com menos de um mês: a média do mês é o que ele vendeu até agora,
+        # nunca uma projeção maior que o total (ex.: "+50 vendidos" não vira 100/mês).
+        saida["vendas_mes"] = int(vendidos * min(1.0, 30 / dias_vida))
     if estimadas is not None and dias_anuncio:
-        terco_meses = max(dias_anuncio / DIAS_MES / 3, 1 / DIAS_MES)
-        saida["ritmo_mes"] = round(estimadas * 0.4 / terco_meses)
+        saida["ritmo_mes"] = ritmo_mensal(estimadas, dias_anuncio)
     if vendidos is not None and visitas:
         saida["conversao_pct"] = round(vendidos / visitas * 100, 2)
     if vendidos is not None and preco:
@@ -272,6 +335,15 @@ def analisar(db: Session, usuario: Usuario, pagina: dict) -> dict:
         no_ar_desde, fonte_data = data_de_vida(primeira_avaliacao, primeira_pergunta, catalogo_criado, em_catalogo)
     dias_anuncio = _dias_desde(no_ar_desde)
     dias_vida = dias_anuncio
+    # Catálogo: a data acima é a do catálogo (vida do produto, todos os vendedores).
+    # A entrada DESTE vendedor no catálogo vem do anúncio dele (1ª pergunta).
+    catalogo = {"total": None, "itens": []}
+    entrada_vendedor = _iso(criado_em) if criado_em else _data_minima(primeira_pergunta, catalogo_criado)
+    if em_catalogo:
+        try:
+            catalogo = vendedores_do_catalogo(ad, produto_id, _iso(catalogo_criado))
+        except (ErroML, httpx.HTTPError):
+            pass
     saida = {"item_id": item_id, "produto_id": produto_id, "titulo": _texto(pagina.get("titulo"), 300),
              "preco": preco, "categoria_id": categoria, "tipo_id": tipo, "tipo_anuncio": _TIPOS.get(tipo, tipo),
              "logistica": nome_logistica(_texto(pagina.get("logistica"), 30), bool(pagina.get("flex"))),
@@ -280,6 +352,10 @@ def analisar(db: Session, usuario: Usuario, pagina: dict) -> dict:
              "dias_anuncio": dias_anuncio, "primeira_pergunta": primeira_pergunta, "primeira_avaliacao": primeira_avaliacao,
              "perguntas": perguntas.get("total"), "visitas_liberadas": visitas is not None,
              "catalogo_criado_em": catalogo_criado, "dias_catalogo": _dias_desde(catalogo_criado), "tarifas": tarifas,
+             "vendedor_entrou_em": entrada_vendedor if em_catalogo else None,
+             "vendedor_dias_catalogo": _dias_desde(entrada_vendedor) if em_catalogo else None,
+             "vendedor_entrada_fonte": ("anuncio" if criado_em else "pergunta" if entrada_vendedor else None) if em_catalogo else None,
+             "catalogo_vendedores_total": catalogo["total"], "catalogo_vendedores": catalogo["itens"],
              "frete": frete["custo"] if frete else None, "frete_peso_g": frete["peso_g"] if frete else None,
              "frete_fonte": frete["fonte"] if frete else None, "vendedor": vendedor,
              "imposto_padrao": config.IMPOSTO_PADRAO, **metricas(vendidos, patamar, preco, visitas, dias_vida, dias_anuncio)}

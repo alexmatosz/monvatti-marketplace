@@ -99,7 +99,7 @@ def eu(conta_ml: str = "", u: Usuario = Depends(usuario_atual), db: Session = De
     tem_propria, tem_central = ml._conectada(propria), ml._conectada(central)
     liberado = tem_propria or tem_central
     return {"ligado": True, "nome": u.nome, "imposto": u.imposto_padrao, "admin": admin, "papel": u.papel,
-            "assinatura_ate": u.assinatura_ate.isoformat() if u.assinatura_ate else None,
+            "assinatura_ate": u.assinatura_ate.isoformat() if u.assinatura_ate and not config.ACESSO_LIVRE else None,
             "conta": {"conta": conta_ml or "deslogado", "liberado": liberado, "motivo": "" if liberado else ml.CONECTE},
             "ml_conectado": liberado,
             "ml_propria": tem_propria, "ml_apelido": propria.apelido if tem_propria else "",
